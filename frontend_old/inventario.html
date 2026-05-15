@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferretaría Luxury | Inventario y Pérdidas</title>
+    <link rel="stylesheet" href="css/luxury.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tabs {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .tab {
+            padding: 1rem 0.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .badge-active {
+            background: rgba(76, 209, 55, 0.1);
+            color: #4cd137;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .badge-reverted {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        /* Modal Simple placeholder */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            max-width: 500px;
+            width: 90%;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">FERRETERÍA <br> LUXURY</div>
+        <ul class="nav-links">
+            <li class="nav-item" onclick="location.href='index.html'">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </li>
+            <li class="nav-item" onclick="location.href='ventas.html'">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Ventas (POS)</span>
+            </li>
+            <li class="nav-item active">
+                <i class="fas fa-boxes"></i>
+                <span>Inventario</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Clientes</span>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="header">
+            <div>
+                <h1 class="title-gradient">Inventario & Stock</h1>
+                <p style="color: var(--text-secondary)">Gestiona tus productos y reporta incidencias</p>
+            </div>
+            <button class="btn-premium"><i class="fas fa-plus"></i> Nuevo Producto</button>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active">Stock Actual</div>
+            <div class="tab">Historial de Pérdidas</div>
+            <div class="tab">Movimientos</div>
+        </div>
+
+        <section class="luxury-card">
+            <table class="luxury-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Stock Actual</th>
+                        <th>Costo Unit.</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="products-body">
+                    <!-- Data will be injected by JS -->
+                </tbody>
+            </table>
+        </section>
+
+        <h2 style="margin: 3rem 0 1.5rem; font-weight: 400; color: var(--accent-gold);">Últimas Pérdidas Registradas</h2>
+        
+        <section class="luxury-card">
+            <table class="luxury-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>14 Abril, 2026</td>
+                        <td>Martillo de Acero</td>
+                        <td>1</td>
+                        <td>Daño físico tras caída</td>
+                        <td><span class="badge-active">ACTIVA</span></td>
+                    </tr>
+                    <tr>
+                        <td>12 Abril, 2026</td>
+                        <td>Lija Nro 80</td>
+                        <td>10</td>
+                        <td>Error en conteo inicial</td>
+                        <td><span class="badge-reverted">REVERTIDA</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <!-- Modal Mockup -->
+    <div class="modal-overlay" id="lossModal">
+        <form class="luxury-card modal" id="loss-form">
+            <h2 style="margin-bottom: 2rem; color: var(--accent);">Reportar Pérdida</h2>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Producto Seleccionado</label>
+                <div id="selectedProductName" style="font-weight: 600; font-size: 1.2rem;">-</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Cantidad</label>
+                    <input type="number" name="qty" required step="0.01" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 0.8rem; border-radius: 8px; color: white;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Responsable</label>
+                    <input type="text" name="responsible" required style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 0.8rem; border-radius: 8px; color: white;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Motivo de la pérdida</label>
+                <textarea name="reason" required style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 0.8rem; border-radius: 8px; color: white; min-height: 100px;"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button" class="btn-premium" style="background: transparent; border: 1px solid var(--glass-border); color: white;" onclick="window.closeLossModal()">Cancelar</button>
+                <button type="submit" class="btn-premium">Confirmar Reporte</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module" src="js/inventory.js"></script>
+</body>
+</html>

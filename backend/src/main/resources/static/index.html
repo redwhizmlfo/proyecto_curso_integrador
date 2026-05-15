@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEPS GROUP PERÚ - Dashboard</title>
+    <link rel="stylesheet" href="css/meps.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">MEPS GROUP PERÚ</div>
+        <ul class="nav-links">
+            <li class="nav-item active" onclick="location.href='index.html'" style="cursor:pointer">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </li>
+            <li class="nav-item" onclick="location.href='ventas.html'" style="cursor:pointer">
+                <i class="fas fa-cash-register"></i>
+                <span>Ventas</span>
+            </li>
+            <li class="nav-item" onclick="location.href='inventario.html'" style="cursor:pointer">
+                <i class="fas fa-box"></i>
+                <span>Inventario</span>
+            </li>
+            <li class="nav-item" onclick="location.href='pedidos.html'" style="cursor:pointer">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Pedidos</span>
+            </li>
+            <li class="nav-item" onclick="location.href='clientes.html'" style="cursor:pointer">
+                <i class="fas fa-users"></i>
+                <span>Clientes</span>
+            </li>
+            <li class="nav-item" onclick="location.href='proveedores.html'" style="cursor:pointer">
+                <i class="fas fa-truck"></i>
+                <span>Proveedores</span>
+            </li>
+            <li class="nav-item" onclick="location.href='personal.html'" style="cursor:pointer">
+                <i class="fas fa-user-tie"></i>
+                <span>RRHH y Usuarios</span>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="topbar-right">
+                <button class="btn btn-outline">GENERAR REPORTE OPERATIVO</button>
+                <button class="btn btn-primary">NUEVA VENTA</button>
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">ADMIN USUARIO</span>
+                        <span class="user-role">SUPER ADMIN</span>
+                    </div>
+                    <i class="far fa-user-circle user-icon"></i>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="header-section">
+                <h1>Panel de Control</h1>
+                <p>Visualice las métricas clave y el rendimiento operativo de su organización en tiempo real.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">RESUMEN DE VENTAS</span>
+                        <i class="fas fa-money-bill-wave stat-icon" style="color: var(--primary-blue);"></i>
+                    </div>
+                    <div class="stat-value" id="d_sales">S/ 0.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">PRODUCTOS ACTIVOS</span>
+                        <i class="fas fa-box-open stat-icon" style="color: #10b981;"></i>
+                    </div>
+                    <div class="stat-value" id="d_products">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">TOTAL CLIENTES</span>
+                        <i class="fas fa-users stat-icon" style="color: #f59e0b;"></i>
+                    </div>
+                    <div class="stat-value" id="d_customers">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">ALERTAS DE STOCK</span>
+                        <i class="fas fa-exclamation-triangle stat-icon" style="color: #ef4444;"></i>
+                    </div>
+                    <div class="stat-value" id="d_alerts">0</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="recent-sales">
+                    <div class="section-header">
+                        <h2>Ventas Recientes</h2>
+                        <a href="ventas.html" class="view-all">NUEVA VENTA</a>
+                    </div>
+                    <table class="sales-table">
+                        <thead>
+                            <tr>
+                                <th>COMPROBANTE</th>
+                                <th>CLIENTE</th>
+                                <th class="text-right">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-sales-body">
+                            <tr><td colspan="3" style="text-align: center; padding: 1rem;">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="stock-alerts">
+                    <div class="section-header">
+                        <h2 class="alert-title"><i class="fas fa-exclamation-triangle"></i> Alertas de Stock Crítico</h2>
+                    </div>
+                    <div class="alerts-list" id="alerts-list">
+                        <div style="text-align: center; padding: 1rem; color: var(--text-muted);">Cargando alertas...</div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

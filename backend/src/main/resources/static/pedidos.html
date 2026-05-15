@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEPS GROUP PERÚ - Pedidos</title>
+    <link rel="stylesheet" href="css/meps.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: white; border-radius: 8px; padding: 2.5rem; max-width: 600px; width: 90%; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; }
+        .form-control { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .badge-pendiente { background: #fef08a; color: #a16207; }
+        .badge-recibido { background: #dcfce7; color: #166534; }
+        .order-product-row { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo">MEPS GROUP PERÚ</div>
+        <ul class="nav-links">
+            <li class="nav-item" onclick="location.href='index.html'" style="cursor:pointer"><i class="fas fa-th-large"></i><span>Dashboard</span></li>
+            <li class="nav-item" onclick="location.href='ventas.html'" style="cursor:pointer"><i class="fas fa-cash-register"></i><span>Ventas</span></li>
+            <li class="nav-item" onclick="location.href='inventario.html'" style="cursor:pointer"><i class="fas fa-box"></i><span>Inventario</span></li>
+            <li class="nav-item active" onclick="location.href='pedidos.html'" style="cursor:pointer"><i class="fas fa-shopping-cart"></i><span>Pedidos</span></li>
+            <li class="nav-item" onclick="location.href='clientes.html'" style="cursor:pointer"><i class="fas fa-users"></i><span>Clientes</span></li>
+            <li class="nav-item" onclick="location.href='proveedores.html'" style="cursor:pointer"><i class="fas fa-truck"></i><span>Proveedores</span></li>
+            <li class="nav-item" onclick="location.href='personal.html'" style="cursor:pointer"><i class="fas fa-user-tie"></i><span>RRHH y Usuarios</span></li>
+        </ul>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="topbar-right">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">ADMIN USUARIO</span>
+                        <span class="user-role">SUPER ADMIN</span>
+                    </div>
+                    <i class="far fa-user-circle user-icon"></i>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="section-header" style="margin-bottom: 2rem;">
+                <div class="header-section" style="margin-bottom: 0;">
+                    <h1>Órdenes de Compra (Pedidos)</h1>
+                    <p>Subasta, solicita y recibe productos de tus proveedores para reabastecer el almacén.</p>
+                </div>
+                <button class="btn btn-primary" onclick="openOrderModal()"><i class="fas fa-plus"></i> CREAR PEDIDO</button>
+            </div>
+
+            <div class="stat-card" style="padding: 0; overflow: hidden;">
+                <table class="sales-table">
+                    <thead style="background-color: #f8fafc;">
+                        <tr>
+                            <th style="padding-left: 1.5rem;">ID PEDIDO</th>
+                            <th>PROVEEDOR</th>
+                            <th>FECHA PEDIDO</th>
+                            <th>ITEMS</th>
+                            <th>ESTADO</th>
+                            <th style="text-align: center;">ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-body">
+                        <tr><td colspan="6" style="text-align: center; padding: 2rem;">Cargando pedidos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Purchase Order -->
+    <div class="modal-overlay" id="orderModal">
+        <form class="modal" id="order-form">
+            <h2 style="margin-bottom: 1.5rem; color: var(--primary-blue);">Nueva Orden de Compra</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Usuario que solicita</label>
+                    <select id="o_user" required class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Proveedor</label>
+                    <select id="o_supplier" required class="form-control"></select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Prioridad</label>
+                <select id="o_priority" required class="form-control">
+                    <option value="baja">Baja</option>
+                    <option value="media" selected>Media</option>
+                    <option value="alta">Alta</option>
+                    <option value="urgente">¡Urgente!</option>
+                </select>
+            </div>
+
+            <h3 style="margin: 1.5rem 0 1rem; font-size: 1rem;">Productos a Solicitar</h3>
+            <div id="order-items-container">
+                <div class="order-product-row">
+                    <select class="form-control o_product_select" required></select>
+                    <input type="number" class="form-control o_qty" placeholder="Cantidad" required min="1">
+                </div>
+            </div>
+            <button type="button" class="btn btn-outline" style="width: 100%; margin-bottom: 1.5rem; border-style: dashed;" onclick="addOrderRow()">+ Añadir otro producto</button>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button" class="btn btn-outline" onclick="closeOrderModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="saveBtn">Emitir Orden</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module" src="js/orders.js"></script>
+    <script>
+        function openOrderModal() { document.getElementById('orderModal').style.display = 'flex'; }
+        function closeOrderModal() { document.getElementById('orderModal').style.display = 'none'; }
+    </script>
+</body>
+</html>

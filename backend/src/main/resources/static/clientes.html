@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEPS GROUP PERÚ - Clientes</title>
+    <link rel="stylesheet" href="css/meps.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; }
+        .form-control { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">MEPS GROUP PERÚ</div>
+        <ul class="nav-links">
+            <li class="nav-item" onclick="location.href='index.html'" style="cursor:pointer">
+                <i class="fas fa-th-large"></i><span>Dashboard</span>
+            </li>
+            <li class="nav-item" onclick="location.href='ventas.html'" style="cursor:pointer">
+                <i class="fas fa-cash-register"></i><span>Ventas</span>
+            </li>
+            <li class="nav-item" onclick="location.href='inventario.html'" style="cursor:pointer">
+                <i class="fas fa-box"></i><span>Inventario</span>
+            </li>
+            <li class="nav-item" onclick="location.href='pedidos.html'" style="cursor:pointer">
+                <i class="fas fa-shopping-cart"></i><span>Pedidos</span>
+            </li>
+            <li class="nav-item active" onclick="location.href='clientes.html'" style="cursor:pointer">
+                <i class="fas fa-users"></i><span>Clientes</span>
+            </li>
+            <li class="nav-item" onclick="location.href='proveedores.html'" style="cursor:pointer">
+                <i class="fas fa-truck"></i><span>Proveedores</span>
+            </li>
+            <li class="nav-item" onclick="location.href='personal.html'" style="cursor:pointer">
+                <i class="fas fa-user-tie"></i><span>RRHH y Usuarios</span>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="topbar-right">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">ADMIN USUARIO</span>
+                        <span class="user-role">SUPER ADMIN</span>
+                    </div>
+                    <i class="far fa-user-circle user-icon"></i>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="section-header" style="margin-bottom: 2rem;">
+                <div class="header-section" style="margin-bottom: 0;">
+                    <h1>Directorio de Clientes</h1>
+                    <p>Gestiona los perfiles y datos de facturación de tus clientes frecuentes.</p>
+                </div>
+                <button class="btn btn-primary" onclick="openCustomerModal()"><i class="fas fa-plus"></i> NUEVO CLIENTE</button>
+            </div>
+
+            <div class="stat-card" style="padding: 0; overflow: hidden;">
+                <table class="sales-table">
+                    <thead style="background-color: #f8fafc;">
+                        <tr>
+                            <th style="padding-left: 1.5rem;">DOCUMENTO</th>
+                            <th>NOMBRES / RAZÓN SOCIAL</th>
+                            <th>TELÉFONO</th>
+                            <th>CORREO</th>
+                            <th>DCTO PREFERENCIAL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-body">
+                        <tr><td colspan="5" style="text-align: center; padding: 2rem;">Cargando clientes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Creating Customer -->
+    <div class="modal-overlay" id="customerModal">
+        <form class="modal" id="customer-form">
+            <h2 style="margin-bottom: 1.5rem; color: var(--primary-blue);">Registrar Cliente</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Nombres Completos o Razón Social</label>
+                <input type="text" id="c_name" required class="form-control" placeholder="Ej: Juan Pérez">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Tipo Doc.</label>
+                    <select id="c_type" required class="form-control">
+                        <option value="DNI">DNI</option>
+                        <option value="RUC">RUC</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Número de Documento</label>
+                    <input type="text" id="c_doc" required class="form-control" placeholder="Ej: 72134567">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Teléfono (Opcional)</label>
+                    <input type="text" id="c_phone" class="form-control" placeholder="Ej: 987654321">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descuento (%)</label>
+                    <input type="number" id="c_discount" class="form-control" value="0" min="0" max="100">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Dirección (Opcional)</label>
+                <input type="text" id="c_address" class="form-control" placeholder="Ej: Av. Principal 123">
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                <button type="button" class="btn btn-outline" onclick="closeCustomerModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="saveBtn">Guardar Cliente</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module" src="js/customers.js"></script>
+    <script>
+        function openCustomerModal() {
+            document.getElementById('customer-form').reset();
+            document.getElementById('customerModal').style.display = 'flex';
+        }
+        function closeCustomerModal() {
+            document.getElementById('customerModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

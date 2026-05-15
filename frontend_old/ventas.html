@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferretaría Luxury | Punto de Venta</title>
+    <link rel="stylesheet" href="css/luxury.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .pos-container {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 1.2rem 3rem;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .cart-summary {
+            margin-top: 2rem;
+            border-top: 1px solid var(--accent-gold);
+            padding-top: 1rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+
+        .total-amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .product-card {
+            cursor: pointer;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .product-card:hover {
+            background: var(--hover-bg);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">FERRETERÍA <br> LUXURY</div>
+        <ul class="nav-links">
+            <li class="nav-item" onclick="location.href='index.html'">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </li>
+            <li class="nav-item active">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Ventas (POS)</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-boxes"></i>
+                <span>Inventario</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Clientes</span>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="header">
+            <div>
+                <h1 class="title-gradient">Punto de Venta</h1>
+                <p style="color: var(--text-secondary)">Realiza ventas rápidas con estilo premium</p>
+            </div>
+        </header>
+
+        <div class="pos-container">
+            <!-- Left Side: Product Selection -->
+            <div class="luxury-card">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Buscar producto por nombre o código de barras...">
+                </div>
+
+                <div class="products-list-header" style="display: grid; grid-template-columns: 2fr 1fr 1fr 80px; padding: 1rem; color: var(--accent); font-size: 0.8rem; text-transform: uppercase;">
+                    <span>Producto</span>
+                    <span>Precio</span>
+                    <span>Stock</span>
+                    <span>Accion</span>
+                </div>
+                
+                <div id="available-products">
+                    <!-- Products will be injected by JS -->
+                </div>
+            </div>
+
+            <!-- Right Side: Cart Summary -->
+            <div class="luxury-card">
+                <h3 style="margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent);">Detalle de Venta</h3>
+                
+                <div class="customer-select luxury-card" style="padding: 0.8rem; margin-bottom: 1.5rem; border-style: dashed;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Cliente:</div>
+                    <div style="font-weight: 600;">Juan Pérez (DNI: 12345678)</div>
+                </div>
+
+                <div id="cart-items" style="min-height: 200px;">
+                    <!-- Cart items will appear here -->
+                </div>
+
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">S/ 0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>IGV (18%)</span>
+                        <span id="igv">S/ 0.00</span>
+                    </div>
+                    <div class="summary-row" style="margin-top: 1rem;">
+                        <span style="font-weight: 700;">TOTAL</span>
+                        <span id="total" class="total-amount">S/ 0.00</span>
+                    </div>
+
+                    <button id="checkout-btn" class="btn-premium" style="width: 100%; margin-top: 2rem; padding: 1.2rem;">PROCESAR VENTA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/sales.js"></script>
+</body>
+</html>

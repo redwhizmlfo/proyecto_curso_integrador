@@ -1,0 +1,42 @@
+# Java / Spring Boot
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven / Gradle
+.gradle/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+
+# Logs
+*.log
+logs/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Variables sensibles
+.env
+application-secret.properties
+application-prod.properties
+
+# Base de datos local
+*.db
+*.sqlite
+*.sqlite3
+*.sql.gz
+*.bak
+
+# Node / frontend
+node_modules/
+dist/

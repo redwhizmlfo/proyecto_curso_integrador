@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEPS GROUP PERÚ - Proveedores</title>
+    <link rel="stylesheet" href="css/meps.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .badge-active { background: #dcfce7; color: #166534; }
+        .badge-inactive { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">MEPS GROUP PERÚ</div>
+        <ul class="nav-links">
+            <li class="nav-item" onclick="location.href='index.html'" style="cursor:pointer">
+                <i class="fas fa-th-large"></i><span>Dashboard</span>
+            </li>
+            <li class="nav-item" onclick="location.href='ventas.html'" style="cursor:pointer">
+                <i class="fas fa-cash-register"></i><span>Ventas</span>
+            </li>
+            <li class="nav-item" onclick="location.href='inventario.html'" style="cursor:pointer">
+                <i class="fas fa-box"></i><span>Inventario</span>
+            </li>
+            <li class="nav-item" onclick="location.href='pedidos.html'" style="cursor:pointer">
+                <i class="fas fa-shopping-cart"></i><span>Pedidos</span>
+            </li>
+            <li class="nav-item" onclick="location.href='clientes.html'" style="cursor:pointer">
+                <i class="fas fa-users"></i><span>Clientes</span>
+            </li>
+            <li class="nav-item active" onclick="location.href='proveedores.html'" style="cursor:pointer">
+                <i class="fas fa-truck"></i><span>Proveedores</span>
+            </li>
+            <li class="nav-item" onclick="location.href='personal.html'" style="cursor:pointer">
+                <i class="fas fa-user-tie"></i><span>RRHH y Usuarios</span>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="topbar-right">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">ADMIN USUARIO</span>
+                        <span class="user-role">SUPER ADMIN</span>
+                    </div>
+                    <i class="far fa-user-circle user-icon"></i>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="section-header" style="margin-bottom: 2rem;">
+                <div class="header-section" style="margin-bottom: 0;">
+                    <h1>Directorio de Proveedores</h1>
+                    <p>Gestiona los datos de las empresas y marcas que abastecen la ferretería.</p>
+                </div>
+                <button class="btn btn-primary" onclick="openSupplierModal()"><i class="fas fa-plus"></i> NUEVO PROVEEDOR</button>
+            </div>
+
+            <div class="stat-card" style="padding: 0; overflow: hidden;">
+                <table class="sales-table">
+                    <thead style="background-color: #f8fafc;">
+                        <tr>
+                            <th style="padding-left: 1.5rem;">RUC</th>
+                            <th>RAZÓN SOCIAL</th>
+                            <th>CONTACTO</th>
+                            <th>TELÉFONO</th>
+                            <th>CORREO</th>
+                            <th>ESTADO</th>
+                            <th style="text-align: center;">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="suppliers-body">
+                        <tr><td colspan="7" style="text-align: center; padding: 2rem;">Cargando proveedores...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Creating/Editing Supplier -->
+    <div class="modal-overlay" id="supplierModal">
+        <form class="modal" id="supplier-form">
+            <h2 style="margin-bottom: 1.5rem; color: var(--primary-blue);" id="modalTitle">Nuevo Proveedor</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Razón Social / Nombre de Empresa</label>
+                <input type="text" id="s_name" required class="form-control" placeholder="Ej: Aceros Arequipa S.A.">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">RUC (Registro Único de Contribuyente)</label>
+                <input type="text" id="s_ruc" required class="form-control" placeholder="Ej: 20123456789" pattern="\d{11}" title="Debe contener 11 dígitos numéricos">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Nombre del Contacto (Opcional)</label>
+                <input type="text" id="s_contact" class="form-control" placeholder="Ej: Juan Pérez - Ventas">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" id="s_phone" class="form-control" placeholder="Ej: 987654321">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" id="s_email" class="form-control" placeholder="Ej: ventas@empresa.com">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                <button type="button" class="btn btn-outline" onclick="closeSupplierModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="saveBtn">Guardar Proveedor</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module" src="js/suppliers.js"></script>
+    <script>
+        function openSupplierModal() {
+            document.getElementById('supplier-form').reset();
+            document.getElementById('modalTitle').innerText = 'Nuevo Proveedor';
+            document.getElementById('supplierModal').style.display = 'flex';
+        }
+        function closeSupplierModal() {
+            document.getElementById('supplierModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

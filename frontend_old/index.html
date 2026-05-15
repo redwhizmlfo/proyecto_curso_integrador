@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferretaría Luxury | Dashboard</title>
+    <link rel="stylesheet" href="css/luxury.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">FERRETERÍA <br> LUXURY</div>
+        <ul class="nav-links">
+            <li class="nav-item active">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Ventas (POS)</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-boxes"></i>
+                <span>Inventario</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Clientes</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-truck"></i>
+                <span>Proveedores</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-user-tie"></i>
+                <span>Empleados</span>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="header">
+            <div>
+                <h1 class="title-gradient">Bienvenido de nuevo</h1>
+                <p style="color: var(--text-secondary)">Sistema de Gestión de Ventas Avanzado</p>
+            </div>
+            <div class="user-profile luxury-card" style="padding: 0.5rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                <div style="text-align: right;">
+                    <div style="font-weight: 600;">Admin User</div>
+                    <div style="font-size: 0.7rem; color: var(--accent);">GERENTE</div>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Admin+User&background=00f2ff&color=000" style="width: 40px; border-radius: 50%;">
+            </div>
+        </header>
+
+        <section class="stats-grid">
+            <div class="luxury-card">
+                <i class="fas fa-dollar-sign" style="color: var(--accent); font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Ventas del Mes</div>
+                <div style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">S/ 42,500.00</div>
+                <div style="color: #4cd137; font-size: 0.8rem;"><i class="fas fa-arrow-up"></i> +12% vs mes anterior</div>
+            </div>
+            <div class="luxury-card">
+                <i class="fas fa-box-open" style="color: var(--accent-gold); font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Stock Crítico</div>
+                <div style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">18 Items</div>
+                <div style="color: #e84118; font-size: 0.8rem;">Requieren reposición inmediata</div>
+            </div>
+            <div class="luxury-card">
+                <i class="fas fa-user-plus" style="color: var(--accent); font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">Nuevos Clientes</div>
+                <div style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">24</div>
+                <div style="color: var(--accent); font-size: 0.8rem;">Registrados esta semana</div>
+            </div>
+        </section>
+
+        <section class="luxury-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-weight: 400; letter-spacing: 1px;">Últimas Ventas</h2>
+                <button class="btn-premium">Nueva Venta</button>
+            </div>
+            
+            <table class="luxury-table">
+                <thead>
+                    <tr>
+                        <th>ID Venta</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="sales-list">
+                    <tr>
+                        <td>#VEN-001</td>
+                        <td>Juan Pérez</td>
+                        <td>14 Abril, 2026</td>
+                        <td style="font-weight: 600; color: var(--accent-gold);">S/ 1,250.00</td>
+                        <td><span style="background: rgba(76, 209, 55, 0.1); color: #4cd137; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">COMPLETADO</span></td>
+                        <td><i class="fas fa-ellipsis-h" style="cursor: pointer;"></i></td>
+                    </tr>
+                    <tr>
+                        <td>#VEN-002</td>
+                        <td>Maria Garcia</td>
+                        <td>14 Abril, 2026</td>
+                        <td style="font-weight: 600; color: var(--accent-gold);">S/ 450.00</td>
+                        <td><span style="background: rgba(76, 209, 55, 0.1); color: #4cd137; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">COMPLETADO</span></td>
+                        <td><i class="fas fa-ellipsis-h" style="cursor: pointer;"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

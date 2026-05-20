@@ -97,7 +97,7 @@ public class PurchaseOrderService {
             StockMovement movement = StockMovement.builder()
                     .product(p)
                     .createdByUser(user)
-                    .movementType("compra")
+                    .movementType("ingreso_stock")
                     .sourceModule("compras")
                     .delta(item.getQty())
                     .unitSnapshot(p.getUnit())

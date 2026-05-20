@@ -33,4 +33,15 @@ public class CustomerController {
     public ResponseEntity<Customer> create(@RequestBody CustomerRequestDTO request) {
         return new ResponseEntity<>(customerService.createCustomer(request), HttpStatus.CREATED);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Customer> update(@PathVariable UUID id, @RequestBody CustomerRequestDTO request) {
+        return ResponseEntity.ok(customerService.updateCustomer(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        customerService.deleteCustomer(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -18,6 +18,7 @@ import {
 
 export default function Sidebar() {
   const [sections, setSections] = useState({
+    dashboard: true, // Expanded by default
     almacen: true,
     operaciones: true,
     rrhh: true,
@@ -33,12 +34,62 @@ export default function Sidebar() {
         MEPS GROUP PERÚ
       </div>
       <ul className="nav-links">
-        {/* Dashboard */}
+        {/* Dashboard Collapsible Menu */}
         <li>
-          <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end>
-            <LayoutDashboard />
-            <span>Dashboard</span>
-          </NavLink>
+          <div 
+            className="nav-category" 
+            style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              cursor: 'pointer', 
+              margin: '0.5rem 1.5rem 0.5rem 1.5rem',
+              color: 'var(--accent)',
+              fontSize: '0.75rem',
+              fontWeight: '800',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
+            }} 
+            onClick={() => toggleSection('dashboard')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <LayoutDashboard size={16} />
+              <span>Dashboard</span>
+            </div>
+            {sections.dashboard ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+          </div>
+          {sections.dashboard && (
+            <div style={{ paddingLeft: '0.5rem' }}>
+              <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end>
+                <LayoutDashboard size={14} style={{ marginRight: '8px' }} />
+                <span>Resumen General</span>
+              </NavLink>
+              <NavLink to="/dashboard/resumen-inventario" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <span style={{ fontSize: '0.85rem', paddingLeft: '22px' }}>Resumen Inventario</span>
+              </NavLink>
+              <NavLink to="/dashboard/resumen-ventas" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <span style={{ fontSize: '0.85rem', paddingLeft: '22px' }}>Resumen Ventas</span>
+              </NavLink>
+              <NavLink to="/dashboard/resumen-clientes" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <span style={{ fontSize: '0.85rem', paddingLeft: '22px' }}>Resumen Clientes</span>
+              </NavLink>
+              <NavLink to="/dashboard/resumen-proveedores" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <span style={{ fontSize: '0.85rem', paddingLeft: '22px' }}>Resumen Proveedores</span>
+              </NavLink>
+              <NavLink to="/dashboard/resumen-pedidos-compra" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <span style={{ fontSize: '0.85rem', paddingLeft: '22px' }}>Resumen Pedidos</span>
+              </NavLink>
+              <NavLink to="/dashboard/resumen-almacen" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <span style={{ fontSize: '0.85rem', paddingLeft: '22px' }}>Resumen Almacén</span>
+              </NavLink>
+              <NavLink to="/dashboard/resumen-empleados" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <span style={{ fontSize: '0.85rem', paddingLeft: '22px' }}>Resumen Empleados</span>
+              </NavLink>
+              <NavLink to="/dashboard/resumen-usuarios-roles" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <span style={{ fontSize: '0.85rem', paddingLeft: '22px' }}>Usuarios y Roles</span>
+              </NavLink>
+            </div>
+          )}
         </li>
 
         {/* POS */}

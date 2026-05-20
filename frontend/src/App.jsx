@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
+import DashboardPlaceholder from './pages/DashboardPlaceholder';
 import Ventas from './pages/Ventas';
 import Inventario from './pages/Inventario';
 import Mermas from './pages/Mermas';
@@ -23,8 +24,16 @@ export default function App() {
         {/* Main Content wrapper */}
         <main className="main-wrapper">
           <Routes>
-            {/* Dashboard */}
+            {/* Dashboard and submodules */}
             <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard/resumen-inventario" element={<DashboardPlaceholder />} />
+            <Route path="/dashboard/resumen-ventas" element={<DashboardPlaceholder />} />
+            <Route path="/dashboard/resumen-clientes" element={<DashboardPlaceholder />} />
+            <Route path="/dashboard/resumen-proveedores" element={<DashboardPlaceholder />} />
+            <Route path="/dashboard/resumen-pedidos-compra" element={<DashboardPlaceholder />} />
+            <Route path="/dashboard/resumen-almacen" element={<DashboardPlaceholder />} />
+            <Route path="/dashboard/resumen-empleados" element={<DashboardPlaceholder />} />
+            <Route path="/dashboard/resumen-usuarios-roles" element={<DashboardPlaceholder />} />
 
             {/* POS Sales */}
             <Route path="/ventas" element={<Ventas />} />

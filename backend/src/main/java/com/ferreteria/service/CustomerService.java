@@ -39,4 +39,23 @@ public class CustomerService {
                 .build();
         return customerRepository.save(customer);
     }
+
+    @Transactional
+    public Customer updateCustomer(UUID id, CustomerRequestDTO request) {
+        Customer customer = getCustomerById(id);
+        customer.setName(request.getName());
+        customer.setDocType(request.getDocType());
+        customer.setDocNumber(request.getDocNumber());
+        customer.setPhone(request.getPhone());
+        customer.setEmail(request.getEmail());
+        customer.setAddress(request.getAddress());
+        customer.setPreferredDiscount(request.getPreferredDiscount() != null ? request.getPreferredDiscount() : BigDecimal.ZERO);
+        return customerRepository.save(customer);
+    }
+
+    @Transactional
+    public void deleteCustomer(UUID id) {
+        Customer customer = getCustomerById(id);
+        customerRepository.delete(customer);
+    }
 }

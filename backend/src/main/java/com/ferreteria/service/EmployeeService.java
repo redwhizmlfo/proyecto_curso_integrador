@@ -40,4 +40,23 @@ public class EmployeeService {
                 .build();
         return employeeRepository.save(employee);
     }
+
+    @Transactional
+    public Employee updateEmployee(UUID id, EmployeeRequestDTO request) {
+        Employee employee = getEmployeeById(id);
+        employee.setInitials(request.getInitials());
+        employee.setName(request.getName());
+        employee.setRole(request.getRole());
+        employee.setDni(request.getDni());
+        if (request.getPayPerDay() != null) {
+            employee.setPayPerDay(request.getPayPerDay());
+        }
+        return employeeRepository.save(employee);
+    }
+
+    @Transactional
+    public void deleteEmployee(UUID id) {
+        Employee employee = getEmployeeById(id);
+        employeeRepository.delete(employee);
+    }
 }

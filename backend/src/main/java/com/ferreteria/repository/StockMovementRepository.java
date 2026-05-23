@@ -8,7 +8,10 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface StockMovementRepository extends JpaRepository<StockMovement, UUID> {
+
     // Esta consulta obtiene el último stock registrado de un producto específico.
     // Selecciona el campo stockAfter de la entidad StockMovement.    
     // WHERE sm.product.id = :productId → filtramos por el producto cuyo ID se pasa como parámetro.
@@ -16,5 +19,8 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, UU
     // Optional<BigDecimal> → devuelve el stockAfter más reciente, o vacío si no hay movimientos.
     @Query("SELECT sm.stockAfter FROM StockMovement sm WHERE sm.productId = :productId ORDER BY sm.occurredAt DESC LIMIT 1")
     Optional<BigDecimal> findLastStockByProductId(@Param("productId") UUID productId);
+
+
+    List<StockMovement> findByProductIdOrderByOccurredAtDesc(UUID productId);
 
 }

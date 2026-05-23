@@ -1,5 +1,6 @@
 package com.ferreteria.service;
 
+
 import com.ferreteria.dto.StockMovementRequestDTO;
 import com.ferreteria.model.Product;
 import com.ferreteria.model.StockMovement;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class StockMovementService {
+
     
     private final StockMovementRepository stockMovementRepo;
     private final ProductRepository productRepo;
@@ -63,5 +65,6 @@ public class StockMovementService {
                 .build();
         
         return this.stockMovementRepo.save(sm);
+
     }
 }

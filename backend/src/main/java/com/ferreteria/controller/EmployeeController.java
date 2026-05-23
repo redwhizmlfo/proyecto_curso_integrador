@@ -23,8 +23,24 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.getAllEmployees());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Employee> getById(@PathVariable java.util.UUID id) {
+        return ResponseEntity.ok(employeeService.getEmployeeById(id));
+    }
+
     @PostMapping
     public ResponseEntity<Employee> create(@RequestBody EmployeeRequestDTO request) {
         return new ResponseEntity<>(employeeService.createEmployee(request), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Employee> update(@PathVariable java.util.UUID id, @RequestBody EmployeeRequestDTO request) {
+        return ResponseEntity.ok(employeeService.updateEmployee(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable java.util.UUID id) {
+        employeeService.deleteEmployee(id);
+        return ResponseEntity.noContent().build();
     }
 }

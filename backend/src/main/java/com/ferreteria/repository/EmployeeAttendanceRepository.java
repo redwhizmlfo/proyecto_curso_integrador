@@ -6,6 +6,9 @@ import java.util.UUID;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import java.util.List;
+
 public interface EmployeeAttendanceRepository extends JpaRepository<EmployeeAttendance, UUID> {
     Optional<EmployeeAttendance> findByEmployeeIdAndWorkDate(UUID employeeId, LocalDate workDate);
+    List<EmployeeAttendance> findByEmployeeIdOrderByWorkDateDesc(UUID employeeId);
 }

@@ -85,6 +85,50 @@ create table if not exists users (
 create unique index if not exists users_username_unique_normalized_idx
   on users (lower(btrim(username)));
 
+create table if not exists categorias (
+  id uuid primary key default gen_random_uuid(),
+  nombre_categoria varchar(180) not null,
+  constraint categorias_nombre_not_blank check (btrim(nombre_categoria) <> '')
+);
+
+create table if not exists marcas (
+  id uuid primary key default gen_random_uuid(),
+  nombre_marca varchar(180) not null,
+  constraint marcas_nombre_not_blank check (btrim(nombre_marca) <> '')
+);
+
+create table if not exists productos_modelos (
+  id uuid primary key default gen_random_uuid(),
+  id_categoria uuid not null references categorias(id),
+  id_marca uuid not null references marcas(id),
+  modelo varchar(180) not null,
+  codigo_modelo varchar(80) not null,
+  sku varchar(80) not null unique,
+  precio numeric(12,2) not null default 0,
+  stock integer not null default 0,
+  constraint productos_modelos_modelo_not_blank check (btrim(modelo) <> ''),
+  constraint productos_modelos_codigo_not_blank check (btrim(codigo_modelo) <> ''),
+  constraint productos_modelos_sku_not_blank check (btrim(sku) <> ''),
+  constraint productos_modelos_precio_non_negative check (precio >= 0),
+  constraint productos_modelos_stock_non_negative check (stock >= 0)
+);
+
+create table if not exists especificaciones (
+  id uuid primary key default gen_random_uuid(),
+  id_producto_modelo uuid not null references productos_modelos(id) on delete cascade,
+  atributo varchar(180) not null,
+  valor varchar(180) not null,
+  constraint especificaciones_atributo_not_blank check (btrim(atributo) <> ''),
+  constraint especificaciones_valor_not_blank check (btrim(valor) <> '')
+);
+
+create table if not exists productos_imagenes (
+  id uuid primary key default gen_random_uuid(),
+  id_producto_modelo uuid not null references productos_modelos(id) on delete cascade,
+  url_imagen varchar(1000) not null,
+  constraint productos_imagenes_url_not_blank check (btrim(url_imagen) <> '')
+);
+
 create table if not exists products (
   id uuid primary key default gen_random_uuid(),
   supplier_id uuid not null references suppliers(id),
@@ -100,6 +144,7 @@ create table if not exists products (
   min_stock numeric(12,2) not null default 0,
   last_reason varchar(180),
   is_active boolean not null default true,
+  image_url varchar(1000),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint products_name_not_blank check (btrim(name) <> ''),
@@ -444,6 +489,41 @@ create table if not exists employee_slips (
   constraint employee_slips_pay_per_day_non_negative check (pay_per_day_snapshot >= 0)
 );
 
+create table if not exists bank_account_configs (
+  id uuid primary key default gen_random_uuid(),
+  bank_name varchar(80) not null,
+  account_alias varchar(120) not null,
+  account_holder_name varchar(180) not null,
+  account_number varchar(80) not null,
+  cci varchar(80),
+  currency varchar(8) not null default 'PEN',
+  document_type varchar(16),
+  document_number varchar(32),
+  supports_api boolean not null default false,
+  provider_code varchar(80),
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint bank_account_configs_bank_not_blank check (btrim(bank_name) <> ''),
+  constraint bank_account_configs_alias_not_blank check (btrim(account_alias) <> ''),
+  constraint bank_account_configs_holder_not_blank check (btrim(account_holder_name) <> ''),
+  constraint bank_account_configs_number_not_blank check (btrim(account_number) <> '')
+);
+
+create table if not exists sunat_ruc_records (
+  ruc varchar(11) primary key,
+  business_name varchar(240) not null,
+  taxpayer_status varchar(80),
+  domicile_condition varchar(80),
+  ubigeo varchar(12),
+  fiscal_address text,
+  source varchar(80) not null default 'SUNAT_PADRON_REDUCIDO',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint sunat_ruc_records_ruc_length check (length(ruc) = 11),
+  constraint sunat_ruc_records_business_name_not_blank check (btrim(business_name) <> '')
+);
+
 create index if not exists products_supplier_id_idx on products (supplier_id);
 create index if not exists products_category_idx on products (category);
 create index if not exists products_active_stock_idx on products (is_active, stock, min_stock);
@@ -469,3 +549,123 @@ create index if not exists employee_attendance_work_date_idx on employee_attenda
 create index if not exists employee_slips_employee_id_idx on employee_slips (employee_id);
 create index if not exists employee_slips_period_label_idx on employee_slips (period_label);
 create index if not exists employee_slips_issued_at_idx on employee_slips (issued_at);
+
+-- Categorías
+INSERT INTO categorias (id, nombre_categoria) VALUES
+  ('8a53e6b7-3b97-4b9e-bd83-bf019808602b', 'Esmeriles'),
+  ('4fdcb3de-5b91-4c4f-96a9-858349280d0d', 'Taladros'),
+  ('d7b403f5-67c3-4d69-a1b1-6a05e2d19213', 'Rotomartillos')
+ON CONFLICT (id) DO NOTHING;
+
+-- Marcas
+INSERT INTO marcas (id, nombre_marca) VALUES
+  ('5c61266d-1bf9-4700-8b1e-b81682701b22', 'Bosch'),
+  ('32be432e-5036-4ad6-b52e-56e632d431f9', 'Makita'),
+  ('20601df5-0db6-48ee-a010-388f61559871', 'DeWalt')
+ON CONFLICT (id) DO NOTHING;
+
+-- Productos Modelos (Stock en Vivo)
+INSERT INTO productos_modelos (id, id_categoria, id_marca, modelo, codigo_modelo, sku, precio, stock) VALUES
+  ('f65c9284-8848-46cb-84ff-b4e82df43a99', '8a53e6b7-3b97-4b9e-bd83-bf019808602b', '5c61266d-1bf9-4700-8b1e-b81682701b22', 'GWS2200', 'GWS 22-180 H', 'SKU-75010324', 349.99, 80),
+  ('2de3e990-28b9-4d92-9447-e61b369f88c3', '8a53e6b7-3b97-4b9e-bd83-bf019808602b', '5c61266d-1bf9-4700-8b1e-b81682701b22', 'GWS750', 'GWS 7-115', 'SKU-72093104', 199.50, 45),
+  ('c4ab044d-5878-43d9-a719-21b36cd8ef16', '8a53e6b7-3b97-4b9e-bd83-bf019808602b', '32be432e-5036-4ad6-b52e-56e632d431f9', 'M0900B', 'M0900B 540W', 'SKU-84102941', 155.00, 30)
+ON CONFLICT (sku) DO NOTHING;
+
+-- Especificaciones de Modelos
+INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210001', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), 'Potencia', '2200 W'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210002', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), 'Diámetro de disco', '7" (180 mm)'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210003', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), 'Velocidad', '8500 RPM'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210004', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), 'Peso', '5.2 kg'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210005', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), 'Potencia', '750 W'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210006', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), 'Diámetro de disco', '4 1/2" (115 mm)'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210007', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), 'Velocidad', '11000 RPM'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210008', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), 'Peso', '1.8 kg'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210009', (SELECT id FROM productos_modelos WHERE sku = 'SKU-84102941'), 'Potencia', '540 W'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210010', (SELECT id FROM productos_modelos WHERE sku = 'SKU-84102941'), 'Velocidad', '12000 RPM'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210011', (SELECT id FROM productos_modelos WHERE sku = 'SKU-84102941'), 'Peso', '1.6 kg')
+ON CONFLICT (id) DO NOTHING;
+
+-- Imágenes de Modelos
+INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210021', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), '/src/assets/esmeril_gws2200.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210022', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), '/src/assets/taladro.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210023', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), '/src/assets/casco.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210024', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), '/src/assets/esmeril_gws750.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210025', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), '/src/assets/taladro.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210026', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), '/src/assets/pernos.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210027', (SELECT id FROM productos_modelos WHERE sku = 'SKU-84102941'), '/src/assets/taladro.png')
+ON CONFLICT (id) DO NOTHING;
+
+-- Configuración de Cuentas Bancarias
+INSERT INTO bank_account_configs (id, bank_name, account_alias, account_holder_name, account_number, cci, currency, document_type, document_number, supports_api, provider_code, is_active, created_at, updated_at) VALUES
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210031', 'BCP', 'Cuenta soles BCP', 'MEPS GROUP PERU S.A.C.', '191-12345678-0-00', '00219100123456780000', 'PEN', 'RUC', '20601234567', true, 'BCP_API', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210032', 'INTERBANK', 'Cuenta ventas Interbank', 'MEPS GROUP PERU S.A.C.', '200-300400500600', '00320030040050060000', 'PEN', 'RUC', '20601234567', true, 'INTERBANK_API', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210033', 'BBVA', 'Cuenta soles BBVA', 'MEPS GROUP PERU S.A.C.', '0011-0123-01-00098765', '01112300010009876500', 'PEN', 'RUC', '20601234567', true, 'BBVA_API', true, now(), now())
+ON CONFLICT (id) DO NOTHING;
+
+-- 10 Registros de SUNAT RUC
+INSERT INTO sunat_ruc_records (ruc, business_name, taxpayer_status, domicile_condition, ubigeo, fiscal_address, source, created_at, updated_at) VALUES
+  ('20601234567', 'CONSTRUCTORA DEL NORTE S.A.C.', 'Activo', 'Habido', '150101', 'AV. LOS ALGARROBOS 456 - LIMA', 'SUNAT_PADRON_REDUCIDO', now(), now()),
+  ('20543210987', 'DISTRIBUIDORA FERRETERA ALFA S.A.', 'Activo', 'Habido', '150103', 'CALLE LOS FICUS 789 - SAN ISIDRO', 'SUNAT_PADRON_REDUCIDO', now(), now()),
+  ('20109876543', 'SERVICIOS GENERALES GÓMEZ E.I.R.L.', 'Activo', 'Habido', '150115', 'AV. LAS PALMERAS 1011 - LA MOLINA', 'SUNAT_PADRON_REDUCIDO', now(), now()),
+  ('20345678901', 'INVERSIONES METALÚRGICAS S.R.L.', 'Activo', 'Habido', '150132', 'JR. HUÁNUCO 345 - CERCADO DE LIMA', 'SUNAT_PADRON_REDUCIDO', now(), now()),
+  ('20498765432', 'CONTRATISTAS ASOCIADOS S.A.', 'Activo', 'Habido', '150140', 'AV. JAVIER PRADO 1500 - SAN BORJA', 'SUNAT_PADRON_REDUCIDO', now(), now()),
+  ('20234567890', 'LOGÍSTICA Y TRANSPORTE RÁPIDO S.A.C.', 'Activo', 'Habido', '150101', 'CALLE EL SOL 123 - LIMA', 'SUNAT_PADRON_REDUCIDO', now(), now()),
+  ('20987654321', 'CONSTRUCCIONES METROPOLITANAS E.I.R.L.', 'Activo', 'Habido', '150108', 'AV. UNIVERSITARIA 3421 - LOS OLIVOS', 'SUNAT_PADRON_REDUCIDO', now(), now()),
+  ('20876543210', 'TECNOLOGÍA DE FIJACIONES S.R.L.', 'Activo', 'Habido', '150125', 'JR. AREQUIPA 567 - MIRAFLORES', 'SUNAT_PADRON_REDUCIDO', now(), now()),
+  ('20765432109', 'MATERIALES E INSUMOS DEL PERÚ S.A.C.', 'Activo', 'Habido', '150110', 'AV. ARGENTINA 2800 - CALLAO', 'SUNAT_PADRON_REDUCIDO', now(), now()),
+  ('20654321098', 'GRUPO CONSTRUCTOR VILLA S.A.', 'Activo', 'Habido', '150142', 'AV. PACHACÚTEC 1450 - VILLA MARÍA DEL TRIUNFO', 'SUNAT_PADRON_REDUCIDO', now(), now())
+ON CONFLICT (ruc) DO NOTHING;
+
+-- Proveedores (10 Registros)
+INSERT INTO suppliers (id, name, ruc, contact, phone, email, is_active, created_at, updated_at) VALUES
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210041', 'PROVEEDOR GENERAL S.A.C.', '20601111111', 'Contacto de Ventas', '999888777', 'proveedor@general.com', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210081', 'CORPORACIÓN ACEROS AREQUIPA S.A.', '20100088559', 'Ing. Carlos Mendoza', '981234567', 'ventas@acerosarequipa.com.pe', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210082', 'CEMENTOS PACASMAYO S.A.A.', '20100140224', 'Lic. Patricia Alva', '972345678', 'distribucion@pacasmayo.com.pe', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210083', 'SIDERURGICA DEL PERU S.A.A. - SIDERPERU', '20100122404', 'Ing. Luis Valdivia', '963456789', 'ventas@sider.com.pe', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210084', 'ROBERT BOSCH S.A.C.', '20504780517', 'Representante Bosch Perú', '954567890', 'soporte@bosch.com.pe', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210085', 'MAKITA PERÚ S.A.', '20508688755', 'Área Mayorista Makita', '945678901', 'comercial@makita.pe', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210086', 'STANLEY BLACK & DECKER PERÚ S.R.L.', '20512345678', 'Supervisor Stanley', '936789012', 'pedidos.sbd@stanley.com', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210087', 'FERREYROS S.A.', '20100028653', 'Contacto Corporativo', '927890123', 'clientes@ferreyros.com.pe', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210088', 'PRODUCTOS PRODAC S.A.', '20100080655', 'Ventas Alambres', '918901234', 'contacto@prodac.com.pe', true, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210089', 'FÁBRICA DE CUBIERTOS S.A. - FACUSA', '20100023694', 'Ventas Herramientas', '909012345', 'ventas@facusa.com.pe', true, now(), now())
+ON CONFLICT (ruc) DO NOTHING;
+
+-- 10 Clientes DNI + 10 Clientes RUC (con preferred_discount)
+INSERT INTO customers (id, name, doc_type, doc_number, phone, email, address, preferred_discount, created_at, updated_at) VALUES
+  -- 10 Clientes DNI
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210051', 'Público General / Varios', 'DNI', '00000000', '-', '-', '[Minorista] Av. El Sol 123', 0.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210052', 'Juan Pérez Rodríguez', 'DNI', '44558899', '987654321', 'juan.perez@gmail.com', '[Minorista] Av. El Sol 123, Lima', 5.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210054', 'Juan Carlos Mendoza', 'DNI', '10293847', '944888333', 'carlos.mendoza@gmail.com', '[Minorista] Av. Larco 450, Miraflores', 0.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210055', 'María Helena Santos', 'DNI', '56473829', '922777111', 'maria.santos@outlook.com', '[Minorista] Jr. Puno 782, Lima', 5.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210056', 'Carlos Alberto Quispe', 'DNI', '87463529', '999111222', 'carlos.quispe@gmail.com', '[Minorista] Av. Tacna 120, Lima', 0.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210057', 'Ana Cecilia Rojas', 'DNI', '34251627', '988333444', 'ana.rojas@hotmail.com', '[Minorista] Calle Los Pinos 400, San Isidro', 5.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210058', 'Luis Fernando Torres', 'DNI', '98765432', '911222333', 'lfernando.torres@gmail.com', '[Minorista] Av. La Marina 2200, San Miguel', 10.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210059', 'Diana Patricia Vega', 'DNI', '23456789', '933444555', 'diana.vega@gmail.com', '[Minorista] Jr. Huallaga 550, Lima', 0.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210060', 'Jorge Luis Flores', 'DNI', '76543210', '955666777', 'jorge.flores@gmail.com', '[Minorista] Av. Brasil 1400, Jesús María', 5.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210062', 'Rosa María Chávez', 'DNI', '12345678', '966777888', 'rosa.chavez@gmail.com', '[Minorista] Av. Arequipa 3500, San Isidro', 10.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210063', 'Miguel Ángel Ramírez', 'DNI', '45678901', '977888999', 'miguel.ramirez@gmail.com', '[Minorista] Jr. Quilca 210, Lima', 0.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210064', 'Carmen Julia Benitez', 'DNI', '89012345', '988999000', 'carmen.benitez@gmail.com', '[Minorista] Av. Sucre 800, Pueblo Libre', 5.00, now(), now()),
+  
+  -- 10 Clientes RUC
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210053', 'CONSTRUCTORA DEL NORTE S.A.C.', 'RUC', '20601234567', '01 4567890', 'compras@construalfa.com', '[Mayorista] Av. Los Algarrobos 456 - LIMA', 10.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210065', 'DISTRIBUIDORA FERRETERA ALFA S.A.', 'RUC', '20543210987', '01 9876543', 'ventas@ferrealfa.com', '[Mayorista] Calle Los Ficus 789 - SAN ISIDRO', 15.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210066', 'SERVICIOS GENERALES GÓMEZ E.I.R.L.', 'RUC', '20109876543', '01 3210987', 'contacto@gomez.com.pe', '[Mayorista] Av. Las Palmeras 1011 - LA MOLINA', 5.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210067', 'INVERSIONES METALÚRGICAS S.R.L.', 'RUC', '20345678901', '01 7894561', 'logistica@invemetal.com', '[Mayorista] Jr. Huánuco 345 - CERCADO DE LIMA', 10.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210068', 'CONTRATISTAS ASOCIADOS S.A.', 'RUC', '20498765432', '01 4561230', 'obras@contratas.com.pe', '[Mayorista] Av. Javier Prado 1500 - SAN BORJA', 15.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210069', 'LOGÍSTICA Y TRANSPORTE RÁPIDO S.A.C.', 'RUC', '20234567890', '01 1237894', 'despachos@transrapido.com', '[Mayorista] Calle El Sol 123 - LIMA', 5.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210070', 'CONSTRUCCIONES METROPOLITANAS E.I.R.L.', 'RUC', '20987654321', '01 9871234', 'proyectos@constru-metro.com', '[Mayorista] Av. Universitaria 3421 - LOS OLIVOS', 10.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210071', 'TECNOLOGÍA DE FIJACIONES S.R.L.', 'RUC', '20876543210', '01 6549873', 'ventas@tecnofijaciones.com', '[Mayorista] Jr. Arequipa 567 - MIRAFLORES', 15.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210072', 'MATERIALES E INSUMOS DEL PERÚ S.A.C.', 'RUC', '20765432109', '01 7891230', 'adquisiciones@matperu.com', '[Mayorista] Av. Argentina 2800 - CALLAO', 5.00, now(), now()),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210073', 'GRUPO CONSTRUCTOR VILLA S.A.', 'RUC', '20654321098', '01 4567891', 'gerencia@grupovilla.com', '[Mayorista] Av. Pachacútec 1450 - VILLA MARÍA DEL TRIUNFO', 10.00, now(), now())
+ON CONFLICT (lower(doc_type), lower(doc_number)) DO NOTHING;
+
+-- Empleado y Usuario Administrador de Prueba
+INSERT INTO employees (id, initials, name, role, dni, pay_per_day, worked_days, can_mark_exit, is_active, created_at, updated_at) VALUES
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210061', 'ADM', 'Admin User', 'GERENTE', '00000000', 100.00, 0, false, true, now(), now())
+ON CONFLICT (dni) DO NOTHING;
+
+INSERT INTO users (id, employee_id, username, role, status, password_hash, is_active, created_at, updated_at) VALUES
+  ('00000000-0000-0000-0000-000000000001', '38d4c2e0-3a61-42b9-a50b-c0209e210061', 'admin', 'admin', 'active', '$2a$10$n8R2d/92jF6sM3.21.J3UeUj34W.G/XbY.9Y2ZtX.B3o/m.J.pXe.', true, now(), now())
+ON CONFLICT (username) DO NOTHING;

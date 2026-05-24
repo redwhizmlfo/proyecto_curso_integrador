@@ -178,15 +178,14 @@ export default function Asistencia() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-      <div className="header">
-        <div>
-          <h1 className="title-gradient">Control de Asistencia</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Marcación de ingresos/salidas diarias y registro de inasistencias</p>
-        </div>
+      <Header 
+        title="Control de Asistencia" 
+        subtitle="Marcación de ingresos/salidas diarias y registro de inasistencias"
+      >
         <button className="btn-secondary" onClick={loadData}>
           <RefreshCw size={14} style={{ marginRight: '4px' }} /> Actualizar
         </button>
-      </div>
+      </Header>
 
       {error && (
         <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid var(--accent-gold)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-gold)', fontSize: '0.9rem' }}>

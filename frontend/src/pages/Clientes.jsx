@@ -175,15 +175,14 @@ export default function Clientes() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-      <div className="header">
-        <div>
-          <h1 className="title-gradient">Gestión de Clientes</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Administra la base de datos de tus clientes mayoristas y minoristas (excluye proveedores)</p>
-        </div>
+      <Header 
+        title="Gestión de Clientes" 
+        subtitle="Administra la base de datos de tus clientes mayoristas y minoristas (excluye proveedores)"
+      >
         <button className="btn-premium" onClick={openAddModal}>
           <UserPlus size={16} /> Agregar Cliente
         </button>
-      </div>
+      </Header>
 
       {error && (
         <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '4px', padding: '1rem', marginBottom: '1.5rem', color: '#b91c1c', fontSize: '0.9rem' }}>
@@ -205,18 +204,18 @@ export default function Clientes() {
           />
         </div>
 
-        <div className="table-container" style={{ border: 'none' }}>
+        <div className="table-container" style={{ border: 'none', width: '100%', overflowX: 'auto' }}>
           <table className="luxury-table">
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #cbd5e1' }}>
                 <th>Nombre / Razón Social</th>
-                <th>Tipo Cliente</th>
-                <th>Documento</th>
-                <th>Contacto Teléfono</th>
-                <th>Correo Electrónico</th>
-                <th>Dirección</th>
-                <th style={{ textAlign: 'right' }}>Descuento</th>
-                <th style={{ textAlign: 'center' }}>Acciones</th>
+                <th style={{ width: '100px', minWidth: '100px' }}>Tipo Cliente</th>
+                <th style={{ width: '130px', minWidth: '130px' }}>Documento</th>
+                <th style={{ width: '120px', minWidth: '120px' }}>Contacto Teléfono</th>
+                <th style={{ width: '160px', minWidth: '160px' }}>Correo Electrónico</th>
+                <th style={{ width: '180px', minWidth: '180px' }}>Dirección</th>
+                <th style={{ textAlign: 'right', width: '90px', minWidth: '90px' }}>Descuento</th>
+                <th style={{ textAlign: 'center', width: '100px', minWidth: '100px' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -230,7 +229,7 @@ export default function Clientes() {
                 filteredCustomers.map((c) => (
                   <tr key={c.id}>
                     <td style={{ fontWeight: '600', color: '#0a1629' }}>{c.name}</td>
-                    <td>
+                    <td style={{ width: '100px', minWidth: '100px' }}>
                       {c.customerType === 'Mayorista' ? (
                         <span style={{ background: '#e9f2fd', color: '#003471', fontSize: '0.75rem', fontWeight: '700', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid #cbd5e1' }}>
                           Mayorista
@@ -241,24 +240,27 @@ export default function Clientes() {
                         </span>
                       )}
                     </td>
-                    <td>
+                    <td style={{ width: '130px', minWidth: '130px' }}>
                       <span className="badge badge-muted" style={{ marginRight: '8px', borderRadius: '4px' }}>{c.docType}</span>
                       <span style={{ fontFamily: 'monospace', fontWeight: '600' }}>{c.docNumber}</span>
                     </td>
-                    <td>{c.phone || '-'}</td>
-                    <td>{c.email || '-'}</td>
-                    <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '200px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    <td style={{ width: '120px', minWidth: '120px' }}>{c.phone || '-'}</td>
+                    <td style={{ maxWidth: '160px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={c.email || ''}>
+                      {c.email || '-'}
+                    </td>
+                    <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '180px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={c.address || ''}>
                       {c.address || '-'}
                     </td>
-                    <td style={{ textAlign: 'right', fontWeight: '700', color: '#ff6b00' }}>
+                    <td style={{ textAlign: 'right', fontWeight: '700', color: '#ff6b00', width: '90px', minWidth: '90px' }}>
                       {c.preferredDiscount}%
                     </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <td style={{ textAlign: 'center', width: '100px', minWidth: '100px' }}>
+                      <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'center' }}>
                         <button 
                           className="btn-secondary" 
                           style={{ padding: '0.4rem', borderRadius: '4px', minWidth: 'auto', border: '1px solid #cbd5e1' }}
                           onClick={() => openEditModal(c)}
+                          title="Editar"
                         >
                           <Edit size={12} />
                         </button>
@@ -267,6 +269,7 @@ export default function Clientes() {
                           style={{ padding: '0.4rem', borderRadius: '4px', minWidth: 'auto', background: '#fee2e2', border: '1px solid #fca5a5', color: '#ef4444' }}
                           onClick={() => handleDelete(c.id)}
                           disabled={c.id === 'c1'}
+                          title="Eliminar"
                         >
                           <Trash size={12} />
                         </button>

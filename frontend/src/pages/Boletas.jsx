@@ -138,15 +138,14 @@ export default function Boletas() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-      <div className="header">
-        <div>
-          <h1 className="title-gradient">Boletas de Pago</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Cálculo quincenal/mensual de haberes del personal y comprobantes de abono</p>
-        </div>
+      <Header 
+        title="Boletas de Pago" 
+        subtitle="Cálculo quincenal/mensual de haberes del personal y comprobantes de abono"
+      >
         <button className="btn-premium" onClick={() => setShowCreateModal(true)}>
           <Plus size={16} /> Generar Boleta
         </button>
-      </div>
+      </Header>
 
       {error && (
         <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid var(--accent-gold)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-gold)', fontSize: '0.9rem' }}>

@@ -201,15 +201,14 @@ export default function OrdenesCompra() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-      <div className="header">
-        <div>
-          <h1 className="title-gradient">Órdenes de Compra</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Genera requerimientos de abastecimiento y recepciona stock en almacén</p>
-        </div>
+      <Header 
+        title="Órdenes de Compra" 
+        subtitle="Genera requerimientos de abastecimiento y recepciona stock en almacén"
+      >
         <button className="btn-premium" onClick={() => setShowModal(true)}>
           <Plus size={16} /> Nueva Orden
         </button>
-      </div>
+      </Header>
 
       {error && (
         <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid var(--accent-gold)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-gold)', fontSize: '0.9rem' }}>

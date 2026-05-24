@@ -128,15 +128,14 @@ export default function Proveedores() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-      <div className="header">
-        <div>
-          <h1 className="title-gradient">Gestión de Proveedores</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Administra la red de proveedores mayoristas e importadoras</p>
-        </div>
+      <Header 
+        title="Gestión de Proveedores" 
+        subtitle="Administra la red de proveedores mayoristas e importadoras"
+      >
         <button className="btn-premium" onClick={openAddModal}>
           <Plus size={16} /> Agregar Proveedor
         </button>
-      </div>
+      </Header>
 
       {error && (
         <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid var(--accent-gold)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-gold)', fontSize: '0.9rem' }}>
@@ -161,13 +160,13 @@ export default function Proveedores() {
           <table className="luxury-table">
             <thead>
               <tr>
-                <th>Razón Social</th>
-                <th>RUC</th>
-                <th>Contacto Directo</th>
-                <th>Teléfono</th>
-                <th>Correo Electrónico</th>
-                <th>Estado</th>
-                <th style={{ textAlign: 'center' }}>Acciones</th>
+                <th style={{ width: '220px', minWidth: '220px' }}>Razón Social</th>
+                <th style={{ width: '120px', minWidth: '120px' }}>RUC</th>
+                <th style={{ width: '150px', minWidth: '150px' }}>Contacto Directo</th>
+                <th style={{ width: '110px', minWidth: '110px' }}>Teléfono</th>
+                <th style={{ width: '180px', minWidth: '180px' }}>Correo Electrónico</th>
+                <th style={{ width: '90px', minWidth: '90px' }}>Estado</th>
+                <th style={{ textAlign: 'center', width: '140px', minWidth: '140px' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -180,22 +179,22 @@ export default function Proveedores() {
               ) : (
                 filteredSuppliers.map((s) => (
                   <tr key={s.id}>
-                    <td style={{ fontWeight: '600' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <td style={{ width: '220px', minWidth: '220px', fontWeight: '600' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', maxWidth: '200px' }}>
                         <Truck size={14} color="var(--accent)" />
-                        <span>{s.name}</span>
+                        <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={s.name}>{s.name}</span>
                       </div>
                     </td>
-                    <td style={{ fontFamily: 'monospace' }}>{s.ruc}</td>
-                    <td>{s.contact || '-'}</td>
-                    <td>{s.phone || '-'}</td>
-                    <td>{s.email || '-'}</td>
-                    <td>
+                    <td style={{ width: '120px', minWidth: '120px', fontFamily: 'monospace' }}>{s.ruc}</td>
+                    <td style={{ width: '150px', minWidth: '150px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={s.contact || ''}>{s.contact || '-'}</td>
+                    <td style={{ width: '110px', minWidth: '110px' }}>{s.phone || '-'}</td>
+                    <td style={{ width: '180px', minWidth: '180px', maxWidth: '180px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={s.email || ''}>{s.email || '-'}</td>
+                    <td style={{ width: '90px', minWidth: '90px' }}>
                       <span className={`badge ${s.isActive ? 'badge-success' : 'badge-muted'}`}>
                         {s.isActive ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td style={{ width: '140px', minWidth: '140px', textAlign: 'center' }}>
                       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                         <button 
                           className="btn-secondary" 

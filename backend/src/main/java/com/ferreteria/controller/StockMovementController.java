@@ -24,7 +24,7 @@ public class StockMovementController {
     }
     
     // Pendiente evaluara si getById debe usar un DTO para no exponer datos de Product o User al frontend.
-    @GetMapping
+    @GetMapping("/{id}")
     public ResponseEntity<StockMovement> getById(UUID id) {
         return ResponseEntity.ok(service.getStockMovementById(id));
     }

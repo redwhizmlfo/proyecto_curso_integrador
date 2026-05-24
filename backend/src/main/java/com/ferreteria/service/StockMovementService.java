@@ -11,6 +11,7 @@ import com.ferreteria.repository.UserRepository;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,8 +43,12 @@ public class StockMovementService {
         User u = this.userRepo.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
-        // Obtener el último stock registrado: stockBefore → Cantidad de producto que había antes del movimiento.        
-        BigDecimal stockBefore = this.stockMovementRepo.findLastStockByProductId(p.getId())
+        // Usamos el método de stockMovementRepository que devuelve el último movimiento:
+        Optional<StockMovement> lastMovementOption = this.stockMovementRepo
+                .findTopByProductIdOrderByOccurredAtDesc(p.getId());                
+        // Si existe el movimiento, tomamos su stockAfter, sino asumimos que es cero:
+        BigDecimal stockBefore =  lastMovementOption
+                .map(sm -> sm.getStockAfter())
                 .orElse(BigDecimal.ZERO);
         
         // Cantidad de producto que queda después del movimiento: stockAfter = stockBefore + delta

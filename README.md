@@ -1,4 +1,4 @@
-# FERREMAS — Sistema de Gestión Ferretera
+# MEPSS GROUP — Sistema de Gestión Ferretera
 
 > Proyecto Integrador · Curso de Desarrollo de Software  
 > Stack: **Spring Boot 3.3 + React 19 + PostgreSQL**
@@ -7,7 +7,7 @@
 
 ## 📋 Descripción General
 
-**FERREMAS** es un sistema de gestión empresarial para ferreterías desarrollado como proyecto integrador. El sistema cubre los módulos de clientes, proveedores, inventario, ventas, empleados, asistencia, boletas/planillas y un dashboard analítico en tiempo real.
+**MEPSS GROUP** es un sistema de gestión empresarial para ferreterías desarrollado como proyecto integrador. El sistema cubre los módulos de clientes, proveedores, inventario, ventas, empleados, asistencia, boletas/planillas y un dashboard analítico en tiempo real.
 
 La arquitectura sigue el patrón **Controller → Service → Repository → Entity** cumpliendo estándares REST y buenas prácticas de desarrollo con Spring Boot.
 
@@ -286,4 +286,4 @@ El archivo `esquema.sql` incluye datos semilla para:
 
 ---
 
-*Sistema desarrollado como proyecto integrador — FERREMAS © 2026*
+*Sistema desarrollado como proyecto integrador — MEPSS GROUP © 2026*

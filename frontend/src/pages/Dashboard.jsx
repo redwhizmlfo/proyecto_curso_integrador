@@ -122,14 +122,14 @@ export default function Dashboard() {
       </section>
 
       {/* Main Content Split */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '1.5rem' }}>
+      <div className="dashboard-main-grid">
         {/* Left Side: Recent Sales */}
-        <div className="luxury-card" style={{ marginBottom: 0 }}>
+        <div className="luxury-card" style={{ marginBottom: 0, minWidth: 0 }}>
           <h2 style={{ fontSize: '1.2rem', fontWeight: '400', letterSpacing: '1px', marginBottom: '1rem', color: 'var(--accent)' }}>
             Últimas Ventas Realizadas
           </h2>
           <div className="table-container">
-            <table className="luxury-table">
+            <table className="luxury-table recent-sales-table">
               <thead>
                 <tr>
                   <th>Nº Boleta/Factura</th>
@@ -163,12 +163,12 @@ export default function Dashboard() {
         </div>
 
         {/* Right Side: Low Stock Items */}
-        <div className="luxury-card" style={{ marginBottom: 0 }}>
+        <div className="luxury-card" style={{ marginBottom: 0, minWidth: 0 }}>
           <h2 style={{ fontSize: '1.2rem', fontWeight: '400', letterSpacing: '1px', marginBottom: '1rem', color: 'var(--danger)' }}>
             Alertas de Stock Crítico
           </h2>
           <div className="table-container">
-            <table className="luxury-table">
+            <table className="luxury-table stock-alerts-table">
               <thead>
                 <tr>
                   <th>Producto</th>

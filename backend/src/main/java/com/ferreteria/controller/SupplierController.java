@@ -29,6 +29,11 @@ public class SupplierController {
         return ResponseEntity.ok(supplierService.getSupplierById(id));
     }
 
+    @GetMapping("/search/ruc/{ruc}")
+    public ResponseEntity<Supplier> getByRuc(@PathVariable String ruc) {
+        return ResponseEntity.ok(supplierService.getSupplierByRuc(ruc));
+    }
+
     @PostMapping
     public ResponseEntity<Supplier> create(@RequestBody SupplierRequestDTO request) {
         return new ResponseEntity<>(supplierService.createSupplier(request), HttpStatus.CREATED);

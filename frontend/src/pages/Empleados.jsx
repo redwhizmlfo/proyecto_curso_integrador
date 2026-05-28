@@ -111,15 +111,14 @@ export default function Empleados() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-      <div className="header">
-        <div>
-          <h1 className="title-gradient">Personal de la Empresa</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Administra la ficha del personal, salarios por día y cargos</p>
-        </div>
+      <Header 
+        title="Personal de la Empresa" 
+        subtitle="Administra la ficha del personal, salarios por día y cargos"
+      >
         <button className="btn-premium" onClick={openAddModal}>
           <Plus size={16} /> Registrar Empleado
         </button>
-      </div>
+      </Header>
 
       {error && (
         <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid var(--accent-gold)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-gold)', fontSize: '0.9rem' }}>

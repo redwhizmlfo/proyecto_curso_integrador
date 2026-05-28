@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/sales")
 @RequiredArgsConstructor
@@ -22,12 +24,14 @@ public class SaleController {
     }
 
     @PostMapping
-    public ResponseEntity<Sale> createSale(@RequestBody SaleRequestDTO request) {
+    public ResponseEntity<?> createSale(@RequestBody SaleRequestDTO request) {
         try {
             Sale sale = saleService.createSale(request);
             return ResponseEntity.ok(sale);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", e.getMessage() != null ? e.getMessage() : "No se pudo registrar la venta"
+            ));
         }
     }
 }

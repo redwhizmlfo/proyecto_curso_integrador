@@ -13,6 +13,8 @@ import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,16 +31,14 @@ public class SaleService {
 
     @Transactional
     public Sale createSale(SaleRequestDTO request) {
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+        Customer customer = resolveSaleCustomer(request);
         
         Employee employee = null;
         if (request.getEmployeeId() != null) {
             employee = employeeRepository.findById(request.getEmployeeId()).orElse(null);
         }
 
-        User user = userRepository.findById(request.getCreatedByUserId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User user = resolveSaleUser(request.getCreatedByUserId());
 
         Sale sale = Sale.builder()
                 .customer(customer)
@@ -47,6 +47,12 @@ public class SaleService {
                 .series(request.getSeries())
                 .documentType(request.getDocumentType())
                 .paymentMethod(request.getPaymentMethod())
+                .paymentStatus(request.getPaymentStatus() != null ? request.getPaymentStatus() : "APROBADO")
+                .paymentReference(request.getPaymentReference())
+                .paymentEvidenceName(request.getPaymentEvidenceName())
+                .paymentBankName(request.getPaymentBankName())
+                .paymentBankAccountAlias(request.getPaymentBankAccountAlias())
+                .paymentBankAccountNumber(request.getPaymentBankAccountNumber())
                 .soldAt(OffsetDateTime.now())
                 .clientNameSnapshot(customer.getName())
                 .clientDocTypeSnapshot(customer.getDocType())
@@ -60,8 +66,7 @@ public class SaleService {
         BigDecimal subtotal = BigDecimal.ZERO;
 
         for (SaleItemDTO itemDTO : request.getItems()) {
-            Product product = productRepository.findById(itemDTO.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + itemDTO.getProductId()));
+            Product product = resolveSaleProduct(itemDTO);
 
             if (product.getStock().compareTo(itemDTO.getQty()) < 0) {
                 throw new RuntimeException("Stock insuficiente para: " + product.getName());
@@ -117,5 +122,49 @@ public class SaleService {
         sale.setTotal(total);
 
         return saleRepository.save(sale);
+    }
+
+    private User resolveSaleUser(UUID requestedUserId) {
+        if (requestedUserId != null) {
+            Optional<User> requestedUser = userRepository.findById(requestedUserId);
+            if (requestedUser.isPresent()) {
+                return requestedUser.get();
+            }
+        }
+
+        return userRepository.findByUsername("admin")
+                .or(() -> userRepository.findAll().stream().findFirst())
+                .orElseThrow(() -> new RuntimeException("No hay usuario cajero configurado para registrar la venta"));
+    }
+
+    private Customer resolveSaleCustomer(SaleRequestDTO request) {
+        String customerId = request.getCustomerId();
+        if (customerId != null && !customerId.isBlank()) {
+            try {
+                UUID id = UUID.fromString(customerId);
+                return customerRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+            } catch (IllegalArgumentException ignored) {
+                // Legacy POS/local ids are resolved by document below.
+            }
+        }
+
+        String docNumber = request.getCustomerDocNumber();
+        if (docNumber != null && !docNumber.isBlank()) {
+            return customerRepository.findByDocNumber(docNumber.replaceAll("\\D", ""))
+                    .orElseThrow(() -> new RuntimeException("Cliente no encontrado por documento: " + docNumber));
+        }
+
+        throw new RuntimeException("Cliente no valido para registrar la venta");
+    }
+
+    private Product resolveSaleProduct(SaleItemDTO itemDTO) {
+        try {
+            UUID productId = UUID.fromString(itemDTO.getProductId());
+            return productRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + itemDTO.getProductId()));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Producto no valido para registrar venta. Debe existir en inventario: " + itemDTO.getProductId());
+        }
     }
 }

@@ -55,6 +55,24 @@ public class Sale {
     @Column(name = "payment_method", nullable = false, length = 32)
     private String paymentMethod;
 
+    @Column(name = "payment_status", length = 32)
+    private String paymentStatus;
+
+    @Column(name = "payment_reference", length = 120)
+    private String paymentReference;
+
+    @Column(name = "payment_evidence_name", length = 220)
+    private String paymentEvidenceName;
+
+    @Column(name = "payment_bank_name", length = 80)
+    private String paymentBankName;
+
+    @Column(name = "payment_bank_account_alias", length = 120)
+    private String paymentBankAccountAlias;
+
+    @Column(name = "payment_bank_account_number", length = 80)
+    private String paymentBankAccountNumber;
+
     @Column(name = "sold_at", nullable = false)
     @Builder.Default
     private OffsetDateTime soldAt = OffsetDateTime.now();

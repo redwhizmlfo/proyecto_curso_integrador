@@ -8,15 +8,19 @@ public class SpaRedirectController {
     
     @RequestMapping(value = {
         "/ventas",
+        "/ventas/**",
         "/inventario",
-        "/inventario/mermas",
-        "/inventario/kardex",
+        "/inventario/**",
         "/clientes",
+        "/clientes/**",
         "/proveedores",
+        "/proveedores/**",
         "/ordenes-compra",
-        "/rrhh/empleados",
-        "/rrhh/asistencia",
-        "/rrhh/boletas"
+        "/ordenes-compra/**",
+        "/rrhh",
+        "/rrhh/**",
+        "/dashboard",
+        "/dashboard/**"
     })
     public String redirectSpaRoutes() {
         // Forwards the URL request internally to index.html so React Router takes over.

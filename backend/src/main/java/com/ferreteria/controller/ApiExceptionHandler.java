@@ -24,4 +24,11 @@ public class ApiExceptionHandler {
                 "message", exception.getReason() != null ? exception.getReason() : "No se pudo procesar la solicitud"
         ));
     }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException exception) {
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).body(Map.of(
+                "message", "El registro no pudo ser guardado porque ya existe un dato idéntico en el sistema (ej. DNI, RUC o Email duplicado)."
+        ));
+    }
 }

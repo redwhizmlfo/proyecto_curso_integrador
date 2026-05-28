@@ -61,7 +61,9 @@ public class DashboardController {
         List<Product> products = productRepository.findAll();
         List<Sale> sales = saleRepository.findAll();
 
-        List<Sale> recentSales = latestByDate(sales, Sale::getSoldAt, 5);
+        List<Map<String, Object>> recentSales = latestByDate(sales, Sale::getSoldAt, 5).stream()
+                .map(this::dashboardSale)
+                .toList();
         List<Product> lowStockItems = products.stream()
                 .filter(product -> product.isActive() && compare(product.getStock(), product.getMinStock()) <= 0)
                 .limit(5)
@@ -73,7 +75,7 @@ public class DashboardController {
         summary.put("totalSalesRevenue", sum(sales.stream().map(Sale::getTotal)));
         summary.put("totalCustomers", customerRepository.count());
         summary.put("recentSales", recentSales);
-        summary.put("lowStockItems", lowStockItems);
+        summary.put("lowStockItems", lowStockItems.stream().map(this::dashboardProduct).toList());
 
         return ResponseEntity.ok(summary);
     }
@@ -342,6 +344,28 @@ public class DashboardController {
         kpi.put("icon", icon);
         kpi.put("tone", tone);
         return kpi;
+    }
+
+    private Map<String, Object> dashboardSale(Sale sale) {
+        Map<String, Object> item = new HashMap<>();
+        item.put("id", sale.getId());
+        item.put("series", sale.getSeries());
+        item.put("clientNameSnapshot", sale.getClientNameSnapshot());
+        item.put("soldAt", sale.getSoldAt());
+        item.put("total", safe(sale.getTotal()));
+        return item;
+    }
+
+    private Map<String, Object> dashboardProduct(Product product) {
+        Map<String, Object> item = new HashMap<>();
+        item.put("id", product.getId());
+        item.put("name", product.getName());
+        item.put("barcode", product.getBarcode());
+        item.put("category", product.getCategory());
+        item.put("stock", safe(product.getStock()));
+        item.put("minStock", safe(product.getMinStock()));
+        item.put("unit", product.getUnit());
+        return item;
     }
 
     private List<Object> row(Object... values) {

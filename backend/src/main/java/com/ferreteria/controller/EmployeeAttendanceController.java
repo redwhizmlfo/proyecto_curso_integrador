@@ -63,4 +63,16 @@ public class EmployeeAttendanceController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/permission")
+    public ResponseEntity<?> registerPermission(@RequestBody AttendanceRequestDTO request) {
+        try {
+            EmployeeAttendance attendance = attendanceService.registerPermission(
+                    request.getEmployeeId(), request.getMarkedByUserId(), request.getWorkDate()
+            );
+            return ResponseEntity.ok(attendance);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

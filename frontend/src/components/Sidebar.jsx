@@ -164,8 +164,8 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
             </button>
           </li>
 
-          {/* Recursos Humanos */}
-          <li title="Recursos Humanos">
+          {/* Empleados */}
+          <li title="Empleados">
             <button 
               onClick={() => handleCategoryClick('rrhh')}
               className={`nav-item-collapsed ${isRrhhActive ? 'active' : ''}`}
@@ -262,10 +262,6 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
               <NavLink to="/dashboard/resumen-pedidos-compra" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <ClipboardList size={14} style={{ marginRight: '8px' }} />
                 <span style={{ fontSize: '0.85rem' }}>Resumen Pedidos</span>
-              </NavLink>
-              <NavLink to="/dashboard/resumen-almacen" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <Package size={14} style={{ marginRight: '8px' }} />
-                <span style={{ fontSize: '0.85rem' }}>Resumen Almacén</span>
               </NavLink>
               <NavLink to="/dashboard/resumen-empleados" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <Briefcase size={14} style={{ marginRight: '8px' }} />
@@ -466,10 +462,10 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
           )}
         </li>
 
-        {/* Recursos Humanos */}
+        {/* Empleados */}
         <li>
           <div className="nav-category" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => toggleSection('rrhh')}>
-            <span>Recursos Humanos</span>
+            <span>Empleados</span>
             {sections.rrhh ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
           </div>
           {sections.rrhh && (

@@ -345,7 +345,21 @@ export default function Inventario() {
       const localModels = [
         { id: 'pm_gws2200', codigoModelo: 'GWS 22-180 H', modelo: 'GWS2200', sku: 'SKU-75010324', precio: 349.99, stock: 80, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
         { id: 'pm_gws750', codigoModelo: 'GWS 7-115', modelo: 'GWS750', sku: 'SKU-72093104', precio: 199.50, stock: 45, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
-        { id: 'pm_m0900b', codigoModelo: 'M0900B 540W', modelo: 'M0900B', sku: 'SKU-84102941', precio: 155.00, stock: 30, categoria: { id: 'cat_esm' }, marca: { id: 'marca_makita' } }
+        { id: 'pm_m0900b', codigoModelo: 'M0900B 540W', modelo: 'M0900B', sku: 'SKU-84102941', precio: 155.00, stock: 30, categoria: { id: 'cat_esm' }, marca: { id: 'marca_makita' } },
+        { id: 'pm_dcd771', codigoModelo: 'DCD771C2', modelo: 'DCD771', sku: 'SKU-30910482', precio: 289.99, stock: 25, categoria: { id: 'cat_tal' }, marca: { id: 'marca_dewalt' } },
+        { id: 'pm_gbh2_24', codigoModelo: 'GBH 2-24 D', modelo: 'GBH2-24', sku: 'SKU-58291043', precio: 549.90, stock: 15, categoria: { id: 'cat_rot' }, marca: { id: 'marca_bosch' } },
+        { id: 'pm_dcd701', codigoModelo: 'DCD701F2', modelo: 'DCD701', sku: 'SKU-10000001', precio: 259.90, stock: 30, categoria: { id: 'cat_tal' }, marca: { id: 'marca_dewalt' } },
+        { id: 'pm_hp1630', codigoModelo: 'HP1630 710W', modelo: 'HP1630', sku: 'SKU-10000002', precio: 189.90, stock: 40, categoria: { id: 'cat_tal' }, marca: { id: 'marca_makita' } },
+        { id: 'pm_gsb18v50', codigoModelo: 'GSB 18V-50', modelo: 'GSB18V50', sku: 'SKU-10000003', precio: 449.00, stock: 20, categoria: { id: 'cat_tal' }, marca: { id: 'marca_bosch' } },
+        { id: 'pm_ga4530', codigoModelo: 'GA4530 720W', modelo: 'GA4530', sku: 'SKU-10000004', precio: 169.00, stock: 35, categoria: { id: 'cat_esm' }, marca: { id: 'marca_makita' } },
+        { id: 'pm_dwe4020', codigoModelo: 'DWE4020 800W', modelo: 'DWE4020', sku: 'SKU-10000005', precio: 185.00, stock: 28, categoria: { id: 'cat_esm' }, marca: { id: 'marca_dewalt' } },
+        { id: 'pm_gws9_125', codigoModelo: 'GWS 9-125', modelo: 'GWS9-125', sku: 'SKU-10000006', precio: 229.00, stock: 18, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
+        { id: 'pm_d25133k', codigoModelo: 'D25133K 800W', modelo: 'D25133K', sku: 'SKU-10000007', precio: 489.00, stock: 12, categoria: { id: 'cat_rot' }, marca: { id: 'marca_dewalt' } },
+        { id: 'pm_hr2470', codigoModelo: 'HR2470 780W', modelo: 'HR2470', sku: 'SKU-10000008', precio: 429.00, stock: 16, categoria: { id: 'cat_rot' }, marca: { id: 'marca_makita' } },
+        { id: 'pm_gbh18v26', codigoModelo: 'GBH 18V-26', modelo: 'GBH18V26', sku: 'SKU-10000009', precio: 799.00, stock: 8, categoria: { id: 'cat_rot' }, marca: { id: 'marca_bosch' } },
+        { id: 'pm_gsr1000', codigoModelo: 'GSR 1000 Smart', modelo: 'GSR1000', sku: 'SKU-10000010', precio: 145.00, stock: 50, categoria: { id: 'cat_tal' }, marca: { id: 'marca_bosch' } },
+        { id: 'pm_dcf801', codigoModelo: 'DCF801 12V', modelo: 'DCF801', sku: 'SKU-10000011', precio: 299.90, stock: 22, categoria: { id: 'cat_tal' }, marca: { id: 'marca_dewalt' } },
+        { id: 'pm_dga452', codigoModelo: 'DGA452 18V', modelo: 'DGA452', sku: 'SKU-10000012', precio: 399.00, stock: 14, categoria: { id: 'cat_esm' }, marca: { id: 'marca_makita' } }
       ];
       const localSpecs = [
         { id: 'sp_1', productoModelo: { id: 'pm_gws2200' }, atributo: 'Potencia', valor: '2200 W' },
@@ -357,7 +371,37 @@ export default function Inventario() {
         { id: 'sp_7', productoModelo: { id: 'pm_gws750' }, atributo: 'Velocidad', valor: '11000 RPM' },
         { id: 'sp_8', productoModelo: { id: 'pm_gws750' }, atributo: 'Peso', valor: '1.8 kg' },
         { id: 'sp_9', productoModelo: { id: 'pm_m0900b' }, atributo: 'Potencia', valor: '540 W' },
-        { id: 'sp_10', productoModelo: { id: 'pm_m0900b' }, atributo: 'Velocidad', valor: '12000 RPM' }
+        { id: 'sp_10', productoModelo: { id: 'pm_m0900b' }, atributo: 'Velocidad', valor: '12000 RPM' },
+        { id: 'sp_11', productoModelo: { id: 'pm_dcd771' }, atributo: 'Voltaje', valor: '20V' },
+        { id: 'sp_12', productoModelo: { id: 'pm_dcd771' }, atributo: 'Mandril', valor: '1/2"' },
+        { id: 'sp_13', productoModelo: { id: 'pm_dcd771' }, atributo: 'Velocidades', valor: '2' },
+        { id: 'sp_14', productoModelo: { id: 'pm_gbh2_24' }, atributo: 'Fuerza de impacto', valor: '2.7 J' },
+        { id: 'sp_15', productoModelo: { id: 'pm_gbh2_24' }, atributo: 'Potencia', valor: '820 W' },
+        { id: 'sp_16', productoModelo: { id: 'pm_gbh2_24' }, atributo: 'Mandril', valor: 'SDS Plus' },
+        { id: 'sp_17', productoModelo: { id: 'pm_dcd701' }, atributo: 'Voltaje', valor: '12V' },
+        { id: 'sp_18', productoModelo: { id: 'pm_dcd701' }, atributo: 'Mandril', valor: '3/8"' },
+        { id: 'sp_19', productoModelo: { id: 'pm_hp1630' }, atributo: 'Potencia', valor: '710W' },
+        { id: 'sp_20', productoModelo: { id: 'pm_hp1630' }, atributo: 'Velocidad', valor: '3200 RPM' },
+        { id: 'sp_21', productoModelo: { id: 'pm_gsb18v50' }, atributo: 'Voltaje', valor: '18V' },
+        { id: 'sp_22', productoModelo: { id: 'pm_gsb18v50' }, atributo: 'Motor', valor: 'Brushless' },
+        { id: 'sp_23', productoModelo: { id: 'pm_ga4530' }, atributo: 'Potencia', valor: '720W' },
+        { id: 'sp_24', productoModelo: { id: 'pm_ga4530' }, atributo: 'Disco', valor: '4 1/2"' },
+        { id: 'sp_25', productoModelo: { id: 'pm_dwe4020' }, atributo: 'Potencia', valor: '800W' },
+        { id: 'sp_26', productoModelo: { id: 'pm_dwe4020' }, atributo: 'Velocidad', valor: '12000 RPM' },
+        { id: 'sp_27', productoModelo: { id: 'pm_gws9_125' }, atributo: 'Potencia', valor: '900W' },
+        { id: 'sp_28', productoModelo: { id: 'pm_gws9_125' }, atributo: 'Disco', valor: '5"' },
+        { id: 'sp_29', productoModelo: { id: 'pm_d25133k' }, atributo: 'Fuerza', valor: '2.6 J' },
+        { id: 'sp_30', productoModelo: { id: 'pm_d25133k' }, atributo: 'Potencia', valor: '800W' },
+        { id: 'sp_31', productoModelo: { id: 'pm_hr2470' }, atributo: 'Fuerza', valor: '2.4 J' },
+        { id: 'sp_32', productoModelo: { id: 'pm_hr2470' }, atributo: 'Potencia', valor: '780W' },
+        { id: 'sp_33', productoModelo: { id: 'pm_gbh18v26' }, atributo: 'Voltaje', valor: '18V' },
+        { id: 'sp_34', productoModelo: { id: 'pm_gbh18v26' }, atributo: 'Fuerza', valor: '2.6 J' },
+        { id: 'sp_35', productoModelo: { id: 'pm_gsr1000' }, atributo: 'Voltaje', valor: '12V' },
+        { id: 'sp_36', productoModelo: { id: 'pm_gsr1000' }, atributo: 'Torque', valor: '15 Nm' },
+        { id: 'sp_37', productoModelo: { id: 'pm_dcf801' }, atributo: 'Voltaje', valor: '12V' },
+        { id: 'sp_38', productoModelo: { id: 'pm_dcf801' }, atributo: 'Torque', valor: '163 Nm' },
+        { id: 'sp_39', productoModelo: { id: 'pm_dga452' }, atributo: 'Voltaje', valor: '18V' },
+        { id: 'sp_40', productoModelo: { id: 'pm_dga452' }, atributo: 'Velocidad', valor: '10000 RPM' }
       ];
       const localImages = [
         { id: 'img_gws22_1', productoModelo: { id: 'pm_gws2200' }, urlImagen: '/src/assets/esmeril_gws2200.png' },
@@ -366,7 +410,21 @@ export default function Inventario() {
         { id: 'img_gws75_1', productoModelo: { id: 'pm_gws750' }, urlImagen: '/src/assets/esmeril_gws750.png' },
         { id: 'img_gws75_2', productoModelo: { id: 'pm_gws750' }, urlImagen: '/src/assets/taladro.png' },
         { id: 'img_gws75_3', productoModelo: { id: 'pm_gws750' }, urlImagen: '/src/assets/pernos.png' },
-        { id: 'img_m0900b_1', productoModelo: { id: 'pm_m0900b' }, urlImagen: '/src/assets/taladro.png' }
+        { id: 'img_m0900b_1', productoModelo: { id: 'pm_m0900b' }, urlImagen: '/src/assets/taladro.png' },
+        { id: 'img_dcd771_1', productoModelo: { id: 'pm_dcd771' }, urlImagen: '/src/assets/taladro_dewalt.png' },
+        { id: 'img_gbh2_24_1', productoModelo: { id: 'pm_gbh2_24' }, urlImagen: '/src/assets/rotomartillo_bosch.png' },
+        { id: 'img_dcd701_1', productoModelo: { id: 'pm_dcd701' }, urlImagen: '/src/assets/taladro_dewalt.png' },
+        { id: 'img_hp1630_1', productoModelo: { id: 'pm_hp1630' }, urlImagen: '/src/assets/taladro.png' },
+        { id: 'img_gsb18v50_1', productoModelo: { id: 'pm_gsb18v50' }, urlImagen: '/src/assets/taladro.png' },
+        { id: 'img_ga4530_1', productoModelo: { id: 'pm_ga4530' }, urlImagen: '/src/assets/esmeril_gws750.png' },
+        { id: 'img_dwe4020_1', productoModelo: { id: 'pm_dwe4020' }, urlImagen: '/src/assets/esmeril_gws750.png' },
+        { id: 'img_gws9_125_1', productoModelo: { id: 'pm_gws9_125' }, urlImagen: '/src/assets/esmeril_gws750.png' },
+        { id: 'img_d25133k_1', productoModelo: { id: 'pm_d25133k' }, urlImagen: '/src/assets/rotomartillo_bosch.png' },
+        { id: 'img_hr2470_1', productoModelo: { id: 'pm_hr2470' }, urlImagen: '/src/assets/rotomartillo_bosch.png' },
+        { id: 'img_gbh18v26_1', productoModelo: { id: 'pm_gbh18v26' }, urlImagen: '/src/assets/rotomartillo_bosch.png' },
+        { id: 'img_gsr1000_1', productoModelo: { id: 'pm_gsr1000' }, urlImagen: '/src/assets/taladro.png' },
+        { id: 'img_dcf801_1', productoModelo: { id: 'pm_dcf801' }, urlImagen: '/src/assets/taladro_dewalt.png' },
+        { id: 'img_dga452_1', productoModelo: { id: 'pm_dga452' }, urlImagen: '/src/assets/esmeril_gws750.png' }
       ];
       setCategorias(localCats);
       setMarcas(localBrands);

@@ -131,4 +131,46 @@ public class EmployeeAttendanceService {
 
         return attendanceRepository.save(attendance);
     }
+
+    @Transactional
+    public EmployeeAttendance registerPermission(UUID employeeId, UUID markedByUserId, LocalDate workDate) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+        User user = userRepository.findById(markedByUserId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (workDate == null) {
+            workDate = LocalDate.now();
+        }
+
+        Optional<EmployeeAttendance> existingOpt = attendanceRepository.findByEmployeeIdAndWorkDate(employeeId, workDate);
+        EmployeeAttendance attendance;
+
+        if (existingOpt.isPresent()) {
+            attendance = existingOpt.get();
+            if ("asistio".equalsIgnoreCase(attendance.getStatus()) || "en turno".equalsIgnoreCase(attendance.getStatus())) {
+                throw new RuntimeException("No se puede registrar permiso: ya existe asistencia registrada para esta fecha");
+            }
+            attendance.setStatus("permiso");
+            attendance.setMarkedByUser(user);
+            attendance.setEntryAt(null);
+            attendance.setExitAt(null);
+        } else {
+            attendance = EmployeeAttendance.builder()
+                    .employee(employee)
+                    .markedByUser(user)
+                    .workDate(workDate)
+                    .status("permiso")
+                    .build();
+        }
+
+        if (workDate.equals(LocalDate.now())) {
+            employee.setTodayStatus("permiso");
+            employee.setAttendanceToday(false);
+            employee.setCanMarkExit(false);
+            employeeRepository.save(employee);
+        }
+
+        return attendanceRepository.save(attendance);
+    }
 }

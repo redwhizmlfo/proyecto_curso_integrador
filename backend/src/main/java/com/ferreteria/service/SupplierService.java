@@ -25,6 +25,11 @@ public class SupplierService {
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
     }
 
+    public Supplier getSupplierByRuc(String ruc) {
+        return supplierRepository.findByRuc(ruc)
+                .orElseThrow(() -> new RuntimeException("Proveedor con RUC " + ruc + " no encontrado"));
+    }
+
     @Transactional
     public Supplier createSupplier(SupplierRequestDTO request) {
         Supplier supplier = Supplier.builder()

@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
-import DashboardPlaceholder from './pages/DashboardPlaceholder';
+import ResumenInventario from './pages/temporal/ResumenInventario';
+import ResumenVentas from './pages/temporal/ResumenVentas';
+import ResumenClientes from './pages/temporal/ResumenClientes';
+import ResumenProveedores from './pages/temporal/ResumenProveedores';
+import ResumenPedidos from './pages/temporal/ResumenPedidos';
+import ResumenEmpleados from './pages/temporal/ResumenEmpleados';
+import ResumenUsuariosRoles from './pages/temporal/ResumenUsuariosRoles';
 import Ventas from './pages/Ventas';
 import VentasHistorial from './pages/VentasHistorial';
 import VentasCotizaciones from './pages/VentasCotizaciones';
@@ -22,8 +28,10 @@ import OrdenesCompra from './pages/OrdenesCompra';
 import Empleados from './pages/Empleados';
 import Asistencia from './pages/Asistencia';
 import Boletas from './pages/Boletas';
+import Login from './pages/Login';
 
 export default function App() {
+  const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebar_collapsed');
     return saved ? JSON.parse(saved) : false;
@@ -37,6 +45,13 @@ export default function App() {
     });
   };
 
+  if (!token) {
+    return <Login onLoginSuccess={(newToken) => {
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+    }} />;
+  }
+
   return (
     <Router>
       <div className={`app-container ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -48,14 +63,13 @@ export default function App() {
           <Routes>
             {/* Dashboard and submodules */}
             <Route path="/" element={<Dashboard />} />
-            <Route path="/dashboard/resumen-inventario" element={<DashboardPlaceholder />} />
-            <Route path="/dashboard/resumen-ventas" element={<DashboardPlaceholder />} />
-            <Route path="/dashboard/resumen-clientes" element={<DashboardPlaceholder />} />
-            <Route path="/dashboard/resumen-proveedores" element={<DashboardPlaceholder />} />
-            <Route path="/dashboard/resumen-pedidos-compra" element={<DashboardPlaceholder />} />
-            <Route path="/dashboard/resumen-almacen" element={<DashboardPlaceholder />} />
-            <Route path="/dashboard/resumen-empleados" element={<DashboardPlaceholder />} />
-            <Route path="/dashboard/resumen-usuarios-roles" element={<DashboardPlaceholder />} />
+            <Route path="/dashboard/resumen-inventario" element={<ResumenInventario />} />
+            <Route path="/dashboard/resumen-ventas" element={<ResumenVentas />} />
+            <Route path="/dashboard/resumen-clientes" element={<ResumenClientes />} />
+            <Route path="/dashboard/resumen-proveedores" element={<ResumenProveedores />} />
+            <Route path="/dashboard/resumen-pedidos-compra" element={<ResumenPedidos />} />
+            <Route path="/dashboard/resumen-empleados" element={<ResumenEmpleados />} />
+            <Route path="/dashboard/resumen-usuarios-roles" element={<ResumenUsuariosRoles />} />
 
             {/* POS Sales and Submodules */}
             <Route path="/ventas" element={<Navigate to="/ventas/pos" replace />} />

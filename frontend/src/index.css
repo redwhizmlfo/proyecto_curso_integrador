@@ -210,6 +210,15 @@ body {
   margin-bottom: 2rem;
 }
 
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.8fr);
+  gap: 1.5rem;
+  align-items: start;
+  width: 100%;
+  max-width: 100%;
+}
+
 /* Buttons */
 .btn-premium {
   background: var(--accent);
@@ -301,6 +310,61 @@ body {
   width: 100%;
   min-width: 900px;
   border-collapse: collapse;
+}
+
+.recent-sales-table {
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.recent-sales-table th:nth-child(1),
+.recent-sales-table td:nth-child(1) {
+  width: 22%;
+}
+
+.recent-sales-table th:nth-child(2),
+.recent-sales-table td:nth-child(2) {
+  width: 34%;
+}
+
+.recent-sales-table th:nth-child(3),
+.recent-sales-table td:nth-child(3) {
+  width: 26%;
+}
+
+.recent-sales-table th:nth-child(4),
+.recent-sales-table td:nth-child(4) {
+  width: 18%;
+  white-space: nowrap;
+}
+
+.recent-sales-table td:nth-child(2),
+.recent-sales-table td:nth-child(3) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stock-alerts-table {
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.stock-alerts-table th:first-child,
+.stock-alerts-table td:first-child {
+  width: 58%;
+}
+
+.stock-alerts-table th:nth-child(2),
+.stock-alerts-table td:nth-child(2),
+.stock-alerts-table th:nth-child(3),
+.stock-alerts-table td:nth-child(3) {
+  width: 21%;
+  white-space: nowrap;
+}
+
+.stock-alerts-table td:first-child > div {
+  overflow-wrap: anywhere;
 }
 
 .luxury-table th {
@@ -679,6 +743,10 @@ body {
 @media (max-width: 1180px) {
   .dashboard-kpi-grid {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
   }
 }
 

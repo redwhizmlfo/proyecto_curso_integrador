@@ -12,6 +12,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import java.util.UUID;
     @UniqueConstraint(columnNames = {"employee_id", "work_date"})
 })
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -51,7 +53,7 @@ public class EmployeeAttendance {
     private OffsetDateTime exitAt;
 
     @NotBlank
-    @Pattern(regexp = "(?i)en turno|asistio|falto")
+    @Pattern(regexp = "(?i)en turno|asistio|falto|permiso")
     @Column(nullable = false, length = 32)
     private String status;
 

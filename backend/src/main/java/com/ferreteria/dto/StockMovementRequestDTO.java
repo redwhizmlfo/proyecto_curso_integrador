@@ -1,4 +1,4 @@
-﻿package com.ferreteria.dto;
+package com.ferreteria.dto;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -11,6 +11,6 @@ public class StockMovementRequestDTO {
     private String movementType;
     private String sourceModule;
     private String reasonCode; // opcional: motivo
-    private BigDecimal delta; // la variaci├│n que aplica el movimiento.
-    private String detail;   
+    private BigDecimal delta;  // la variacion que aplica el movimiento
+    private String detail;
 }

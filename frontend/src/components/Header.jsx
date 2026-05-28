@@ -1,7 +1,12 @@
 import React from 'react';
-import { User } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 
 export default function Header({ title, subtitle = "Sistema de Gestión de Ventas Avanzado", children }) {
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/';
+  };
+
   return (
     <header className="header">
       <div>
@@ -27,6 +32,34 @@ export default function Header({ title, subtitle = "Sistema de Gestión de Venta
           }}>
             <User size={18} />
           </div>
+          
+          <button
+            onClick={handleLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px',
+              borderRadius: '8px',
+              border: '1px solid #cbd5e1',
+              background: '#ffffff',
+              color: '#dc2626',
+              cursor: 'pointer',
+              marginLeft: '0.5rem',
+              transition: 'all 0.2s'
+            }}
+            title="Cerrar Sesión"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#fef2f2';
+              e.currentTarget.style.borderColor = '#fca5a5';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#ffffff';
+              e.currentTarget.style.borderColor = '#cbd5e1';
+            }}
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
     </header>

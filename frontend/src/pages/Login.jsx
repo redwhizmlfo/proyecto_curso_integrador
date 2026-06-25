@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 import warehouseBg from '../assets/warehouse_bg.png';
-import { validators } from './service/validators';
+import { validators } from '../services/validators';
 
 export default function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
@@ -16,8 +16,8 @@ export default function Login({ onLoginSuccess }) {
 	
 	const [passwordError, setPasswordError] = useState('');
 	const [passwordIsValid, setPasswordIsValid] = useState(false);
-	
-	const [canLogin, setCanLogin] = useState(false);
+		
+	const canLogin = usernameIsValid && passwordIsValid;
   
   
 	const validateUsername = (text) => {
@@ -31,21 +31,16 @@ export default function Login({ onLoginSuccess }) {
 		}		
 	};
 	
-	const validatePassword = (text) => {
+	const validatePassword = (text) => {		
 		setPassword(text);
 		if(text.trim() === "") {
-			setPasswordError(validators.password.errorMsg);
+			setPasswordError(validators.loginPassword.errorMsg);
 			setPasswordIsValid(false);
 		} else {
 			setPasswordError('');
 			setPasswordIsValid(true);
-		}
-	};
-  
-  
-	useEffect(() => {
-		setCanLogin(usernameIsValid && passwordIsValid);
-	}, [usernameIsValid, passwordIsValid]);
+		}		
+	};  
 	
 
   const handleSubmit = async (e) => {
@@ -414,18 +409,17 @@ export default function Login({ onLoginSuccess }) {
                   <input
                     type="text"
                     className="login-input"
-                    placeholder="usuario@mepsgroup.pe"
-                    value={username}
-					{/* onChange={(e) => setUsername(e.target.value)}*/}
+                    placeholder="nombre de usuario"
+                    value={username}					
 					onChange={(e) => validateUsername(e.target.value)}
                     autoFocus
                     disabled={loading}
                     autoComplete="username"
-                  />
-				  
-				  {usernameError ? <p>{validators.username.errorMsg}</p> : null}
-				  
+                  />				  				  				  
                 </div>
+				
+				{usernameError ? <p style={{ color: 'red', fontWeight: 'bold' }}>{validators.username.errorMsg}</p> : null}
+				
               </div>
 
               {/* Password Field */}
@@ -437,8 +431,7 @@ export default function Login({ onLoginSuccess }) {
                     type={showPassword ? 'text' : 'password'}
                     className="login-input"
                     placeholder="••••••••"
-                    value={password}
-					{/*onChange={(e) => setPassword(e.target.value)}*/}
+                    value={password}					
 					onChange={(e) => validatePassword(e.target.value)}
                     disabled={loading}
                     autoComplete="current-password"
@@ -451,11 +444,11 @@ export default function Login({ onLoginSuccess }) {
                     title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-				  
-				  {passwordError ? <p>{validators.password.errorMsg}</p> : null}
-				  
+                  </button>				 
                 </div>
+				
+				{passwordError ? <p style={{ color: 'red', fontWeight: 'bold' }}>{validators.loginPassword.errorMsg}</p> : null}
+				
               </div>
 
               <div style={{ textAlign: 'left' }}>
@@ -465,22 +458,16 @@ export default function Login({ onLoginSuccess }) {
 
 			  
               {/* Submit Button */}
-			  {canLogin ?
-				  <button type="submit" className="login-btn-submit" disabled={loading}>
-					{loading ? (
-					  <>
-						<Loader2 size={18} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
-						<span>Iniciando sesión...</span>
-					  </>
-					) : (
-					  <span>Ingresar</span>
-					)}
-				  </button>
-			  :
-				<button type="disabled" className="login-btn-submit-disabled" disabled={true}>
-					<span>Ingresar</span>										
-				  </button>
-			  }
+			  <button type="submit" className="login-btn-submit" disabled={loading || !canLogin}>
+                {loading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Iniciando sesión...</span>
+                  </>
+                ) : (
+                  <span>Ingresar</span>
+                )}
+              </button>
 			  
             </form>
           </div>

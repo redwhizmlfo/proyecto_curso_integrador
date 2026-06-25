@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 import warehouseBg from '../assets/warehouse_bg.png';
+import { validators } from './service/validators';
 
 export default function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
@@ -9,6 +10,43 @@ export default function Login({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
+	const [usernameError, setUsernameError] = useState('');
+	const [usernameIsValid, setUsernameIsValid] = useState(false);
+	
+	const [passwordError, setPasswordError] = useState('');
+	const [passwordIsValid, setPasswordIsValid] = useState(false);
+	
+	const [canLogin, setCanLogin] = useState(false);
+  
+  
+	const validateUsername = (text) => {
+		setUsername(text);
+		if(!validators.username.regex.test(text)) {
+			setUsernameError(validators.username.errorMsg);
+			setUsernameIsValid(false);
+		} else {
+			setUsernameError('');
+			setUsernameIsValid(true);
+		}		
+	};
+	
+	const validatePassword = (text) => {
+		setPassword(text);
+		if(text.trim() === "") {
+			setPasswordError(validators.password.errorMsg);
+			setPasswordIsValid(false);
+		} else {
+			setPasswordError('');
+			setPasswordIsValid(true);
+		}
+	};
+  
+  
+	useEffect(() => {
+		setCanLogin(usernameIsValid && passwordIsValid);
+	}, [usernameIsValid, passwordIsValid]);
+	
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -378,11 +416,15 @@ export default function Login({ onLoginSuccess }) {
                     className="login-input"
                     placeholder="usuario@mepsgroup.pe"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+					{/* onChange={(e) => setUsername(e.target.value)}*/}
+					onChange={(e) => validateUsername(e.target.value)}
                     autoFocus
                     disabled={loading}
                     autoComplete="username"
                   />
+				  
+				  {usernameError ? <p>{validators.username.errorMsg}</p> : null}
+				  
                 </div>
               </div>
 
@@ -396,7 +438,8 @@ export default function Login({ onLoginSuccess }) {
                     className="login-input"
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+					{/*onChange={(e) => setPassword(e.target.value)}*/}
+					onChange={(e) => validatePassword(e.target.value)}
                     disabled={loading}
                     autoComplete="current-password"
                   />
@@ -409,6 +452,9 @@ export default function Login({ onLoginSuccess }) {
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
+				  
+				  {passwordError ? <p>{validators.password.errorMsg}</p> : null}
+				  
                 </div>
               </div>
 
@@ -416,17 +462,26 @@ export default function Login({ onLoginSuccess }) {
                 <span className="login-forgot-link">¿Olvidaste tu contraseña?</span>
               </div>
 
+
+			  
               {/* Submit Button */}
-              <button type="submit" className="login-btn-submit" disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
-                    <span>Iniciando sesión...</span>
-                  </>
-                ) : (
-                  <span>Ingresar</span>
-                )}
-              </button>
+			  {canLogin ?
+				  <button type="submit" className="login-btn-submit" disabled={loading}>
+					{loading ? (
+					  <>
+						<Loader2 size={18} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
+						<span>Iniciando sesión...</span>
+					  </>
+					) : (
+					  <span>Ingresar</span>
+					)}
+				  </button>
+			  :
+				<button type="disabled" className="login-btn-submit-disabled" disabled={true}>
+					<span>Ingresar</span>										
+				  </button>
+			  }
+			  
             </form>
           </div>
         </div>

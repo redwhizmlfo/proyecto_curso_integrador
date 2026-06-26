@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import Header from '../../components/Header';
+import React, { useState, useEffect } from 'react';
+import Header from '../components/Header';
 import {
   ShoppingBag, BarChart2, FileText, TrendingUp,
   TrendingDown, ArrowLeft, DollarSign, Clock,
   Users, Package, Filter, Download, CheckCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
 
 /* ─── Datos base de la aplicación (los mismos originales) ─────────── */
 

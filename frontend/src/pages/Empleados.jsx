@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Search, Plus, Edit, Briefcase, DollarSign } from 'lucide-react';

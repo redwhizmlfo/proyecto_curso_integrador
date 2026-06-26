@@ -3,7 +3,6 @@ package com.ferreteria.controller;
 import com.ferreteria.model.Categoria;
 import com.ferreteria.model.Marca;
 import com.ferreteria.model.ProductoModelo;
-import com.ferreteria.dto.PosCatalogProductDTO;
 import com.ferreteria.repository.CategoriaRepository;
 import com.ferreteria.repository.MarcaRepository;
 import com.ferreteria.repository.ProductoModeloRepository;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/modelos")
@@ -30,28 +28,6 @@ public class ProductoModeloController {
     @GetMapping
     public ResponseEntity<List<ProductoModelo>> getAll() {
         return ResponseEntity.ok(productoModeloRepository.findAll());
-    }
-
-    @GetMapping("/pos-catalog")
-    public ResponseEntity<List<PosCatalogProductDTO>> getPosCatalog() {
-        List<PosCatalogProductDTO> catalog = productoModeloRepository.findAll().stream()
-                .map(model -> new PosCatalogProductDTO(
-                        model.getId(),
-                        buildPosProductName(model),
-                        model.getMarca() != null ? model.getMarca().getNombreMarca() : null,
-                        model.getCodigoModelo(),
-                        model.getSku(),
-                        model.getPrecio(),
-                        model.getStock()
-                ))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(catalog);
-    }
-
-    private String buildPosProductName(ProductoModelo model) {
-        String brandName = model.getMarca() != null ? model.getMarca().getNombreMarca() : "";
-        String modelName = model.getModelo() != null ? model.getModelo() : "";
-        return (brandName + " " + modelName).trim();
     }
 
     @GetMapping("/search")

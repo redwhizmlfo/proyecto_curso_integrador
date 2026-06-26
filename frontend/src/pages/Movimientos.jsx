@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { 
   Box, Sparkles, Package, Lock, Unlock, ArrowRight, Clock, Plus, Trash, 
-  PlusCircle, CheckCircle2, History, Truck, Wrench, RefreshCw, X, AlertTriangle, Info
+  PlusCircle, CheckCircle2, History, Truck, Wrench, RefreshCw, X, AlertTriangle
 } from 'lucide-react';
 
 export default function Movimientos() {

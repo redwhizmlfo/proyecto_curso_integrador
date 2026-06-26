@@ -74,7 +74,6 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
         }}>
           <span style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--accent)' }}>M</span>
           <button 
-            className="sidebar-menu-toggle"
             onClick={onToggleCollapse}
             style={{ 
               background: 'none', 
@@ -195,7 +194,6 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
       }}>
         <span>MEPS GROUP PERÚ</span>
         <button 
-          className="sidebar-menu-toggle"
           onClick={onToggleCollapse} 
           style={{ 
             background: 'none', 

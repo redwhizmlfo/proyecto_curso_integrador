@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
-import { SidebarToggleProvider } from './context/SidebarToggleContext';
 import Dashboard from './pages/Dashboard';
 import ResumenInventario from './pages/temporal/ResumenInventario';
 import ResumenVentas from './pages/temporal/ResumenVentas';
@@ -56,13 +55,12 @@ export default function App() {
   return (
     <Router>
       <div className={`app-container ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
-        <SidebarToggleProvider value={{ isCollapsed, toggleSidebar }}>
-          {/* Navigation Sidebar */}
-          <Sidebar isCollapsed={isCollapsed} onToggleCollapse={toggleSidebar} />
+        {/* Navigation Sidebar */}
+        <Sidebar isCollapsed={isCollapsed} onToggleCollapse={toggleSidebar} />
 
-          {/* Main Content wrapper */}
-          <main className="main-wrapper">
-            <Routes>
+        {/* Main Content wrapper */}
+        <main className="main-wrapper">
+          <Routes>
             {/* Dashboard and submodules */}
             <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard/resumen-inventario" element={<ResumenInventario />} />
@@ -101,9 +99,8 @@ export default function App() {
             <Route path="/rrhh/empleados" element={<Empleados />} />
             <Route path="/rrhh/asistencia" element={<Asistencia />} />
             <Route path="/rrhh/boletas" element={<Boletas />} />
-            </Routes>
-          </main>
-        </SidebarToggleProvider>
+          </Routes>
+        </main>
       </div>
     </Router>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Search, Eye, Printer, Calendar, User, CreditCard, RefreshCw, X } from 'lucide-react';

@@ -1,7 +1,9 @@
-import React from 'react';
 import { User, LogOut } from 'lucide-react';
+import { useSidebarToggle } from '../context/SidebarToggleContext';
 
 export default function Header({ title, subtitle = "Sistema de Gestión de Ventas Avanzado", children }) {
+  const { isCollapsed, toggleSidebar } = useSidebarToggle();
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/';
@@ -9,10 +11,26 @@ export default function Header({ title, subtitle = "Sistema de Gestión de Venta
 
   return (
     <header className="header">
-      <div>
-        <h1 className="title-gradient">{title}</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.2rem' }}>{subtitle}</p>
+      <div className="header-title-group">
+        <button
+          type="button"
+          className="sidebar-edge-toggle"
+          onClick={toggleSidebar}
+          aria-label={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
+          title={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
+        >
+          <span className="sidebar-toggle-icon" aria-hidden="true">
+            <span className="sidebar-toggle-line" />
+            <span className="sidebar-toggle-line" />
+            <span className="sidebar-toggle-line" />
+          </span>
+        </button>
+        <div>
+          <h1 className="title-gradient">{title}</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.2rem' }}>{subtitle}</p>
+        </div>
       </div>
+
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
         {children}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -32,7 +50,7 @@ export default function Header({ title, subtitle = "Sistema de Gestión de Venta
           }}>
             <User size={18} />
           </div>
-          
+
           <button
             onClick={handleLogout}
             style={{

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { User, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 import warehouseBg from '../assets/warehouse_bg.png';
-import { validators } from '../services/validators';
+import { loginValidators } from '../services/validators';
 
 export default function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
@@ -10,43 +10,37 @@ export default function Login({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-	const [usernameError, setUsernameError] = useState('');
-	const [usernameIsValid, setUsernameIsValid] = useState(false);
-	
-	const [passwordError, setPasswordError] = useState('');
-	const [passwordIsValid, setPasswordIsValid] = useState(false);
-		
-	const canLogin = usernameIsValid && passwordIsValid;
-  
-  
-	const validateUsername = (text) => {
-		setUsername(text);
-		if(!validators.username.regex.test(text)) {
-			setUsernameError(validators.username.errorMsg);
-			setUsernameIsValid(false);
-		} else {
-			setUsernameError('');
-			setUsernameIsValid(true);
-		}		
-	};
-	
-	const validatePassword = (text) => {		
-		setPassword(text);
-		if(text.trim() === "") {
-			setPasswordError(validators.loginPassword.errorMsg);
-			setPasswordIsValid(false);
-		} else {
-			setPasswordError('');
-			setPasswordIsValid(true);
-		}		
-	};  
-	
+  const [usernameError, setUsernameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const canLogin = loginValidators.username.isValid(username)
+    && loginValidators.password.isValid(password);
+
+  const handleUsernameChange = (event) => {
+    const value = event.target.value;
+    setUsername(value);
+    setUsernameError(
+      loginValidators.username.isValid(value) ? '' : loginValidators.username.errorMessage,
+    );
+  };
+
+  const handlePasswordChange = (event) => {
+    const value = event.target.value;
+    setPassword(value);
+    setPasswordError(
+      loginValidators.password.isValid(value) ? '' : loginValidators.password.errorMessage,
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!username || !password) {
-      setError('Por favor ingrese su usuario y contraseña.');
+    const isUsernameValid = loginValidators.username.isValid(username);
+    const isPasswordValid = loginValidators.password.isValid(password);
+
+    setUsernameError(isUsernameValid ? '' : loginValidators.username.errorMessage);
+    setPasswordError(isPasswordValid ? '' : loginValidators.password.errorMessage);
+
+    if (!isUsernameValid || !isPasswordValid) {
       return;
     }
 
@@ -232,6 +226,13 @@ export default function Login({ onLoginSuccess }) {
           font-weight: 300;
         }
 
+        .login-field-error {
+          margin: 0.45rem 0 0;
+          color: #dc2626;
+          font-size: 0.8rem;
+          font-weight: 600;
+        }
+
         .login-eye-toggle {
           background: none;
           border: none;
@@ -410,15 +411,17 @@ export default function Login({ onLoginSuccess }) {
                     type="text"
                     className="login-input"
                     placeholder="nombre de usuario"
-                    value={username}					
-					onChange={(e) => validateUsername(e.target.value)}
+                    value={username}
+                    onChange={handleUsernameChange}
                     autoFocus
                     disabled={loading}
                     autoComplete="username"
-                  />				  				  				  
+                    aria-invalid={Boolean(usernameError)}
+                    aria-describedby={usernameError ? 'username-error' : undefined}
+                  />
                 </div>
 				
-				{usernameError ? <p style={{ color: 'red', fontWeight: 'bold' }}>{validators.username.errorMsg}</p> : null}
+				{usernameError && <p id="username-error" className="login-field-error">{usernameError}</p>}
 				
               </div>
 
@@ -431,10 +434,12 @@ export default function Login({ onLoginSuccess }) {
                     type={showPassword ? 'text' : 'password'}
                     className="login-input"
                     placeholder="••••••••"
-                    value={password}					
-					onChange={(e) => validatePassword(e.target.value)}
+                    value={password}
+                    onChange={handlePasswordChange}
                     disabled={loading}
                     autoComplete="current-password"
+                    aria-invalid={Boolean(passwordError)}
+                    aria-describedby={passwordError ? 'password-error' : undefined}
                   />
                   <button
                     type="button"
@@ -447,7 +452,7 @@ export default function Login({ onLoginSuccess }) {
                   </button>				 
                 </div>
 				
-				{passwordError ? <p style={{ color: 'red', fontWeight: 'bold' }}>{validators.loginPassword.errorMsg}</p> : null}
+				{passwordError && <p id="password-error" className="login-field-error">{passwordError}</p>}
 				
               </div>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Clock, Check, LogOut, XOctagon, RefreshCw, Calendar, FileText, Printer, ArrowUpRight, ArrowDownRight, UserMinus, FileClock } from 'lucide-react';

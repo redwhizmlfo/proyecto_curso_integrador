@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
-import { Search, Plus, Minus, Trash2, ShoppingCart, User, Ban, Printer, Check, X, CreditCard, Landmark, Smartphone, KeyRound, Upload, DollarSign } from 'lucide-react';
+import { Search, Plus, Minus, Trash2, ShoppingCart, Ban, Check, X, CreditCard, Landmark, Smartphone, KeyRound, Upload, DollarSign } from 'lucide-react';
 
 // Product images
 import taladroImg from '../assets/taladro.png';
@@ -17,6 +17,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 const isUuid = (value) => UUID_PATTERN.test(String(value || ''));
 export default function Ventas() {
   const [products, setProducts] = useState([]);
+  const [posCatalog, setPosCatalog] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState('');
@@ -83,8 +84,9 @@ export default function Ventas() {
     async function loadData() {
       try {
         setLoading(true);
-        const [prodList, custList, modelList, specList, imgList, catList, brandList, supplierList, bankList] = await Promise.all([
+        const [prodList, posCatalogList, custList, modelList, specList, imgList, catList, brandList, supplierList, bankList] = await Promise.all([
           api.get('/products').catch(() => []),
+          api.get('/modelos/pos-catalog').catch(() => []),
           api.get('/customers').catch(() => []),
           api.get('/modelos').catch(() => []),
           api.get('/especificaciones').catch(() => []),
@@ -101,6 +103,7 @@ export default function Ventas() {
         } else {
           setProducts([]);
         }
+        setPosCatalog(posCatalogList);
         
         if (custList.length > 0) {
           setCustomers(custList);
@@ -424,28 +427,33 @@ export default function Ventas() {
   };
 
   const getCatalogProducts = () => {
-    // 1. Get base products that are NOT tools/brands
-    const nonTools = products.filter(p => {
-      const name = p.name.toLowerCase();
-      const cat = p.category.toLowerCase();
-      return !name.includes('taladro') && !name.includes('esmeril') && !cat.includes('herramienta');
-    });
-
-    // 2. Map each model variant from inventory (modelos) directly as an individual product card
-    const modelProducts = modelos.map(m => {
-      return {
-        id: m.id,
-        name: `${m.marca?.nombreMarca} - ${m.modelo} (${m.codigoModelo})`,
-        barcode: m.sku,
-        price: m.precio,
-        stock: m.stock,
-        category: m.categoria?.nombreCategoria || 'Herramientas',
+    if (posCatalog.length > 0) {
+      return posCatalog.map((product) => ({
+        id: product.id,
+        name: product.name,
+        barcode: product.sku,
+        price: Number(product.price || 0),
+        stock: Number(product.stock || 0),
         isModel: true,
-        brandName: m.marca?.nombreMarca
+        brandName: product.brand,
+        model: product.model,
+      }));
+    }
+
+    return modelos.map((model) => {
+      const brandName = model.marca?.nombreMarca || '';
+      const modelName = model.modelo || '';
+      return {
+        id: model.id,
+        name: `${brandName} ${modelName}`.trim(),
+        barcode: model.sku,
+        price: Number(model.precio || 0),
+        stock: Number(model.stock || 0),
+        isModel: true,
+        brandName,
+        model: model.codigoModelo,
       };
     });
-
-    return [...modelProducts, ...nonTools];
   };
 
   const handleCardClick = (product) => {
@@ -657,7 +665,6 @@ export default function Ventas() {
   const total = rawSubtotal - discountAmount;
 
   const selectedBankAccount = bankAccounts.find((account) => account.id === selectedBankAccountId) || bankAccounts[0];
-  const customerDocLabel = validatedCustomer?.docType || (docInput.length === 11 ? 'RUC' : 'DNI');
   const customerCondition = validatedCustomer?.docType === 'RUC' ? 'Factura electronica' : 'Boleta de venta';
 
   const resetPaymentFields = () => {
@@ -1325,10 +1332,12 @@ export default function Ventas() {
     
     // Filter by search query
     let list = modelos.filter(m => {
-      const matchesSearch = 
-        m.modelo.toLowerCase().includes(variantSearch.toLowerCase()) ||
-        m.codigoModelo.toLowerCase().includes(variantSearch.toLowerCase()) ||
-        m.sku.toLowerCase().includes(variantSearch.toLowerCase());
+      let matchesSearch = true;
+      if (variantSearch.trim()) {
+        const searchTerms = String(variantSearch || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/\s+/);
+        const searchableText = String(`${m.modelo} ${m.codigoModelo} ${m.sku} ${m.marca?.nombreMarca || ''} ${m.categoria?.nombreCategoria || ''}`).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        matchesSearch = searchTerms.every(term => searchableText.includes(term));
+      }
         
       if (!matchesSearch) return false;
       
@@ -1356,10 +1365,18 @@ export default function Ventas() {
     return list;
   };
 
-  const filteredProducts = getCatalogProducts().filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase()) || 
-    p.barcode.toLowerCase().includes(search.toLowerCase())
-  );
+  const normalizeText = (text) => {
+    return String(text || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  };
+
+  const filteredProducts = getCatalogProducts().filter(p => {
+    if (!search.trim()) return true;
+    const searchTerms = normalizeText(search).split(/\s+/);
+    const searchableText = normalizeText(
+      `${p.name} ${p.barcode} ${p.category} ${p.unit || ''} ${p.description || ''} ${p.brandName || ''}`
+    );
+    return searchTerms.every(term => searchableText.includes(term));
+  });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, width: '100%', minWidth: 0, paddingBottom: '2.5rem', background: '#ffffff' }}>

@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
+import { useState, useEffect } from 'react';
+import Header from '../../components/Header';
 import {
   ClipboardList, Clock, Truck, AlertTriangle,
   CheckCircle, DollarSign, Calendar, BarChart2,
   TrendingUp, TrendingDown, ArrowLeft
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
+import api from '../../services/api';
 
 /* ─── Datos simulados ─────────────────────────────────────────── */
 

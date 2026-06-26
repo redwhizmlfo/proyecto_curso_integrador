@@ -21,6 +21,10 @@ build/
 *.log
 logs/
 
+# Herramientas locales / temporales
+.refact/
+HashMe.java
+
 # Sistema
 .DS_Store
 Thumbs.db

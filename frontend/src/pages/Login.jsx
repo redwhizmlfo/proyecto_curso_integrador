@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { User, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 import warehouseBg from '../assets/warehouse_bg.png';
+import { loginValidators } from '../services/validators';
 
 export default function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
@@ -9,11 +10,37 @@ export default function Login({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [usernameError, setUsernameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const canLogin = loginValidators.username.isValid(username)
+    && loginValidators.password.isValid(password);
+
+  const handleUsernameChange = (event) => {
+    const value = event.target.value;
+    setUsername(value);
+    setUsernameError(
+      loginValidators.username.isValid(value) ? '' : loginValidators.username.errorMessage,
+    );
+  };
+
+  const handlePasswordChange = (event) => {
+    const value = event.target.value;
+    setPassword(value);
+    setPasswordError(
+      loginValidators.password.isValid(value) ? '' : loginValidators.password.errorMessage,
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!username || !password) {
-      setError('Por favor ingrese su usuario y contraseña.');
+    const isUsernameValid = loginValidators.username.isValid(username);
+    const isPasswordValid = loginValidators.password.isValid(password);
+
+    setUsernameError(isUsernameValid ? '' : loginValidators.username.errorMessage);
+    setPasswordError(isPasswordValid ? '' : loginValidators.password.errorMessage);
+
+    if (!isUsernameValid || !isPasswordValid) {
       return;
     }
 
@@ -199,6 +226,13 @@ export default function Login({ onLoginSuccess }) {
           font-weight: 300;
         }
 
+        .login-field-error {
+          margin: 0.45rem 0 0;
+          color: #dc2626;
+          font-size: 0.8rem;
+          font-weight: 600;
+        }
+
         .login-eye-toggle {
           background: none;
           border: none;
@@ -376,14 +410,19 @@ export default function Login({ onLoginSuccess }) {
                   <input
                     type="text"
                     className="login-input"
-                    placeholder="usuario@mepsgroup.pe"
+                    placeholder="nombre de usuario"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={handleUsernameChange}
                     autoFocus
                     disabled={loading}
                     autoComplete="username"
+                    aria-invalid={Boolean(usernameError)}
+                    aria-describedby={usernameError ? 'username-error' : undefined}
                   />
                 </div>
+				
+				{usernameError && <p id="username-error" className="login-field-error">{usernameError}</p>}
+				
               </div>
 
               {/* Password Field */}
@@ -396,9 +435,11 @@ export default function Login({ onLoginSuccess }) {
                     className="login-input"
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={handlePasswordChange}
                     disabled={loading}
                     autoComplete="current-password"
+                    aria-invalid={Boolean(passwordError)}
+                    aria-describedby={passwordError ? 'password-error' : undefined}
                   />
                   <button
                     type="button"
@@ -408,16 +449,21 @@ export default function Login({ onLoginSuccess }) {
                     title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+                  </button>				 
                 </div>
+				
+				{passwordError && <p id="password-error" className="login-field-error">{passwordError}</p>}
+				
               </div>
 
               <div style={{ textAlign: 'left' }}>
                 <span className="login-forgot-link">¿Olvidaste tu contraseña?</span>
               </div>
 
+
+			  
               {/* Submit Button */}
-              <button type="submit" className="login-btn-submit" disabled={loading}>
+			  <button type="submit" className="login-btn-submit" disabled={loading || !canLogin}>
                 {loading ? (
                   <>
                     <Loader2 size={18} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
@@ -427,6 +473,7 @@ export default function Login({ onLoginSuccess }) {
                   <span>Ingresar</span>
                 )}
               </button>
+			  
             </form>
           </div>
         </div>

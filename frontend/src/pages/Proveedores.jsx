@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Search, Plus, Edit, Trash, HelpCircle, Truck } from 'lucide-react';

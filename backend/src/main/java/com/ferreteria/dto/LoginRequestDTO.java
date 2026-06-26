@@ -1,4 +1,4 @@
-﻿package com.ferreteria.dto;
+package com.ferreteria.dto;
 
 import lombok.Data;
 

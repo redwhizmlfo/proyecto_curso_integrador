@@ -661,6 +661,7 @@ INSERT INTO customers (id, name, doc_type, doc_number, phone, email, address, pr
   ('38d4c2e0-3a61-42b9-a50b-c0209e210073', 'GRUPO CONSTRUCTOR VILLA S.A.', 'RUC', '20654321098', '01 4567891', 'gerencia@grupovilla.com', '[Mayorista] Av. Pachacútec 1450 - VILLA MARÍA DEL TRIUNFO', 10.00, now(), now())
 ON CONFLICT (lower(doc_type), lower(doc_number)) DO NOTHING;
 
+/*
   id uuid primary key default gen_random_uuid(),
   employee_id uuid not null references employees(id),
   created_by_user_id uuid references users(id),
@@ -718,6 +719,7 @@ create table if not exists sunat_ruc_records (
   constraint sunat_ruc_records_ruc_length check (length(ruc) = 11),
   constraint sunat_ruc_records_business_name_not_blank check (btrim(business_name) <> '')
 );
+
 
 create index if not exists products_supplier_id_idx on products (supplier_id);
 create index if not exists products_category_idx on products (category);
@@ -855,6 +857,8 @@ INSERT INTO customers (id, name, doc_type, doc_number, phone, email, address, pr
   ('38d4c2e0-3a61-42b9-a50b-c0209e210072', 'MATERIALES E INSUMOS DEL PERÚ S.A.C.', 'RUC', '20765432109', '01 7891230', 'adquisiciones@matperu.com', '[Mayorista] Av. Argentina 2800 - CALLAO', 5.00, now(), now()),
   ('38d4c2e0-3a61-42b9-a50b-c0209e210073', 'GRUPO CONSTRUCTOR VILLA S.A.', 'RUC', '20654321098', '01 4567891', 'gerencia@grupovilla.com', '[Mayorista] Av. Pachacútec 1450 - VILLA MARÍA DEL TRIUNFO', 10.00, now(), now())
 ON CONFLICT (lower(doc_type), lower(doc_number)) DO NOTHING;
+*/
+
 
 -- Empleado y Usuario Administrador de Prueba
 INSERT INTO employees (id, initials, name, role, dni, pay_per_day, worked_days, can_mark_exit, is_active, created_at, updated_at) VALUES

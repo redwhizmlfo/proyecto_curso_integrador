@@ -1,3 +1,4 @@
+
 create extension if not exists pgcrypto;
 
 create table if not exists suppliers (
@@ -660,7 +661,7 @@ INSERT INTO customers (id, name, doc_type, doc_number, phone, email, address, pr
   ('38d4c2e0-3a61-42b9-a50b-c0209e210072', 'MATERIALES E INSUMOS DEL PERÚ S.A.C.', 'RUC', '20765432109', '01 7891230', 'adquisiciones@matperu.com', '[Mayorista] Av. Argentina 2800 - CALLAO', 5.00, now(), now()),
   ('38d4c2e0-3a61-42b9-a50b-c0209e210073', 'GRUPO CONSTRUCTOR VILLA S.A.', 'RUC', '20654321098', '01 4567891', 'gerencia@grupovilla.com', '[Mayorista] Av. Pachacútec 1450 - VILLA MARÍA DEL TRIUNFO', 10.00, now(), now())
 ON CONFLICT (lower(doc_type), lower(doc_number)) DO NOTHING;
-
+select * from customers;
 /*
   id uuid primary key default gen_random_uuid(),
   employee_id uuid not null references employees(id),

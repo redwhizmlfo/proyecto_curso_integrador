@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Search, Plus, Edit, Briefcase, DollarSign } from 'lucide-react';
+import { registerEmployeeValidators } from '../services/validators';
 
 export default function Empleados() {
   const [employees, setEmployees] = useState([]);
@@ -23,6 +24,32 @@ export default function Empleados() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Form validation   
+  const [inputErrors, setInputErrors] = useState({
+	  name: '',
+	  initials: '',
+	  dni: '',
+	  role: '',
+	  payPerDay: ''
+  });
+  
+  const handleChange = (field, value) => {
+	setForm({...form, [field]: value });
+	
+	if(registerEmployeeValidators[field]) {
+		const isValid = registerEmployeeValidators[field].isValid(value);
+		setInputErrors({
+			...inputErrors,
+			[field]: isValid ? '' : registerEmployeeValidators[field].errorMessage
+		});
+	}
+  };
+  
+	
+	
+	
+	
 
   const loadEmployees = async () => {
     try {
@@ -75,7 +102,17 @@ export default function Empleados() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
+	const isFormValid =  registerEmployeeValidators.name.isValid(form.name)
+		&& registerEmployeeValidators.initials.isValid(form.initials)
+		&& registerEmployeeValidators.dni.isValid(form.dni)
+		&& registerEmployeeValidators.role.isValid(form.role)
+		&& registerEmployeeValidators.payPerDay.isValid(form.payPerDay);
+		
+	if(!isFormValid) {
+		alert("Corregir errores antes de guardar datos.");
+		return;
+	}
+    try {		
       if (editingEmployee) {
         if (error) {
           setEmployees(employees.map(emp => emp.id === editingEmployee.id ? { ...emp, ...form } : emp));
@@ -233,8 +270,9 @@ export default function Empleados() {
                   className="form-input" 
                   required 
                   value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  onChange={(e) => handleChange('name', e.target.value)}				  
                 />
+				{inputErrors.name && <span style={{color: 'red' }}>{inputErrors.name}</span>}
               </div>
 
               <div className="form-row">
@@ -247,8 +285,9 @@ export default function Empleados() {
                     maxLength={4}
                     placeholder="Ej. JC"
                     value={form.initials}
-                    onChange={(e) => setForm({ ...form, initials: e.target.value.toUpperCase() })}
+                    onChange={(e) => handleChange('initials', e.target.value.toUpperCase())}
                   />
+				  {inputErrors.initials && <span style={{color: 'red' }}>{inputErrors.initials}</span>}
                 </div>
                 <div className="form-group">
                   <label>DNI *</label>
@@ -258,8 +297,9 @@ export default function Empleados() {
                     required 
                     maxLength={8}
                     value={form.dni}
-                    onChange={(e) => setForm({ ...form, dni: e.target.value.replace(/\D/g, '') })}
+                    onChange={(e) => handleChange('dni', e.target.value.replace(/\D/g, ''))}
                   />
+				  {inputErrors.dni && <span style={{color: 'red' }}>{inputErrors.dni}</span>}
                 </div>
               </div>
 
@@ -272,8 +312,9 @@ export default function Empleados() {
                     required 
                     placeholder="Ej. Almacenero, Vendedor..."
                     value={form.role}
-                    onChange={(e) => setForm({ ...form, role: e.target.value })}
+                   onChange={(e) => handleChange('role', e.target.value)}
                   />
+				  {inputErrors.role && <span style={{color: 'red' }}>{inputErrors.role}</span>}
                 </div>
                 <div className="form-group">
                   <label>Tarifa Diaria (S/) *</label>
@@ -283,8 +324,9 @@ export default function Empleados() {
                     className="form-input" 
                     required 
                     value={form.payPerDay}
-                    onChange={(e) => setForm({ ...form, payPerDay: parseFloat(e.target.value) })}
+                    onChange={(e) => handleChange('payPerDay', e.target.value)}
                   />
+				  {inputErrors.payPerDay && <span style={{color: 'red' }}>{inputErrors.payPerDay}</span>}
                 </div>
               </div>
 

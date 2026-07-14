@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { DollarSign, FileText, CheckCircle, Plus, Eye, Printer, Trash2 } from 'lucide-react';
+import { validateField, employeeSlipValidators } from '../services/validators';
 
 export default function Boletas() {
   const [slips, setSlips] = useState([]);
@@ -23,8 +24,12 @@ export default function Boletas() {
 
   // Form states
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
-  const [workDays, setWorkDays] = useState(15);
-  const [periodLabel, setPeriodLabel] = useState('');
+  const [form, setForm] = useState({
+	  periodLabel: '',
+	  workDays: 15
+  });
+  //const [workDays, setWorkDays] = useState(15);
+  //const [periodLabel, setPeriodLabel] = useState('');
   const [notes, setNotes] = useState('');
 
   const [loading, setLoading] = useState(true);
@@ -86,6 +91,21 @@ export default function Boletas() {
     } finally {
       setLoading(false);
     }
+  };
+  
+  // Form validation   
+  const [inputErrors, setInputErrors] = useState({
+	  eriod: '',
+	  workDays: ''	  
+  });
+  
+  const handleChange = (field, value) => {
+	  setForm(prev => ({
+		  ...prev, [field]: value
+	  }));
+	  setInputErrors(prev => ({
+		  ...prev, [field]: validateField(employeeSlipValidators, field, value)
+	  }));
   };
 
   useEffect(() => {
@@ -368,8 +388,9 @@ export default function Boletas() {
                   style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                   required
                   placeholder="Ej. Mayo-2026-Quincena-2"
-                  value={periodLabel}
-                  onChange={(e) => setPeriodLabel(e.target.value)}
+                  value={form.periodLabel}
+                  //onChange={(e) => setPeriodLabel(e.target.value)}
+				  onChange={(e) => handleChange("periodLabel", e.target.value)}
                 />
               </div>
 
@@ -383,8 +404,9 @@ export default function Boletas() {
                   required 
                   min="0"
                   disabled={!error} // Only editable in offline mode, real backend reads directly from employees table count
-                  value={workDays}
-                  onChange={(e) => setWorkDays(e.target.value)}
+                  value={form.workDays}
+                  //onChange={(e) => setWorkDays(e.target.value)}
+				  onChange={(e) => handleChange("workDays", e.target.value)}
                 />
                 <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.3rem' }}>
                   {error ? (

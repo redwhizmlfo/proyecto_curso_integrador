@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Search, Plus, Edit, Trash, UserPlus } from 'lucide-react';
+import { validateField, commonValidators } from '../services/validators';
 
 export default function Clientes() {
   const [customers, setCustomers] = useState([]);
@@ -25,6 +26,25 @@ export default function Clientes() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Form validation   
+  const [inputErrors, setInputErrors] = useState({
+	name: '',
+	docNumber: '',
+    phone: '',
+    email: '',
+    address: '',
+	preferredDiscount: ''
+  });
+  
+   const handleChange = (field, value) => {
+	  setForm(prev => ({
+		  ...prev, [field]: value
+	  }));
+	  setInputErrors(prev => ({
+		  ...prev, [field]: validateField(commonValidators, field, value)
+	  }));
+  };
 
   // Helper to parse type and address
   const parseCustomer = (c) => {
@@ -86,6 +106,14 @@ export default function Clientes() {
       preferredDiscount: 0,
       customerType: 'Minorista'
     });
+	setInputErrors({
+		name: '',
+		docNumber: '',
+		phone: '',
+		email: '',
+		address: '',
+		preferredDiscount: ''
+	});
     setShowModal(true);
   };
 
@@ -101,11 +129,30 @@ export default function Clientes() {
       preferredDiscount: c.preferredDiscount || 0,
       customerType: c.customerType || 'Minorista'
     });
+	setInputErrors({
+		name: '',
+		docNumber: '',
+		phone: '',
+		email: '',
+		address: '',
+		preferredDiscount: ''
+	});
     setShowModal(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+	const isFormValid =  commonValidators.docNumber.isValid(form.docNumber)		
+		&& commonValidators.phone.isValid(form.phone)
+		&& commonValidators.name.isValid(form.name)
+		&& commonValidators.address.isValid(form.address)
+		&& commonValidators.email.isValid(form.email)
+		&& commonValidators.preferredDiscount.isValid(form.preferredDiscount);
+		
+	if(!isFormValid) {
+		alert("Corregir errores antes de guardar datos.");
+		return;
+	}
     
     // Save customerType in address with a prefix to satisfy no-backend constraint
     const payload = {
@@ -300,8 +347,10 @@ export default function Clientes() {
                   style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                   required 
                   value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  //onChange={(e) => setForm({ ...form, name: e.target.value })}
+				  onChange={(e) => handleChange('name', e.target.value)}
                 />
+				{inputErrors.name && <span style={{color: 'red' }}>{inputErrors.name}</span>}
               </div>
 
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -328,8 +377,10 @@ export default function Clientes() {
                     style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                     required 
                     value={form.preferredDiscount}
-                    onChange={(e) => setForm({ ...form, preferredDiscount: parseFloat(e.target.value) })}
+                    //onChange={(e) => setForm({ ...form, preferredDiscount: parseFloat(e.target.value) })}
+					onChange={(e) => handleChange('preferredDiscount', e.target.value)}
                   />
+				  {inputErrors.preferredDiscount && <span style={{color: 'red' }}>{inputErrors.preferredDiscount}</span>}
                 </div>
               </div>
 
@@ -357,8 +408,10 @@ export default function Clientes() {
                     placeholder={form.docType === 'DNI' ? '8 dígitos' : '11 dígitos'}
                     maxLength={form.docType === 'DNI' ? 8 : 11}
                     value={form.docNumber}
-                    onChange={(e) => setForm({ ...form, docNumber: e.target.value.replace(/\D/g, '') })}
+                    //onChange={(e) => setForm({ ...form, docNumber: e.target.value.replace(/\D/g, '') })}
+					onChange={(e) => handleChange('docNumber', e.target.value)}
                   />
+				  {inputErrors.docNumber && <span style={{color: 'red' }}>{inputErrors.docNumber}</span>}
                 </div>
               </div>
 
@@ -370,8 +423,10 @@ export default function Clientes() {
                     className="form-input" 
                     style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                     value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    //onChange={(e) => setForm({ ...form, phone: e.target.value })}
+					onChange={(e) => handleChange('phone', e.target.value)}
                   />
+				  {inputErrors.phone && <span style={{color: 'red' }}>{inputErrors.phone}</span>}
                 </div>
                 <div className="form-group">
                   <label style={{ fontWeight: '700' }}>Correo Electrónico</label>
@@ -380,8 +435,10 @@ export default function Clientes() {
                     className="form-input" 
                     style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    //onChange={(e) => setForm({ ...form, email: e.target.value })}
+					onChange={(e) => handleChange('email', e.target.value)}
                   />
+				  {inputErrors.email && <span style={{color: 'red' }}>{inputErrors.email}</span>}
                 </div>
               </div>
 
@@ -392,8 +449,10 @@ export default function Clientes() {
                   className="form-input" 
                   style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                   value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  //onChange={(e) => setForm({ ...form, address: e.target.value })}
+				  onChange={(e) => handleChange('address', e.target.value)}
                 />
+				{inputErrors.address && <span style={{color: 'red' }}>{inputErrors.address}</span>}
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem', borderTop: '1px solid #cbd5e1', paddingTop: '1rem' }}>

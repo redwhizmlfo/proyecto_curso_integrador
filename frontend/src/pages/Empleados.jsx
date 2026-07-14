@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Search, Plus, Edit, Briefcase, DollarSign } from 'lucide-react';
-import { registerEmployeeValidators } from '../services/validators';
+import { validateField, registerEmployeeValidators } from '../services/validators';
 
 export default function Empleados() {
   const [employees, setEmployees] = useState([]);
@@ -34,6 +34,7 @@ export default function Empleados() {
 	  payPerDay: ''
   });
   
+  /*
   const handleChange = (field, value) => {
 	setForm({...form, [field]: value });
 	
@@ -45,7 +46,16 @@ export default function Empleados() {
 		});
 	}
   };
+  */
   
+  const handleChange = (field, value) => {
+	  setForm(prev => ({
+		  ...prev, [field]: value
+	  }));
+	  setInputErrors(prev => ({
+		  ...prev, [field]: validateField(registerEmployeeValidators, field, value)
+	  }));
+  };
 	
 	
 	

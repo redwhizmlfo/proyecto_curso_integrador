@@ -346,8 +346,7 @@ export default function Clientes() {
                   className="form-input" 
                   style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                   required 
-                  value={form.name}
-                  //onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  value={form.name}                  
 				  onChange={(e) => handleChange('name', e.target.value)}
                 />
 				{inputErrors.name && <span style={{color: 'red' }}>{inputErrors.name}</span>}
@@ -376,8 +375,7 @@ export default function Clientes() {
                     className="form-input" 
                     style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                     required 
-                    value={form.preferredDiscount}
-                    //onChange={(e) => setForm({ ...form, preferredDiscount: parseFloat(e.target.value) })}
+                    value={form.preferredDiscount}                    
 					onChange={(e) => handleChange('preferredDiscount', e.target.value)}
                   />
 				  {inputErrors.preferredDiscount && <span style={{color: 'red' }}>{inputErrors.preferredDiscount}</span>}
@@ -407,8 +405,7 @@ export default function Clientes() {
                     required 
                     placeholder={form.docType === 'DNI' ? '8 dígitos' : '11 dígitos'}
                     maxLength={form.docType === 'DNI' ? 8 : 11}
-                    value={form.docNumber}
-                    //onChange={(e) => setForm({ ...form, docNumber: e.target.value.replace(/\D/g, '') })}
+                    value={form.docNumber}                    
 					onChange={(e) => handleChange('docNumber', e.target.value)}
                   />
 				  {inputErrors.docNumber && <span style={{color: 'red' }}>{inputErrors.docNumber}</span>}
@@ -422,8 +419,7 @@ export default function Clientes() {
                     type="text" 
                     className="form-input" 
                     style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
-                    value={form.phone}
-                    //onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    value={form.phone}                    
 					onChange={(e) => handleChange('phone', e.target.value)}
                   />
 				  {inputErrors.phone && <span style={{color: 'red' }}>{inputErrors.phone}</span>}
@@ -434,8 +430,7 @@ export default function Clientes() {
                     type="email" 
                     className="form-input" 
                     style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
-                    value={form.email}
-                    //onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    value={form.email}                    
 					onChange={(e) => handleChange('email', e.target.value)}
                   />
 				  {inputErrors.email && <span style={{color: 'red' }}>{inputErrors.email}</span>}
@@ -448,8 +443,7 @@ export default function Clientes() {
                   type="text" 
                   className="form-input" 
                   style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
-                  value={form.address}
-                  //onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  value={form.address}                  
 				  onChange={(e) => handleChange('address', e.target.value)}
                 />
 				{inputErrors.address && <span style={{color: 'red' }}>{inputErrors.address}</span>}

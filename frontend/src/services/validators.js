@@ -19,10 +19,11 @@ const regexPatterns = {
 	ruc: /^(10|20)\d{9}$/,
 	docNumber: /^\d{8}|(10|20)\d{9}$/,
 	phone: /^\d{9}$/,
-	name: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ' -]{3,180}$/,
+	name: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ' \-]{3,180}$/,
 	address: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.,#°\-\/]{3,500}$/,
 	email: /^([a-zA-Z0-9._%-+]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/,
 	preferredDiscount: /^(0|[1-9]\d?)$/,
+	contact: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ.' \-]{3,180}$/
 };
 
 // regex generales: dni, telefono, correo, nombre completo, dirección, ruc
@@ -113,5 +114,9 @@ export const commonValidators = {
 	preferredDiscount: {
 		isValid: (value) => value.trim().length > 0 && regexPatterns.preferredDiscount.test(value),
 		errorMessage: 'Descuento inválido.'
-	}
+	},
+	contact: {
+		isValid: (value) => value.trim().length > 0 && regexPatterns.contact.test(value),
+		errorMessage: 'Contacto inválido.'
+	},
 }

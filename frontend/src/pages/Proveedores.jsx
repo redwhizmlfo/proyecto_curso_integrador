@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Search, Plus, Edit, Trash, HelpCircle, Truck } from 'lucide-react';
+import { validateField, commonValidators } from '../services/validators';
 
 export default function Proveedores() {
   const [suppliers, setSuppliers] = useState([]);
@@ -23,6 +24,26 @@ export default function Proveedores() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Form validation   
+  const [inputErrors, setInputErrors] = useState({
+	name: '',
+	ruc: '',
+	contact: '',
+    phone: '',
+    email: ''   
+  });
+  
+   const handleChange = (field, value) => {
+	  setForm(prev => ({
+		  ...prev, [field]: value
+	  }));
+	  setInputErrors(prev => ({
+		  ...prev, [field]: validateField(commonValidators, field, value)
+	  }));
+  };
+  
+  
 
   const loadSuppliers = async () => {
     try {
@@ -57,6 +78,13 @@ export default function Proveedores() {
       email: '',
       isActive: true
     });
+	setInputErrors({
+		name: '',
+		ruc: '',
+		contact: '',
+		phone: '',
+		email: ''
+	});
     setShowModal(true);
   };
 
@@ -70,11 +98,29 @@ export default function Proveedores() {
       email: s.email || '',
       isActive: s.isActive ?? true
     });
+	setInputErrors({
+		name: '',
+		ruc: '',
+		contact: '',
+		phone: '',
+		email: ''
+	});
     setShowModal(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+	const isFormValid =  commonValidators.ruc.isValid(form.ruc)		
+		&& commonValidators.phone.isValid(form.phone)
+		&& commonValidators.name.isValid(form.name)
+		&& commonValidators.contact.isValid(form.contact)
+		&& commonValidators.email.isValid(form.email);
+		
+	if(!isFormValid) {
+		alert("Corregir errores antes de guardar datos.");
+		return;
+	}
+		
     try {
       if (editingSupplier) {
         if (error) {
@@ -235,8 +281,10 @@ export default function Proveedores() {
                   className="form-input" 
                   required 
                   value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  //onChange={(e) => setForm({ ...form, name: e.target.value })}
+				  onChange={(e) => handleChange('name', e.target.value)}
                 />
+				{inputErrors.name && <span style={{color: 'red' }}>{inputErrors.name}</span>}
               </div>
 
               <div className="form-row">
@@ -248,8 +296,10 @@ export default function Proveedores() {
                     required 
                     maxLength={11}
                     value={form.ruc}
-                    onChange={(e) => setForm({ ...form, ruc: e.target.value.replace(/\D/g, '') })}
+                    //onChange={(e) => setForm({ ...form, ruc: e.target.value.replace(/\D/g, '') })}
+					onChange={(e) => handleChange('ruc', e.target.value)}
                   />
+				  {inputErrors.ruc && <span style={{color: 'red' }}>{inputErrors.ruc}</span>}
                 </div>
                 <div className="form-group">
                   <label>Persona de Contacto</label>
@@ -258,8 +308,10 @@ export default function Proveedores() {
                     className="form-input" 
                     placeholder="Ej. Ing. Juan López"
                     value={form.contact}
-                    onChange={(e) => setForm({ ...form, contact: e.target.value })}
+                    //onChange={(e) => setForm({ ...form, contact: e.target.value })}
+					onChange={(e) => handleChange('contact', e.target.value)}
                   />
+				  {inputErrors.contact && <span style={{color: 'red' }}>{inputErrors.contact}</span>}
                 </div>
               </div>
 
@@ -270,8 +322,10 @@ export default function Proveedores() {
                     type="text" 
                     className="form-input" 
                     value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    //onChange={(e) => setForm({ ...form, phone: e.target.value })}
+					onChange={(e) => handleChange('phone', e.target.value)}
                   />
+				  {inputErrors.phone && <span style={{color: 'red' }}>{inputErrors.phone}</span>}
                 </div>
                 <div className="form-group">
                   <label>Email de Pedidos</label>
@@ -279,8 +333,10 @@ export default function Proveedores() {
                     type="email" 
                     className="form-input" 
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    //onChange={(e) => setForm({ ...form, email: e.target.value })}
+					onChange={(e) => handleChange('email', e.target.value)}
                   />
+				  {inputErrors.email && <span style={{color: 'red' }}>{inputErrors.email}</span>}
                 </div>
               </div>
 

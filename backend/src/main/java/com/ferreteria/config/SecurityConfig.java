@@ -86,7 +86,7 @@ public class SecurityConfig {
                     .access(hasAnyPermission("proveedores", "ordenes-compra"))
                 .requestMatchers("/api/orders/**")
                     .access(hasAnyPermission("ordenes-compra"))
-                .requestMatchers("/api/sales/**", "/api/payment-config/**")
+                .requestMatchers("/api/sales/**", "/api/sales-workflow/**", "/api/payment-config/**")
                     .access(hasAnyPermission("ventas:pos", "ventas:historial", "ventas:cotizaciones", "ventas:pedidos"))
                 .requestMatchers(
                     "/api/products/**",

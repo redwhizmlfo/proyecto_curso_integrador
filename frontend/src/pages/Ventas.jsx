@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Search, Plus, Minus, Trash2, ShoppingCart, Ban, Check, X, CreditCard, Landmark, Smartphone, KeyRound, Upload, DollarSign } from 'lucide-react';
@@ -24,6 +25,7 @@ const getAuthenticatedUserId = () => {
 };
 
 export default function Ventas() {
+  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [posCatalog, setPosCatalog] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -560,38 +562,18 @@ export default function Ventas() {
     };
   };
 
-  // Set default initial cart to match the mockup screenshot or load pending cart
+  // Load quotation data passed from the quotations module.
   useEffect(() => {
-    if (products.length > 0) {
-      const timer = window.setTimeout(() => {
-        const pendingCart = localStorage.getItem('pos_cart_pending');
-        const pendingCustomer = localStorage.getItem('pos_customer_pending');
-
-        if (pendingCart || pendingCustomer) {
-          if (pendingCart) {
-            try {
-              setCart(JSON.parse(pendingCart));
-            } catch(e) {
-              console.error('Error parsing pending cart', e);
-            }
-            localStorage.removeItem('pos_cart_pending');
-          }
-          if (pendingCustomer) {
-            try {
-              const cust = JSON.parse(pendingCustomer);
-              setValidatedCustomer(cust);
-              setDocInput(cust.docNumber);
-            } catch(e) {
-              console.error('Error parsing pending customer', e);
-            }
-            localStorage.removeItem('pos_customer_pending');
-          }
-        }
-      }, 0);
-
-      return () => window.clearTimeout(timer);
+    const pending = location.state?.quotation;
+    if (products.length > 0 && pending) {
+      setCart(pending.items || []);
+      if (pending.customer) {
+        setValidatedCustomer(pending.customer);
+        setDocInput(pending.customer.docNumber);
+      }
+      window.history.replaceState({}, document.title);
     }
-  }, [products]);
+  }, [products, location.state]);
 
   // Execute the print using a clean pop-up window formatted as a thermal ticket
   const handlePrint = () => {
@@ -843,14 +825,11 @@ export default function Ventas() {
           status: 'PENDIENTE'
         };
 
-        const stored = localStorage.getItem('inventory_orders');
-        const list = stored ? JSON.parse(stored) : [];
-        list.unshift(order);
-        localStorage.setItem('inventory_orders', JSON.stringify(list));
+        const savedOrder = await api.post('/sales-workflow/orders', order);
 
-        handlePrintOrderTicket(order);
+        handlePrintOrderTicket(savedOrder);
 
-        alert(`Pedido ${order.docNumber} registrado con éxito.\nEnviado al submódulo Pedidos.`);
+        alert(`Pedido ${savedOrder.docNumber} registrado con exito.\nEnviado al submodulo Pedidos.`);
         setCart([]);
         resetPaymentFields();
         setOperationType('Venta Directa');
@@ -955,7 +934,7 @@ export default function Ventas() {
     }
   };
 
-  const saveQuotation = () => {
+  const saveQuotation = async () => {
     if (cart.length === 0) {
       alert('El carrito de compras está vacío.');
       return;
@@ -988,63 +967,19 @@ export default function Ventas() {
       total: total
     };
 
-    const stored = localStorage.getItem('inventory_quotations');
-    const list = stored ? JSON.parse(stored) : [];
-    list.unshift(quotation);
-    localStorage.setItem('inventory_quotations', JSON.stringify(list));
-
-    alert(`Cotización ${quotation.docNumber} guardada con éxito.\nRegistrada en el submódulo Cotizaciones.`);
-    setCart([]);
-    setOperationType('Venta Directa');
+    try {
+      const savedQuotation = await api.post('/sales-workflow/quotations', quotation);
+      alert(`Cotizacion ${savedQuotation.docNumber} guardada con exito.\nRegistrada en el submodulo Cotizaciones.`);
+      setCart([]);
+      setOperationType('Venta Directa');
+    } catch (err) {
+      alert('Error al guardar la cotizacion: ' + err.message);
+    }
   };
 
-  /* eslint-disable no-unreachable */
   const saveOrder = () => {
     handleOpenCheckout();
-    return;
-
-    if (cart.length === 0) {
-      alert('El carrito de compras está vacío.');
-      return;
-    }
-    if (!validatedCustomer) {
-      alert('Por favor identifique un cliente válido para guardar el pedido.');
-      return;
-    }
-    
-    const order = {
-      id: `ped_${Date.now()}`,
-      docNumber: `PED-${Math.floor(100000 + Math.random() * 900000)}`,
-      date: new Date().toISOString(),
-      customer: {
-        id: validatedCustomer.id,
-        name: validatedCustomer.name,
-        docType: validatedCustomer.docType,
-        docNumber: validatedCustomer.docNumber,
-        preferredDiscount: validatedCustomer.preferredDiscount || 0
-      },
-      items: cart.map(item => ({
-        productId: item.productId,
-        name: item.name,
-        price: item.price,
-        qty: item.qty,
-        barcode: item.barcode,
-        maxStock: item.maxStock,
-        isModel: item.isModel || false
-      })),
-      total: total
-    };
-
-    const stored = localStorage.getItem('inventory_orders');
-    const list = stored ? JSON.parse(stored) : [];
-    list.unshift(order);
-    localStorage.setItem('inventory_orders', JSON.stringify(list));
-
-    alert(`Pedido ${order.docNumber} guardado con éxito.\nRegistrado en el submódulo Pedidos.`);
-    setCart([]);
-    setOperationType('Venta Directa');
   };
-  /* eslint-enable no-unreachable */
 
   const handleConfirmAction = () => {
     if (operationType === 'Cotizacion') {

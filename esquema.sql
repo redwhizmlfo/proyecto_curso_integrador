@@ -549,6 +549,40 @@ create table if not exists employee_slips (
   constraint employee_slips_pay_per_day_non_negative check (pay_per_day_snapshot >= 0)
 );
 
+create table if not exists sales_workflow_documents (
+  id uuid primary key default gen_random_uuid(),
+  document_kind varchar(32) not null,
+  doc_number varchar(40) not null unique,
+  order_number varchar(40),
+  document_date timestamptz not null default now(),
+  customer_json text not null,
+  items_json text not null,
+  payment_method varchar(80),
+  payment_status varchar(32),
+  payment_reference varchar(120),
+  payment_evidence_name varchar(220),
+  payment_bank_name varchar(80),
+  payment_bank_account_alias varchar(120),
+  payment_bank_account_number varchar(80),
+  subtotal numeric(12,2),
+  igv numeric(12,2),
+  total numeric(12,2) not null,
+  discount_pct numeric(5,2),
+  discount_amount numeric(12,2),
+  status varchar(80),
+  origin_address varchar(240),
+  destination_address varchar(240),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint sales_workflow_documents_kind_allowed check (
+    lower(document_kind) in ('quotation', 'order', 'dispatch')
+  ),
+  constraint sales_workflow_documents_doc_not_blank check (btrim(doc_number) <> ''),
+  constraint sales_workflow_documents_customer_not_blank check (btrim(customer_json) <> ''),
+  constraint sales_workflow_documents_items_not_blank check (btrim(items_json) <> ''),
+  constraint sales_workflow_documents_total_non_negative check (total >= 0)
+);
+
 create table if not exists bank_account_configs (
   id uuid primary key default gen_random_uuid(),
   bank_name varchar(80) not null,
@@ -609,6 +643,7 @@ create index if not exists employee_attendance_work_date_idx on employee_attenda
 create index if not exists employee_slips_employee_id_idx on employee_slips (employee_id);
 create index if not exists employee_slips_period_label_idx on employee_slips (period_label);
 create index if not exists employee_slips_issued_at_idx on employee_slips (issued_at);
+create index if not exists sales_workflow_documents_kind_idx on sales_workflow_documents (document_kind);
 
 -- Categorias
 INSERT INTO categorias (id, nombre_categoria) VALUES

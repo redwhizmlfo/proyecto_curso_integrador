@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import api from '../services/api';
 import Header from '../components/Header';
 import { Truck, Calendar, User, Printer, Trash2, CheckCircle2, ChevronRight, X, MapPin } from 'lucide-react';
 
@@ -7,11 +8,12 @@ export default function VentasDespachos() {
   const [selectedDesp, setSelectedDesp] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  const loadDispatches = () => {
-    const stored = localStorage.getItem('inventory_dispatches');
-    if (stored) {
-      setDispatches(JSON.parse(stored));
-    } else {
+  const loadDispatches = async () => {
+    try {
+      setDispatches(await api.get('/sales-workflow/dispatches'));
+    } catch (err) {
+      console.error('Error loading dispatches from backend:', err);
+      alert('No se pudieron cargar los despachos desde el backend.');
       setDispatches([]);
     }
   };
@@ -20,23 +22,29 @@ export default function VentasDespachos() {
     loadDispatches();
   }, []);
 
-  const handleDelete = (id, e) => {
+  const handleDelete = async (id, e) => {
     e.stopPropagation();
-    if (window.confirm('¿Seguro que deseas eliminar este registro de despacho?')) {
-      const updated = dispatches.filter(d => d.id !== id);
-      setDispatches(updated);
-      localStorage.setItem('inventory_dispatches', JSON.stringify(updated));
+    if (window.confirm('Seguro que deseas eliminar este registro de despacho?')) {
+      try {
+        await api.delete(`/sales-workflow/dispatches/${id}`);
+        setDispatches(dispatches.filter(d => d.id !== id));
+      } catch (err) {
+        alert('No se pudo eliminar el despacho: ' + err.message);
+      }
     }
   };
 
-  const updateStatus = (id, newStatus, e) => {
+  const updateStatus = async (id, newStatus, e) => {
     if (e) e.stopPropagation();
-    const updated = dispatches.map(d => d.id === id ? { ...d, status: newStatus } : d);
-    setDispatches(updated);
-    localStorage.setItem('inventory_dispatches', JSON.stringify(updated));
-    
-    if (selectedDesp && selectedDesp.id === id) {
-      setSelectedDesp({ ...selectedDesp, status: newStatus });
+    try {
+      const saved = await api.put(`/sales-workflow/dispatches/${id}/status`, { status: newStatus });
+      const updated = dispatches.map(d => d.id === id ? saved : d);
+      setDispatches(updated);
+      if (selectedDesp && selectedDesp.id === id) {
+        setSelectedDesp(saved);
+      }
+    } catch (err) {
+      alert('No se pudo actualizar el estado del despacho: ' + err.message);
     }
   };
 

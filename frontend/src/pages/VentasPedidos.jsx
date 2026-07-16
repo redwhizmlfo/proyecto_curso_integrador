@@ -9,11 +9,12 @@ export default function VentasPedidos() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const loadOrders = () => {
-    const stored = localStorage.getItem('inventory_orders');
-    if (stored) {
-      setOrders(JSON.parse(stored));
-    } else {
+  const loadOrders = async () => {
+    try {
+      setOrders(await api.get('/sales-workflow/orders'));
+    } catch (err) {
+      console.error('Error loading orders from backend:', err);
+      alert('No se pudieron cargar los pedidos desde el backend.');
       setOrders([]);
     }
   };
@@ -22,78 +23,29 @@ export default function VentasPedidos() {
     loadOrders();
   }, []);
 
-  const handleDelete = (id, e) => {
+  const handleDelete = async (id, e) => {
     e.stopPropagation();
-    if (window.confirm('¿Seguro que deseas eliminar este pedido?')) {
-      const updated = orders.filter(p => p.id !== id);
-      setOrders(updated);
-      localStorage.setItem('inventory_orders', JSON.stringify(updated));
+    if (window.confirm('Seguro que deseas eliminar este pedido?')) {
+      try {
+        await api.delete(`/sales-workflow/orders/${id}`);
+        setOrders(orders.filter(p => p.id !== id));
+      } catch (err) {
+        alert('No se pudo eliminar el pedido: ' + err.message);
+      }
     }
   };
 
   const handleConfirmDispatch = async (ped, e) => {
     if (e) e.stopPropagation();
-    
-    if (!window.confirm(`¿Confirmar despacho para el pedido ${ped.docNumber}? Esto validará y descontará stock real.`)) {
+    if (!window.confirm(`Confirmar despacho para el pedido ${ped.docNumber}? Esto validara y descontara stock real.`)) {
       return;
     }
-    
+
     setLoading(true);
     try {
-      // 1. Fetch latest models from backend to update stock correctly
-      let latestModels = [];
-      try {
-        latestModels = await api.get('/modelos');
-      } catch (err) {
-        console.warn('Backend offline or error fetching models.', err);
-        throw new Error('No se pudo validar stock real contra el backend.');
-      }
-
-      // 2. Decrement stock for each model item
-      if (latestModels.length === 0) {
-        throw new Error('No se encontraron modelos para validar stock.');
-      }
-      for (const item of ped.items) {
-        // Find model by ID or SKU
-        const modelObj = latestModels.find(m => m.id === item.productId || m.sku === item.barcode);
-        if (!modelObj) {
-          throw new Error(`No se encontro el producto ${item.name} en el backend.`);
-        }
-        const newStock = Math.max(0, modelObj.stock - item.qty);
-        await api.put(`/modelos/${modelObj.id}`, {
-          ...modelObj,
-          id_categoria: modelObj.categoria?.id,
-          id_marca: modelObj.marca?.id,
-          stock: newStock
-        });
-      }
-
-      // 3. Save to inventory_dispatches in localStorage
-      const dispatch = {
-        id: `desp_${Date.now()}`,
-        docNumber: ped.docNumber.replace('PED-', 'DESP-'),
-        orderNumber: ped.docNumber,
-        date: new Date().toISOString(),
-        customer: ped.customer,
-        items: ped.items,
-        paymentMethod: ped.paymentMethod,
-        total: ped.total,
-        status: 'Preparando Embalaje',
-        originAddress: 'Almacén Central (Lurín)',
-        destinationAddress: ped.customer.docType === 'RUC' ? 'Obra Principal Constructora S.A.C.' : 'Dirección Domiciliaria Cliente'
-      };
-
-      const storedDispatches = localStorage.getItem('inventory_dispatches');
-      const dispatchesList = storedDispatches ? JSON.parse(storedDispatches) : [];
-      dispatchesList.unshift(dispatch);
-      localStorage.setItem('inventory_dispatches', JSON.stringify(dispatchesList));
-
-      // 4. Remove order from inventory_orders
-      const updatedOrders = orders.filter(o => o.id !== ped.id);
-      setOrders(updatedOrders);
-      localStorage.setItem('inventory_orders', JSON.stringify(updatedOrders));
-
-      alert(`Pedido ${ped.docNumber} confirmado con éxito. Se ha enviado al submódulo de Despachos y se ha actualizado el stock.`);
+      const dispatch = await api.post(`/sales-workflow/orders/${ped.id}/dispatch`);
+      setOrders(orders.filter(o => o.id !== ped.id));
+      alert(`Pedido ${ped.docNumber} confirmado con exito. Despacho generado: ${dispatch.docNumber}.`);
       setShowDetailModal(false);
     } catch (err) {
       console.error('Error confirming dispatch:', err);

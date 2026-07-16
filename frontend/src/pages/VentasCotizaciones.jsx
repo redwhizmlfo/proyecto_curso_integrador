@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import Header from '../components/Header';
 import { FileText, Calendar, User, Trash2, ArrowRight, Eye, X } from 'lucide-react';
 
@@ -9,33 +10,39 @@ export default function VentasCotizaciones() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const stored = localStorage.getItem('inventory_quotations');
-    if (stored) {
-      setQuotations(JSON.parse(stored));
+  const loadQuotations = async () => {
+    try {
+      setQuotations(await api.get('/sales-workflow/quotations'));
+    } catch (err) {
+      console.error('Error loading quotations from backend:', err);
+      alert('No se pudieron cargar las cotizaciones desde el backend.');
+      setQuotations([]);
     }
+  };
+
+  useEffect(() => {
+    loadQuotations();
   }, []);
 
-  const handleDelete = (id, e) => {
+  const handleDelete = async (id, e) => {
     e.stopPropagation();
-    if (window.confirm('¿Seguro que deseas eliminar esta cotización?')) {
-      const updated = quotations.filter(q => q.id !== id);
-      setQuotations(updated);
-      localStorage.setItem('inventory_quotations', JSON.stringify(updated));
+    if (window.confirm('Seguro que deseas eliminar esta cotizacion?')) {
+      try {
+        await api.delete(`/sales-workflow/quotations/${id}`);
+        setQuotations(quotations.filter(q => q.id !== id));
+      } catch (err) {
+        alert('No se pudo eliminar la cotizacion: ' + err.message);
+      }
     }
   };
 
   const handleConvertToSale = (cot, e) => {
     if (e) e.stopPropagation();
     
-    // Save items to localStorage so Ventas POS can read them on mount
-    localStorage.setItem('pos_cart_pending', JSON.stringify(cot.items));
-    localStorage.setItem('pos_customer_pending', JSON.stringify(cot.customer));
     
     alert(`Cargando proforma ${cot.docNumber} en el carrito del Punto de Venta POS...`);
     
-    // Redirect to POS Sales page
-    navigate('/ventas/pos');
+    navigate('/ventas/pos', { state: { quotation: cot } });
   };
 
   const formatDate = (dateStr) => {

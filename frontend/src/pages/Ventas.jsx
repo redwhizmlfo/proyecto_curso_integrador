@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Search, Plus, Minus, Trash2, ShoppingCart, Ban, Check, X, CreditCard, Landmark, Smartphone, KeyRound, Upload, DollarSign } from 'lucide-react';
+import { resolveCatalogImageUrl } from '../services/catalogAssets';
 
 // Product images
 import taladroImg from '../assets/taladro.png';
@@ -2099,7 +2100,10 @@ export default function Ventas() {
                 
                 return list.map(m => {
                   const mImages = productosImagenes.filter(img => img.productoModelo?.id === m.id);
-                  const mImgUrl = mImages.length > 0 ? mImages[0].urlImagen : taladroImg;
+                  const mImgUrl = resolveCatalogImageUrl(
+                    mImages.length > 0 ? mImages[0].urlImagen : '',
+                    getModelImageFallback(m)
+                  );
                   const isOutOfStock = m.stock <= 0;
                   const mSpecs = especificaciones.filter(s => s.productoModelo?.id === m.id);
 

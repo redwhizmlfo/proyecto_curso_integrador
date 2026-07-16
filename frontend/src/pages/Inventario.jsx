@@ -7,6 +7,7 @@ import {
   ChevronRight, ChevronDown, Folder, FolderOpen, Tag, 
   Cpu, ZoomIn, Info, Package
 } from 'lucide-react';
+import { catalogImageFallback, resolveCatalogImageUrl } from '../services/catalogAssets';
 import { liveFieldValidators, validateProductModelForm } from '../services/validators';
 
 // Sub-component to manage interactive Carousel, Gallery and Zoom (Lightbox) inside the table row
@@ -24,7 +25,7 @@ function ModelCard({ model, specs, images, onEdit, onDelete, onZoom }) {
     return () => clearInterval(interval);
   }, [images]);
 
-  const currentImage = images && images.length > 0 ? images[activeIdx]?.urlImagen : '/src/assets/taladro.png';
+  const currentImage = resolveCatalogImageUrl(images && images.length > 0 ? images[activeIdx]?.urlImagen : '', catalogImageFallback);
   const totalValue = model.precio * model.stock;
 
   return (
@@ -79,7 +80,7 @@ function ModelCard({ model, specs, images, onEdit, onDelete, onZoom }) {
           alt={model.modelo} 
           onError={(e) => {
             e.currentTarget.onerror = null;
-            e.currentTarget.src = '/src/assets/taladro.png';
+            e.currentTarget.src = catalogImageFallback;
           }}
           style={{ 
             maxHeight: '90%', 

@@ -53,7 +53,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 80,
                 esmeriles,
                 bosch,
-                "https://www.bosch-professional.com/middle-east/en/ocsmedia/50101-82/product-image/166x164/angle-grinder-pro-gws-22-180-h-0601881l63.png",
+                "/src/assets/esmeril_gws2200.png",
                 spec("Potencia", "2200 W"),
                 spec("Disco", "7 pulg. / 180 mm"),
                 spec("Velocidad", "8500 RPM")
@@ -67,7 +67,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 22,
                 taladros,
                 bosch,
-                "https://www.bosch-professional.com/middle-east/en/ocsmedia/392666-82/product-image/166x164/cordless-combi-gsb-18v-50-06019h5100.png",
+                "/src/assets/taladro.png",
                 spec("Voltaje", "18 V"),
                 spec("Motor", "Brushless"),
                 spec("Torque", "50 Nm")
@@ -81,7 +81,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 15,
                 rotomartillos,
                 bosch,
-                "https://www.powertoolworld.co.uk/media/catalog/product/cache/084e1d53cb6448930cfcf0f17a664cff/b/o/bosch-gbh-2-24-d-professional-2kg-sds-hammer-drill-240v.jpg",
+                "/src/assets/rotomartillo_bosch.png",
                 spec("Potencia", "790 W"),
                 spec("Impacto", "2.7 J"),
                 spec("Mandril", "SDS Plus")
@@ -95,7 +95,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 30,
                 esmeriles,
                 makita,
-                "https://makitacentre.com/cdn/shop/products/M0900B_large.jpg",
+                "/src/assets/esmeril_gws750.png",
                 spec("Potencia", "540 W"),
                 spec("Disco", "4 1/2 pulg."),
                 spec("Velocidad", "12000 RPM")
@@ -109,7 +109,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 40,
                 taladros,
                 makita,
-                "https://makita.com.sg/wp-content/uploads/2020/09/HP1630.png",
+                "/src/assets/taladro.png",
                 spec("Potencia", "710 W"),
                 spec("Mandril", "13 mm"),
                 spec("Velocidad", "3200 RPM")
@@ -123,7 +123,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 35,
                 esmeriles,
                 makita,
-                "https://images.thdstatic.com/productImages/079da4bc-9958-4e41-8d87-419d6e8897cc/svn/makita-angle-grinders-ga4530-e1_600.jpg",
+                "/src/assets/esmeril_gws750.png",
                 spec("Potencia", "720 W"),
                 spec("Disco", "4 1/2 pulg."),
                 spec("Velocidad", "11000 RPM")
@@ -137,7 +137,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 25,
                 taladros,
                 dewalt,
-                "https://images.thdstatic.com/productImages/4fe71abf-108e-4721-b39c-fbe2acf8336d/svn/dewalt-power-drills-dcd771c2-64_600.jpg",
+                "/src/assets/taladro_dewalt.png",
                 spec("Voltaje", "20 V Max"),
                 spec("Mandril", "1/2 pulg."),
                 spec("Velocidades", "2")
@@ -151,7 +151,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 28,
                 esmeriles,
                 dewalt,
-                "https://images.thdstatic.com/productImages/eec96a1f-001e-4478-88b2-60eecbe5b5c1/svn/dewalt-angle-grinders-dwe402-64_600.jpg",
+                "/src/assets/esmeril_gws750.png",
                 spec("Potencia", "11 A"),
                 spec("Disco", "4 1/2 pulg."),
                 spec("Velocidad", "11000 RPM")
@@ -165,7 +165,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 12,
                 rotomartillos,
                 dewalt,
-                "https://images.thdstatic.com/productImages/fcc2fb48-6fc5-41f7-b14d-4bf52b84f7ff/svn/dewalt-rotary-hammers-d25263k-64_600.jpg",
+                "/src/assets/rotomartillo_bosch.png",
                 spec("Potencia", "8.5 A"),
                 spec("Impacto", "3.0 J"),
                 spec("Mandril", "SDS Plus")

@@ -10,5 +10,6 @@ public record PosCatalogProductDTO(
         String model,
         String sku,
         BigDecimal price,
-        Integer stock
+        Integer stock,
+        String imageUrl
 ) {}

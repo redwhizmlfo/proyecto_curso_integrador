@@ -22,6 +22,8 @@ export const resolveCatalogImageUrl = (url, fallback = taladroImg) => {
   const cleanUrl = String(url || '').trim();
   if (!cleanUrl) return fallback;
 
+  if (/^https?:\/\//i.test(cleanUrl)) return cleanUrl;
+
   const fileName = cleanUrl.split('/').pop();
   if (catalogAssetMap[fileName]) return catalogAssetMap[fileName];
 

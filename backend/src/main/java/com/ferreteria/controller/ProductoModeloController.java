@@ -7,6 +7,7 @@ import com.ferreteria.dto.PosCatalogProductDTO;
 import com.ferreteria.repository.CategoriaRepository;
 import com.ferreteria.repository.MarcaRepository;
 import com.ferreteria.repository.ProductoModeloRepository;
+import com.ferreteria.repository.ProductoImagenRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ public class ProductoModeloController {
     private final ProductoModeloRepository productoModeloRepository;
     private final CategoriaRepository categoriaRepository;
     private final MarcaRepository marcaRepository;
+    private final ProductoImagenRepository productoImagenRepository;
 
     @GetMapping
     public ResponseEntity<List<ProductoModelo>> getAll() {
@@ -42,10 +44,18 @@ public class ProductoModeloController {
                         model.getCodigoModelo(),
                         model.getSku(),
                         model.getPrecio(),
-                        model.getStock()
+                        model.getStock(),
+                        resolveFirstImageUrl(model)
                 ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(catalog);
+    }
+
+    private String resolveFirstImageUrl(ProductoModelo model) {
+        return productoImagenRepository.findByProductoModeloId(model.getId()).stream()
+                .findFirst()
+                .map(image -> image.getUrlImagen())
+                .orElse(null);
     }
 
     private String buildPosProductName(ProductoModelo model) {

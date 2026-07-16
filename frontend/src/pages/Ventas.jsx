@@ -100,6 +100,10 @@ export default function Ventas() {
     return taladroImg;
   };
 
+  const getResolvedProductImage = (product) => {
+    return resolveCatalogImageUrl(product?.imageUrl, getProductImage(product?.barcode, product?.name));
+  };
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -207,12 +211,14 @@ export default function Ventas() {
         isModel: true,
         brandName: product.brand,
         model: product.model,
+        imageUrl: product.imageUrl || '',
       }));
     }
 
     return modelos.map((model) => {
       const brandName = model.marca?.nombreMarca || '';
       const modelName = model.modelo || '';
+      const modelImages = productosImagenes.filter((img) => img.productoModelo?.id === model.id);
       return {
         id: model.id,
         name: `${brandName} ${modelName}`.trim(),
@@ -222,6 +228,7 @@ export default function Ventas() {
         isModel: true,
         brandName,
         model: model.codigoModelo,
+        imageUrl: modelImages[0]?.urlImagen || '',
       };
     });
   };
@@ -266,7 +273,8 @@ export default function Ventas() {
         barcode: model.sku,
         qty: 1,
         maxStock: model.stock,
-        isModel: true
+        isModel: true,
+        imageUrl: productosImagenes.find((img) => img.productoModelo?.id === model.id)?.urlImagen || ''
       }]);
     }
     
@@ -310,7 +318,7 @@ export default function Ventas() {
       price: model.precio,
       stock: model.stock,
       minStock: 2,
-      imageUrl: '',
+      imageUrl: productosImagenes.find((img) => img.productoModelo?.id === model.id)?.urlImagen || '',
       supplierId: supplierId
     });
     
@@ -353,7 +361,7 @@ export default function Ventas() {
       price: item.price,
       stock: item.maxStock || item.qty,
       minStock: 1,
-      imageUrl: '',
+      imageUrl: item.imageUrl || '',
       supplierId
     });
   };
@@ -383,7 +391,8 @@ export default function Ventas() {
         price: product.price,
         barcode: product.barcode,
         qty: 1,
-        maxStock: product.stock
+        maxStock: product.stock,
+        imageUrl: product.imageUrl || ''
       }]);
     }
   };
@@ -1148,8 +1157,12 @@ export default function Ventas() {
                       {/* Image container */}
                       <div style={{ position: 'relative', height: '150px', background: '#f3f4f6', overflow: 'hidden' }}>
                         <img 
-                          src={getProductImage(p.barcode, p.name)} 
+                          src={getResolvedProductImage(p)}
                           alt={p.name}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = getProductImage(p.barcode, p.name);
+                          }}
                           style={{ 
                             width: '100%', 
                             height: '100%', 
@@ -1886,8 +1899,12 @@ export default function Ventas() {
                     >
                       {/* Item thumbnail */}
                       <img 
-                        src={getProductImage(item.barcode, item.name)} 
+                        src={getResolvedProductImage(item)}
                         alt={item.name} 
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = getProductImage(item.barcode, item.name);
+                        }}
                         style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#f3f4f6' }}
                       />
                       

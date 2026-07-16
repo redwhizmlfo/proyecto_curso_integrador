@@ -281,6 +281,8 @@ export default function Empleados() {
                     className="form-input" 
                     required 
                     maxLength={8}
+                    inputMode="numeric"
+                    pattern="\d*"
                     value={form.dni}
                     onChange={(e) => setForm({ ...form, dni: e.target.value.replace(/\D/g, '') })}
                   />
@@ -321,18 +323,21 @@ export default function Empleados() {
                   <label>Tarifa Diaria (S/) *</label>
                   <input 
                     type="number" 
+                    min="0.01"
+                    max="9999.99"
                     step="0.01" 
+                    inputMode="decimal"
                     className="form-input" 
                     required 
                     value={form.payPerDay}
-                    onChange={(e) => setForm({ ...form, payPerDay: parseFloat(e.target.value) })}
+                    onChange={(e) => setForm({ ...form, payPerDay: e.target.value })}
                   />
                   <FieldValidationHint
                     value={form.payPerDay}
                     isValid={liveFieldValidators.payPerDay}
                     validMessage="Tarifa correcta."
-                    invalidMessage="Escribe un monto mayor a 0. Puedes usar hasta 2 decimales."
-                    limitLabel="Formato: 999.99"
+                    invalidMessage="Escribe un monto entre S/ 0.01 y S/ 9999.99. Puedes usar hasta 2 decimales."
+                    limitLabel="Rango: S/ 0.01 a S/ 9999.99"
                   />
                   {formErrors.payPerDay && <div className="form-error">{formErrors.payPerDay}</div>}
                 </div>

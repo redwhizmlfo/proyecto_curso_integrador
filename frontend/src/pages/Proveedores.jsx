@@ -270,7 +270,7 @@ export default function Proveedores() {
                     value={form.ruc}
                     isValid={liveFieldValidators.ruc}
                     validMessage="RUC correcto."
-                    invalidMessage="Escribe 11 digitos. El RUC debe empezar con 10 o 20."
+                    invalidMessage="Escribe 11 digitos. El RUC debe empezar con 10, 15, 16, 17 o 20."
                     maxLength={11}
                     unit="digitos"
                   />
@@ -303,16 +303,19 @@ export default function Proveedores() {
                   <input 
                     type="text" 
                     className="form-input" 
-                    maxLength={15}
+                    inputMode="numeric"
+                    pattern="\d*"
+                    placeholder="Ej. 999888777, 014567890 o 4567890"
+                    maxLength={9}
                     value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '') })}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '').slice(0, 9) })}
                   />
                   <FieldValidationHint
                     value={form.phone}
                     isValid={liveFieldValidators.phone}
-                    validMessage="Telefono correcto."
-                    invalidMessage="Escribe solo numeros, entre 7 y 15 digitos."
-                    maxLength={15}
+                    validMessage="Telefono correcto para Peru."
+                    invalidMessage="Usa fijo de 7 digitos, fijo Lima 01 + 7 digitos o celular de 9 digitos que empieza con 9."
+                    maxLength={9}
                     unit="digitos"
                   />
                   {formErrors.phone && <div className="form-error">{formErrors.phone}</div>}

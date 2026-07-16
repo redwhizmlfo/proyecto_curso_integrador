@@ -345,7 +345,17 @@ export default function Clientes() {
                   <select 
                     className="form-select" 
                     value={form.customerType}
-                    onChange={(e) => setForm({ ...form, customerType: e.target.value })}
+                    onChange={(e) => {
+                      const nextCustomerType = e.target.value;
+                      const nextDocType = nextCustomerType === 'Mayorista' ? 'RUC' : 'DNI';
+                      setForm({
+                        ...form,
+                        customerType: nextCustomerType,
+                        docType: nextDocType,
+                        docNumber: ''
+                      });
+                      setFormErrors({ ...formErrors, customerType: '', docType: '', docNumber: '' });
+                    }}
                   >
                     <option value="Minorista">Minorista (Público general / DNI)</option>
                     <option value="Mayorista">Mayorista (Empresas / RUC)</option>
@@ -358,10 +368,19 @@ export default function Clientes() {
                     type="number" 
                     min="0" 
                     max="100" 
+                    step="0.01"
+                    inputMode="decimal"
                     className="form-input" 
                     required 
                     value={form.preferredDiscount}
-                    onChange={(e) => setForm({ ...form, preferredDiscount: parseFloat(e.target.value) })}
+                    onChange={(e) => setForm({ ...form, preferredDiscount: e.target.value })}
+                  />
+                  <FieldValidationHint
+                    value={form.preferredDiscount}
+                    isValid={liveFieldValidators.preferredDiscount}
+                    validMessage="Descuento correcto."
+                    invalidMessage="Escribe un porcentaje entre 0 y 100. Puedes usar hasta 2 decimales."
+                    limitLabel="Rango: 0 a 100%"
                   />
                   {formErrors.preferredDiscount && <div className="form-error">{formErrors.preferredDiscount}</div>}
                 </div>
@@ -381,6 +400,7 @@ export default function Clientes() {
                     <option value="DNI">DNI (Persona Física)</option>
                     <option value="RUC">RUC (Empresa)</option>
                   </select>
+                  {formErrors.docType && <div className="form-error">{formErrors.docType}</div>}
                 </div>
                 
                 <div className="form-group">
@@ -391,6 +411,8 @@ export default function Clientes() {
                     required 
                     placeholder={form.docType === 'DNI' ? '8 dígitos' : '11 dígitos'}
                     maxLength={form.docType === 'DNI' ? 8 : 11}
+                    inputMode="numeric"
+                    pattern="\d*"
                     value={form.docNumber}
                     onChange={(e) => setForm({ ...form, docNumber: e.target.value.replace(/\D/g, '') })}
                   />
@@ -398,7 +420,7 @@ export default function Clientes() {
                     value={form.docNumber}
                     isValid={(value) => liveFieldValidators.docByType(value, form.docType)}
                     validMessage={`${form.docType} correcto.`}
-                    invalidMessage={form.docType === 'RUC' ? 'Escribe 11 digitos. El RUC debe empezar con 10 o 20.' : 'Escribe exactamente 8 digitos para el DNI.'}
+                    invalidMessage={form.docType === 'RUC' ? 'Escribe 11 digitos. El RUC debe empezar con 10, 15, 16, 17 o 20.' : 'Escribe exactamente 8 digitos para el DNI.'}
                     maxLength={form.docType === 'DNI' ? 8 : 11}
                     unit="digitos"
                   />
@@ -411,19 +433,22 @@ export default function Clientes() {
                   <label style={{ fontWeight: '700' }}>Teléfono Contacto</label>
                   <input 
                     type="text" 
-                  className="form-input" 
-                  maxLength={15}
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '') })}
-                />
-                <FieldValidationHint
-                  value={form.phone}
-                  isValid={liveFieldValidators.phone}
-                  validMessage="Telefono correcto."
-                  invalidMessage="Escribe solo numeros, entre 7 y 15 digitos."
-                  maxLength={15}
-                  unit="digitos"
-                />
+                    className="form-input" 
+                    inputMode="numeric"
+                    pattern="\d*"
+                    placeholder="Ej. 999888777, 014567890 o 4567890"
+                    maxLength={9}
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '').slice(0, 9) })}
+                  />
+                  <FieldValidationHint
+                    value={form.phone}
+                    isValid={liveFieldValidators.phone}
+                    validMessage="Telefono correcto para Peru."
+                    invalidMessage="Usa fijo de 7 digitos, fijo Lima 01 + 7 digitos o celular de 9 digitos que empieza con 9."
+                    maxLength={9}
+                    unit="digitos"
+                  />
                   {formErrors.phone && <div className="form-error">{formErrors.phone}</div>}
                 </div>
                 <div className="form-group">

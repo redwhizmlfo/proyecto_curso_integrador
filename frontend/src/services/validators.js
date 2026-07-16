@@ -2,9 +2,9 @@ const regexPatterns = {
 	loginUsername: /^[a-zA-Z0-9](?:[a-zA-Z0-9._-]{0,78}[a-zA-Z0-9])?$/,
 	email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
 	dni: /^\d{8}$/,
-	ruc: /^(10|20)\d{9}$/,
-	docNumber: /^(\d{8}|(10|20)\d{9})$/,
-	phone: /^\d{7,15}$/,
+	ruc: /^(10|15|16|17|20)\d{9}$/,
+	docNumber: /^(\d{8}|(10|15|16|17|20)\d{9})$/,
+	phone: /^(\d{7}|01\d{7}|9\d{8})$/,
 	name: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,'&()/-]{3,180}$/,
 	personName: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ .'-]{3,180}$/,
 	initials: /^[A-ZÑ]{2,4}$/,
@@ -71,7 +71,7 @@ export const commonValidators = {
 	},
 	ruc: {
 		isValid: (value) => regexPatterns.ruc.test(onlyDigits(value)),
-		errorMessage: 'Ingrese RUC de 11 digitos que empiece con 10 o 20.',
+		errorMessage: 'Ingrese RUC de 11 digitos que empiece con 10, 15, 16, 17 o 20.',
 	},
 	docNumber: {
 		isValid: (value) => regexPatterns.docNumber.test(onlyDigits(value)),
@@ -79,7 +79,7 @@ export const commonValidators = {
 	},
 	phone: {
 		isValid: (value) => !String(value || '').trim() || regexPatterns.phone.test(onlyDigits(value)),
-		errorMessage: 'El telefono debe tener entre 7 y 15 digitos.',
+		errorMessage: 'Ingrese un telefono peruano valido: fijo de 7 digitos, fijo Lima 01 + 7 digitos o celular de 9 digitos que empieza con 9.',
 	},
 	name: {
 		isValid: (value) => regexPatterns.name.test(String(value || '').trim()),
@@ -95,8 +95,9 @@ export const commonValidators = {
 	},
 	preferredDiscount: {
 		isValid: (value) => {
+			const cleanValue = String(value ?? '').trim();
 			const numberValue = Number(value);
-			return Number.isFinite(numberValue) && numberValue >= 0 && numberValue <= 100;
+			return regexPatterns.decimal.test(cleanValue) && Number.isFinite(numberValue) && numberValue >= 0 && numberValue <= 100;
 		},
 		errorMessage: 'El descuento debe estar entre 0 y 100.',
 	},
@@ -121,8 +122,12 @@ export const registerEmployeeValidators = {
 		errorMessage: 'Ingrese un cargo valido. Solo letras y espacios.',
 	},
 	payPerDay: {
-		isValid: (value) => regexPatterns.decimal.test(String(value || '').trim()) && Number(value) > 0,
-		errorMessage: 'Ingrese una tarifa diaria positiva.',
+		isValid: (value) => {
+			const cleanValue = String(value ?? '').trim();
+			const numberValue = Number(value);
+			return regexPatterns.decimal.test(cleanValue) && Number.isFinite(numberValue) && numberValue > 0 && numberValue <= 9999.99;
+		},
+		errorMessage: 'Ingrese una tarifa diaria entre S/ 0.01 y S/ 9999.99.',
 	},
 };
 
@@ -149,9 +154,15 @@ export const validateCustomerForm = (form = {}, existingCustomers = [], editingI
 	if (!commonValidators.name.isValid(form.name)) {
 		errors.name = 'Ingrese el nombre del cliente.';
 	}
+	if (form.customerType === 'Mayorista' && form.docType !== 'RUC') {
+		errors.docType = 'Un cliente mayorista debe registrarse con RUC.';
+	}
+	if (form.customerType === 'Minorista' && form.docType !== 'DNI') {
+		errors.docType = 'Un cliente minorista debe registrarse con DNI.';
+	}
 	if (cleanDocNumber.length !== expectedLength || (form.docType === 'RUC' && !regexPatterns.ruc.test(cleanDocNumber))) {
 		errors.docNumber = form.docType === 'RUC'
-			? 'Ingrese un RUC valido de 11 digitos que empiece con 10 o 20.'
+			? 'Ingrese un RUC valido de 11 digitos que empiece con 10, 15, 16, 17 o 20.'
 			: 'Ingrese un DNI valido de 8 digitos.';
 	}
 	if (existingCustomers.some((customer) =>
@@ -288,6 +299,7 @@ export const liveFieldValidators = {
 	address: commonValidators.address.isValid,
 	email: commonValidators.email.isValid,
 	phone: commonValidators.phone.isValid,
+	preferredDiscount: commonValidators.preferredDiscount.isValid,
 	contact: commonValidators.contact.isValid,
 	dni: commonValidators.dni.isValid,
 	ruc: commonValidators.ruc.isValid,

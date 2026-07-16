@@ -61,6 +61,7 @@ export default function Ventas() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartSessionId, setCartSessionId] = useState(0);
 
   // Inventory models and suppliers states
   const [modelos, setModelos] = useState([]);
@@ -301,14 +302,19 @@ export default function Ventas() {
     setValidatedCustomer(null);
   };
 
+  const openCleanCart = () => {
+    resetCustomerSearch();
+    setCartSessionId((current) => current + 1);
+    setIsCartOpen(true);
+  };
+
   const addModelToCart = (model) => {
     if (model.stock <= 0) {
       alert('¡Sin stock disponible para este modelo!');
       return;
     }
     
-    resetCustomerSearch();
-    setIsCartOpen(true);
+    openCleanCart();
 
     const name = `${model.marca?.nombreMarca} - ${model.modelo} (${model.codigoModelo})`;
     const existingItem = cart.find(item => item.productId === model.id);
@@ -428,9 +434,8 @@ export default function Ventas() {
       return;
     }
     
-    resetCustomerSearch();
-    // Auto-open shopping cart drawer on item addition
-    setIsCartOpen(true);
+    // Auto-open shopping cart drawer on item addition.
+    openCleanCart();
 
     const existingItem = cart.find(item => item.productId === product.id);
     if (existingItem) {
@@ -634,10 +639,7 @@ export default function Ventas() {
     const pending = location.state?.quotation;
     if (products.length > 0 && pending) {
       setCart(pending.items || []);
-      if (pending.customer) {
-        setValidatedCustomer(pending.customer);
-        setDocInput(pending.customer.docNumber);
-      }
+      resetCustomerSearch();
       window.history.replaceState({}, document.title);
     }
   }, [products, location.state]);
@@ -1731,6 +1733,7 @@ export default function Ventas() {
         <>
           {/* Overlay backdrop */}
           <div 
+            key={`cart-overlay-${cartSessionId}`}
             onClick={() => setIsCartOpen(false)}
             style={{
               position: 'fixed',
@@ -1746,7 +1749,7 @@ export default function Ventas() {
           />
 
           {/* Cart Drawer */}
-          <div style={{
+          <div key={`cart-drawer-${cartSessionId}`} style={{
             position: 'fixed',
             top: 0,
             right: 0,
@@ -1794,8 +1797,8 @@ export default function Ventas() {
                   placeholder="DNI o RUC"
                   inputMode="numeric"
                   maxLength={11}
-                  autoComplete="off"
-                  name="pos-customer-document"
+                  autoComplete="new-password"
+                  name={`pos-customer-document-${cartSessionId}`}
                   style={{ border: '1px solid #cbd5e1', background: '#f3f4f6', borderRadius: '4px', height: '38px', padding: '0 0.8rem', width: '100%', flexGrow: 1 }}
                   value={docInput}
                   onChange={handleDocInputChange}

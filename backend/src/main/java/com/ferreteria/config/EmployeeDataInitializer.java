@@ -1,4 +1,4 @@
-package com.ferreteria.config;
+﻿package com.ferreteria.config;
 
 import com.ferreteria.model.Employee;
 import com.ferreteria.model.EmployeeAttendance;
@@ -56,8 +56,8 @@ public class EmployeeDataInitializer implements CommandLineRunner {
             seedAttendance(carlos, admin, LocalDate.now().minusDays(5), OffsetDateTime.now(ZoneOffset.UTC).minusDays(5).withHour(8).withMinute(0), OffsetDateTime.now(ZoneOffset.UTC).minusDays(5).withHour(17).withMinute(0), "asistio");
         }
 
-        // 2. Seed Juan Pérez Almacén
-        Employee juan = seedEmployee("JP", "Juan Pérez Almacén", "Encargado Almacén", "44558877", new BigDecimal("90.00"), new BigDecimal("6.0"), "asistio", true, false);
+        // 2. Seed Juan Perez Almacen
+        Employee juan = seedEmployee("JP", "Juan Perez Almacen", "Encargado Almacen", "44558877", new BigDecimal("90.00"), new BigDecimal("6.0"), "asistio", true, false);
         if (juan != null) {
             seedAttendance(juan, admin, LocalDate.now(), OffsetDateTime.now(ZoneOffset.UTC).withHour(7).withMinute(55), OffsetDateTime.now(ZoneOffset.UTC).withHour(17).withMinute(0), "asistio");
             seedAttendance(juan, admin, LocalDate.now().minusDays(1), OffsetDateTime.now(ZoneOffset.UTC).minusDays(1).withHour(7).withMinute(50), OffsetDateTime.now(ZoneOffset.UTC).minusDays(1).withHour(17).withMinute(10), "asistio");
@@ -67,8 +67,8 @@ public class EmployeeDataInitializer implements CommandLineRunner {
             seedAttendance(juan, admin, LocalDate.now().minusDays(5), OffsetDateTime.now(ZoneOffset.UTC).minusDays(5).withHour(7).withMinute(55), OffsetDateTime.now(ZoneOffset.UTC).minusDays(5).withHour(17).withMinute(0), "asistio");
         }
 
-        // 3. Seed Lucía Lima
-        Employee lucia = seedEmployee("LL", "Lucía Lima", "Administradora", "44558855", new BigDecimal("120.00"), new BigDecimal("4.0"), null, false, false);
+        // 3. Seed Lucia Lima
+        Employee lucia = seedEmployee("LL", "Lucia Lima", "Administradora", "44558855", new BigDecimal("120.00"), new BigDecimal("4.0"), null, false, false);
         if (lucia != null) {
             seedAttendance(lucia, admin, LocalDate.now().minusDays(1), OffsetDateTime.now(ZoneOffset.UTC).minusDays(1).withHour(8).withMinute(2), OffsetDateTime.now(ZoneOffset.UTC).minusDays(1).withHour(18).withMinute(0), "asistio");
             seedAttendance(lucia, admin, LocalDate.now().minusDays(2), OffsetDateTime.now(ZoneOffset.UTC).minusDays(2).withHour(8).withMinute(0), OffsetDateTime.now(ZoneOffset.UTC).minusDays(2).withHour(18).withMinute(0), "asistio");
@@ -170,3 +170,5 @@ public class EmployeeDataInitializer implements CommandLineRunner {
         attendanceRepository.save(attendance);
     }
 }
+
+

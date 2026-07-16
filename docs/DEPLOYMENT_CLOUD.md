@@ -16,6 +16,7 @@ El backend queda preparado con:
 - `render.yaml`
 - Endpoint publico de salud: `GET /api/health`
 - Variables productivas en `backend/.env.example`
+- Esquema auditado en `docs/SCHEMA_AUDIT.md`
 
 ### Variables requeridas
 

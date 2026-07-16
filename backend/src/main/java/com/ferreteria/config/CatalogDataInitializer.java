@@ -22,7 +22,7 @@ import java.util.Arrays;
 public class CatalogDataInitializer implements CommandLineRunner {
 
     private static final String CATALOG_IMAGE_BASE_URL =
-            "https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/";
+            "https://cdn.jsdelivr.net/gh/redwhizmlfo/proyecto_curso_integrador@aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/";
 
     private final CategoriaRepository categoriaRepository;
     private final MarcaRepository marcaRepository;

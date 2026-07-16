@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Search, Plus, Minus, Trash2, ShoppingCart, Ban, Check, X, CreditCard, Landmark, Smartphone, KeyRound, Upload, DollarSign } from 'lucide-react';
-import { resolveCatalogImageUrl } from '../services/catalogAssets';
+import { getCatalogImageValue, resolveCatalogImageUrl } from '../services/catalogAssets';
 
 // Product images
 import taladroImg from '../assets/taladro.png';
@@ -211,7 +211,7 @@ export default function Ventas() {
         isModel: true,
         brandName: product.brand,
         model: product.model,
-        imageUrl: product.imageUrl || '',
+        imageUrl: product.imageUrl || product.image_url || '',
       }));
     }
 
@@ -228,7 +228,7 @@ export default function Ventas() {
         isModel: true,
         brandName,
         model: model.codigoModelo,
-        imageUrl: modelImages[0]?.urlImagen || '',
+        imageUrl: getCatalogImageValue(modelImages[0]),
       };
     });
   };
@@ -274,7 +274,7 @@ export default function Ventas() {
         qty: 1,
         maxStock: model.stock,
         isModel: true,
-        imageUrl: productosImagenes.find((img) => img.productoModelo?.id === model.id)?.urlImagen || ''
+        imageUrl: getCatalogImageValue(productosImagenes.find((img) => img.productoModelo?.id === model.id))
       }]);
     }
     
@@ -318,7 +318,7 @@ export default function Ventas() {
       price: model.precio,
       stock: model.stock,
       minStock: 2,
-      imageUrl: productosImagenes.find((img) => img.productoModelo?.id === model.id)?.urlImagen || '',
+      imageUrl: getCatalogImageValue(productosImagenes.find((img) => img.productoModelo?.id === model.id)),
       supplierId: supplierId
     });
     
@@ -2117,10 +2117,7 @@ export default function Ventas() {
                 
                 return list.map(m => {
                   const mImages = productosImagenes.filter(img => img.productoModelo?.id === m.id);
-                  const mImgUrl = resolveCatalogImageUrl(
-                    mImages.length > 0 ? mImages[0].urlImagen : '',
-                    getModelImageFallback(m)
-                  );
+                  const mImgUrl = resolveCatalogImageUrl(getCatalogImageValue(mImages[0]), getModelImageFallback(m));
                   const isOutOfStock = m.stock <= 0;
                   const mSpecs = especificaciones.filter(s => s.productoModelo?.id === m.id);
 

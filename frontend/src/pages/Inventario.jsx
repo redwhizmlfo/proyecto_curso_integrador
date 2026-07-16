@@ -7,7 +7,7 @@ import {
   ChevronRight, ChevronDown, Folder, FolderOpen, Tag, 
   Cpu, ZoomIn, Info, Package
 } from 'lucide-react';
-import { catalogImageFallback, resolveCatalogImageUrl } from '../services/catalogAssets';
+import { catalogImageFallback, getCatalogImageValue, resolveCatalogImageUrl } from '../services/catalogAssets';
 import { liveFieldValidators, validateProductModelForm } from '../services/validators';
 
 // Sub-component to manage interactive Carousel, Gallery and Zoom (Lightbox) inside the table row
@@ -25,7 +25,7 @@ function ModelCard({ model, specs, images, onEdit, onDelete, onZoom }) {
     return () => clearInterval(interval);
   }, [images]);
 
-  const currentImage = resolveCatalogImageUrl(images && images.length > 0 ? images[activeIdx]?.urlImagen : '', catalogImageFallback);
+  const currentImage = resolveCatalogImageUrl(images && images.length > 0 ? getCatalogImageValue(images[activeIdx]) : '', catalogImageFallback);
   const totalValue = model.precio * model.stock;
 
   return (
@@ -530,7 +530,7 @@ export default function Inventario() {
       id_categoria: model.categoria?.id || '',
       id_marca: model.marca?.id || '',
       specs: modelSpecs.length > 0 ? modelSpecs.map(s => ({ atributo: s.atributo, valor: s.valor })) : [{ atributo: '', valor: '' }],
-      imageUrl: modelImages[0]?.urlImagen || ''
+      imageUrl: getCatalogImageValue(modelImages[0])
     });
     setFormErrors({});
     setShowModelModal(true);

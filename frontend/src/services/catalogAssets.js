@@ -30,4 +30,9 @@ export const resolveCatalogImageUrl = (url, fallback = taladroImg) => {
   return cleanUrl;
 };
 
+export const getCatalogImageValue = (image) => {
+  if (!image) return '';
+  return image.urlImagen || image.url_imagen || image.imageUrl || image.image_url || '';
+};
+
 export const catalogImageFallback = taladroImg;

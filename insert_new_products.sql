@@ -10,7 +10,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('2b839201-4829-410a-bc92-192013829d01', 'a54d6738-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro_dewalt.png')
+  ('2b839201-4829-410a-bc92-192013829d01', 'a54d6738-3482-411a-829d-ee3d45c1a3b1', 'https://cdn.jsdelivr.net/gh/redwhizmlfo/proyecto_curso_integrador@aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro_dewalt.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- Bosch Rotomartillo
@@ -25,5 +25,9 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('4d829102-4829-420a-bc39-102938482d01', 'c829e102-4829-410a-bc39-a83d910d82d4', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/rotomartillo_bosch.png')
+  ('4d829102-4829-420a-bc39-102938482d01', 'c829e102-4829-410a-bc39-a83d910d82d4', 'https://cdn.jsdelivr.net/gh/redwhizmlfo/proyecto_curso_integrador@aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/rotomartillo_bosch.png')
 ON CONFLICT (id) DO NOTHING;
+
+UPDATE productos_imagenes
+SET url_imagen = replace(url_imagen, '/src/assets/', 'https://cdn.jsdelivr.net/gh/redwhizmlfo/proyecto_curso_integrador@aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/')
+WHERE url_imagen LIKE '/src/assets/%';

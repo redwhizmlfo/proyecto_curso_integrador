@@ -34,12 +34,12 @@ public class ProductoImagenController {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody ImagenRequestDTO request) {
         try {
-            ProductoModelo modelo = productoModeloRepository.findById(request.getId_producto_modelo())
+            ProductoModelo modelo = productoModeloRepository.findById(request.getModelId())
                     .orElseThrow(() -> new RuntimeException("Modelo no encontrado"));
 
             ProductoImagen img = ProductoImagen.builder()
                     .productoModelo(modelo)
-                    .urlImagen(request.getUrl_imagen())
+                    .urlImagen(request.getImageUrl())
                     .build();
 
             return new ResponseEntity<>(productoImagenRepository.save(img), HttpStatus.CREATED);
@@ -58,6 +58,16 @@ public class ProductoImagenController {
     @Data
     public static class ImagenRequestDTO {
         private UUID id_producto_modelo;
+        private UUID idProductoModelo;
         private String url_imagen;
+        private String urlImagen;
+
+        public UUID getModelId() {
+            return id_producto_modelo != null ? id_producto_modelo : idProductoModelo;
+        }
+
+        public String getImageUrl() {
+            return url_imagen != null ? url_imagen : urlImagen;
+        }
     }
 }

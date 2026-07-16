@@ -24,6 +24,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class EmployeeDataInitializer implements CommandLineRunner {
 
+    private static final String DEFAULT_ADMIN_PASSWORD = "Administrador123";
+
     private final EmployeeRepository employeeRepository;
     private final EmployeeAttendanceRepository attendanceRepository;
     private final UserRepository userRepository;
@@ -96,7 +98,7 @@ public class EmployeeDataInitializer implements CommandLineRunner {
                         .username("admin")
                         .role("ADMIN")
                         .status("active")
-                        .passwordHash(passwordEncoder.encode("admin123"))
+                        .passwordHash(passwordEncoder.encode(DEFAULT_ADMIN_PASSWORD))
                         .isActive(true)
                         .build());
 
@@ -104,8 +106,8 @@ public class EmployeeDataInitializer implements CommandLineRunner {
         admin.setRole("ADMIN");
         admin.setStatus("active");
         admin.setActive(true);
-        if (admin.getPasswordHash() == null || !passwordEncoder.matches("admin123", admin.getPasswordHash())) {
-            admin.setPasswordHash(passwordEncoder.encode("admin123"));
+        if (admin.getPasswordHash() == null || !passwordEncoder.matches(DEFAULT_ADMIN_PASSWORD, admin.getPasswordHash())) {
+            admin.setPasswordHash(passwordEncoder.encode(DEFAULT_ADMIN_PASSWORD));
         }
 
         return userRepository.save(admin);

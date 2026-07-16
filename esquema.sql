@@ -796,8 +796,13 @@ INSERT INTO employees (id, initials, name, role, dni, pay_per_day, worked_days, 
 ON CONFLICT (dni) DO NOTHING;
 
 INSERT INTO users (id, employee_id, username, role, status, password_hash, is_active, created_at, updated_at) VALUES
-  ('00000000-0000-0000-0000-000000000001', '38d4c2e0-3a61-42b9-a50b-c0209e210061', 'admin', 'ADMIN', 'active', '$2a$10$7dwU247wOF1DeSdLI1AQ7OYKPK.EH8BvObb3R7Azsz1Zix5HElxce', true, now(), now())
-ON CONFLICT (username) DO NOTHING;
+  ('00000000-0000-0000-0000-000000000001', '38d4c2e0-3a61-42b9-a50b-c0209e210061', 'admin', 'ADMIN', 'active', '$2a$10$oZHH63eSzKIlzFQ6D9zIX.KNaR.A36NSHxNgcP7lUuACxwHeEw7q2', true, now(), now())
+ON CONFLICT (username) DO UPDATE SET
+  role = EXCLUDED.role,
+  status = EXCLUDED.status,
+  password_hash = EXCLUDED.password_hash,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
 
 -- Nuevos Productos (Agregados por solicitud del usuario)
 -- DeWalt Taladro DCD771

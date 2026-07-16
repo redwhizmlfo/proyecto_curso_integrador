@@ -115,7 +115,7 @@ Login:
 ```bash
 curl -X POST https://TU_BACKEND.onrender.com/api/auth/login \
   -H "Content-Type: application/json" \
-  -d "{\"username\":\"admin\",\"password\":\"admin123\"}"
+  -d "{\"username\":\"admin\",\"password\":\"Administrador123\"}"
 ```
 
 Validar sesion:

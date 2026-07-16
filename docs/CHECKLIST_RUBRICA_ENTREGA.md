@@ -29,8 +29,8 @@ Evidencia actual:
 - Frontend usa `VITE_API_URL`.
 - Servicio central `frontend/src/services/api.js` conecta con backend.
 - Backend expone API bajo `/api`.
-- Login probado localmente con `admin/admin123`.
-- Login JWT probado localmente con `admin/admin123`.
+- Login probado localmente con `admin/Administrador123`.
+- Login JWT probado localmente con `admin/Administrador123`.
 - `GET /api/auth/me` probado con token Bearer.
 - `GET /api/users` sin token responde `401`.
 - Frontend local: `http://127.0.0.1:5173`.

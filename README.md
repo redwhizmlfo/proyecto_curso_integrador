@@ -62,7 +62,7 @@ Credenciales locales de prueba:
 
 ```text
 Usuario: admin
-Password: admin123
+Password: Administrador123
 Rol: ADMIN
 ```
 
@@ -149,7 +149,7 @@ Login API:
 ```bash
 curl -X POST http://localhost:8081/api/auth/login ^
   -H "Content-Type: application/json" ^
-  -d "{\"username\":\"admin\",\"password\":\"admin123\"}"
+  -d "{\"username\":\"admin\",\"password\":\"Administrador123\"}"
 ```
 
 ## Despliegue recomendado

@@ -23,19 +23,9 @@ export default function Kardex() {
       setError(null);
     } catch (err) {
       console.error('Error loading Kardex data:', err);
-      setError('Servidor backend offline. Usando datos demo de Kardex.');
-      // Demo Fallback
-      setProducts([
-        { id: '101', name: 'Martillo de Acero 16oz', barcode: '75010324' },
-        { id: '102', name: 'Cemento Sol Tipo 1 (42.5kg)', barcode: '77502310' },
-        { id: '103', name: 'Tornillo de Madera 2" (x100)', barcode: '84102941' }
-      ]);
-      setMovements([
-        { id: 'm1', productId: '101', product_name_snapshot: 'Martillo de Acero 16oz', occurred_at: '2026-05-18T10:00:00Z', movement_type: 'perdida', delta: -1, stock_before: 13, stock_after: 12, detail: 'Reporte merma: Roto durante traslado', unit_snapshot: 'pza' },
-        { id: 'm2', productId: '102', product_name_snapshot: 'Cemento Sol Tipo 1 (42.5kg)', occurred_at: '2026-05-17T15:00:00Z', movement_type: 'ingreso_stock', delta: 50, stock_before: 10, stock_after: 60, detail: 'Recepcion Orden Compra OC-4821', unit_snapshot: 'bolsa' },
-        { id: 'm3', productId: '101', product_name_snapshot: 'Martillo de Acero 16oz', occurred_at: '2026-05-15T11:20:00Z', movement_type: 'venta', delta: -2, stock_before: 15, stock_after: 13, detail: 'Venta Boleta B001-00044', unit_snapshot: 'pza' },
-        { id: 'm4', productId: '103', product_name_snapshot: 'Tornillo de Madera 2" (x100)', occurred_at: '2026-05-14T09:00:00Z', movement_type: 'alta_producto', delta: 45, stock_before: 0, stock_after: 45, detail: 'Stock Inicial de Producto', unit_snapshot: 'caja' }
-      ]);
+      setError('No se pudo cargar Kardex desde el backend. Revisa la conexion antes de operar.');
+      setProducts([]);
+      setMovements([]);
     } finally {
       setLoading(false);
     }
@@ -58,15 +48,9 @@ export default function Kardex() {
       const filtered = await api.get(`/stock-movements/product/${productId}`);
       setMovements(filtered);
     } catch (err) {
-      console.warn('Failed filtering via backend, filtering locally.');
-      // Local filter when offline
-      const localData = [
-        { id: 'm1', productId: '101', product_name_snapshot: 'Martillo de Acero 16oz', occurred_at: '2026-05-18T10:00:00Z', movement_type: 'perdida', delta: -1, stock_before: 13, stock_after: 12, detail: 'Reporte merma: Roto durante traslado', unit_snapshot: 'pza' },
-        { id: 'm2', productId: '102', product_name_snapshot: 'Cemento Sol Tipo 1 (42.5kg)', occurred_at: '2026-05-17T15:00:00Z', movement_type: 'ingreso_stock', delta: 50, stock_before: 10, stock_after: 60, detail: 'Recepcion Orden Compra OC-4821', unit_snapshot: 'bolsa' },
-        { id: 'm3', productId: '101', product_name_snapshot: 'Martillo de Acero 16oz', occurred_at: '2026-05-15T11:20:00Z', movement_type: 'venta', delta: -2, stock_before: 15, stock_after: 13, detail: 'Venta Boleta B001-00044', unit_snapshot: 'pza' },
-        { id: 'm4', productId: '103', product_name_snapshot: 'Tornillo de Madera 2" (x100)', occurred_at: '2026-05-14T09:00:00Z', movement_type: 'alta_producto', delta: 45, stock_before: 0, stock_after: 45, detail: 'Stock Inicial de Producto', unit_snapshot: 'caja' }
-      ];
-      setMovements(localData.filter(m => m.productId === productId));
+      console.warn('Failed filtering via backend:', err);
+      setError('No se pudo filtrar Kardex desde el backend. Intenta actualizar nuevamente.');
+      setMovements([]);
     } finally {
       setLoading(false);
     }

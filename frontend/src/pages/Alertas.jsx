@@ -53,35 +53,12 @@ export default function Alertas() {
       setMinStocks(initialMins);
       localStorage.setItem('inventory_min_stocks', JSON.stringify(initialMins));
     } catch (err) {
-      console.warn("Backend offline. Loading local simulation models.", err);
-      setError("Servidor offline. Usando datos de simulación local.");
-      
-      const localBrands = [
-        { id: 'marca_bosch', nombreMarca: 'Bosch' },
-        { id: 'marca_makita', nombreMarca: 'Makita' },
-        { id: 'marca_dewalt', nombreMarca: 'DeWalt' }
-      ];
-      const localCats = [
-        { id: 'cat_esm', nombreCategoria: 'Esmeriles' }
-      ];
-      const localModels = [
-        { id: 'pm_gws2200', codigoModelo: 'GWS 22 180 H', modelo: 'GWS2200', sku: 'SKU-75010324', precio: 349.99, stock: 80, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
-        { id: 'pm_gws750', codigoModelo: 'GWS 7-115', modelo: 'GWS750', sku: 'SKU-72093104', precio: 199.50, stock: 4, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
-        { id: 'pm_m0900b', codigoModelo: 'M0900B 540W', modelo: 'M0900B', sku: 'SKU-84102941', precio: 155.00, stock: 0, categoria: { id: 'cat_esm' }, marca: { id: 'marca_makita' } }
-      ];
-
-      setModelos(localModels);
-      setMarcas(localBrands);
-      setCategorias(localCats);
-
-      const storedMins = localStorage.getItem('inventory_min_stocks');
-      const initialMins = storedMins ? JSON.parse(storedMins) : {
-        'pm_gws2200': 10,
-        'pm_gws750': 15,
-        'pm_m0900b': 8
-      };
-      setMinStocks(initialMins);
-      localStorage.setItem('inventory_min_stocks', JSON.stringify(initialMins));
+      console.warn('Error loading inventory alerts from backend.', err);
+      setError('No se pudo cargar alertas desde el backend. No se muestran datos simulados.');
+      setModelos([]);
+      setMarcas([]);
+      setCategorias([]);
+      setMinStocks({});
     } finally {
       setLoading(false);
     }
@@ -100,48 +77,7 @@ export default function Alertas() {
 
   // Create a replenishment box in Movimientos
   const handleCreateReplenishment = (model, deficit) => {
-    try {
-      const storedBoxes = localStorage.getItem('inventory_boxes');
-      const boxes = storedBoxes ? JSON.parse(storedBoxes) : [];
-
-      // Deficit amount to order (minimum of 10 for a realistic order)
-      const qtyToOrder = Math.max(deficit, 10);
-
-      const newBox = {
-        id: `box_urgent_${Date.now()}`,
-        name: `Reposición Urgente: ${model.modelo}`,
-        brandId: model.marca?.id || 'marca_bosch',
-        brandName: model.marca?.nombreMarca || 'Bosch',
-        status: 'SELLADA',
-        origin: 'Alerta de Quiebre/Stock Bajo',
-        dateRegistered: new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-        items: [
-          {
-            modelId: model.id,
-            modelName: model.modelo,
-            codModelo: model.codigoModelo,
-            qty: qtyToOrder
-          }
-        ]
-      };
-
-      const updatedBoxes = [newBox, ...boxes];
-      localStorage.setItem('inventory_boxes', JSON.stringify(updatedBoxes));
-
-      // Show toast message
-      setToastMessage({
-        text: `¡Solicitud registrada! Se ha creado una caja sellada "${newBox.name}" con +${qtyToOrder} uds en Movimientos.`,
-        type: 'success'
-      });
-
-      // Clear toast after 5s
-      setTimeout(() => {
-        setToastMessage(null);
-      }, 5000);
-    } catch (err) {
-      console.error("Error creating replenishment box", err);
-      alert("No se pudo registrar la reposición en Movimientos.");
-    }
+    alert('La reposicion no se puede registrar desde Alertas porque no existe un endpoint backend para cajas o solicitudes de reposicion.');
   };
 
   // Compile alerts data

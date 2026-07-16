@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
-import { DollarSign, FileText, CheckCircle, Plus, Eye, Printer, Trash2 } from 'lucide-react';
+import { DollarSign, FileText, Plus, Eye, Printer } from 'lucide-react';
 import { validatePayrollSlipForm } from '../services/validators';
 
 export default function Boletas() {
@@ -12,16 +12,6 @@ export default function Boletas() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [viewingSlip, setViewingSlip] = useState(null);
 
-  // Local storage for paid slips (persisted status flow)
-  const [paidSlipIds, setPaidSlipIds] = useState(() => {
-    try {
-      const saved = localStorage.getItem('meps_paid_slip_ids');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
   // Form states
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [workDays, setWorkDays] = useState(15);
@@ -31,6 +21,14 @@ export default function Boletas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [formErrors, setFormErrors] = useState({});
+
+  const getAuthenticatedUserId = () => {
+    try {
+      return JSON.parse(localStorage.getItem('current_user') || 'null')?.userId || null;
+    } catch {
+      return null;
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -49,42 +47,11 @@ export default function Boletas() {
       setError(null);
     } catch (err) {
       console.error('Error loading payroll slips data:', err);
-      setError('Servidor backend offline. Usando panel demo de boletas de pago.');
-      setSlips([
-        { 
-          id: 'sl-demo-1', 
-          slipNumber: 'BP-44558899-Mayo-2026-Q1',
-          periodLabel: 'Mayo-2026-Q1',
-          issuedAt: '2026-05-15T10:00:00Z', 
-          totalAmount: 1160.00, 
-          workedDaysSnapshot: 14.5, 
-          payPerDaySnapshot: 80.00, 
-          employeeNameSnapshot: 'Carlos Mendoza', 
-          employeeDniSnapshot: '44558899', 
-          employeeRoleSnapshot: 'Vendedor Cajero',
-          usernameSnapshot: 'admin'
-        },
-        { 
-          id: 'sl-demo-2', 
-          slipNumber: 'BP-44558877-Mayo-2026-Q1',
-          periodLabel: 'Mayo-2026-Q1',
-          issuedAt: '2026-05-15T10:00:00Z', 
-          totalAmount: 1350.00, 
-          workedDaysSnapshot: 15.0, 
-          payPerDaySnapshot: 90.00, 
-          employeeNameSnapshot: 'Juan Pérez Almacén', 
-          employeeDniSnapshot: '44558877', 
-          employeeRoleSnapshot: 'Encargado Almacén',
-          usernameSnapshot: 'admin'
-        }
-      ]);
-      setEmployees([
-        { id: 'e1', name: 'Carlos Mendoza', role: 'Vendedor Cajero', dni: '44558899', payPerDay: 80.00, workedDays: 14.5 },
-        { id: 'e2', name: 'Juan Pérez Almacén', role: 'Encargado Almacén', dni: '44558877', payPerDay: 90.00, workedDays: 15.0 },
-        { id: 'e3', name: 'Lucía Lima', role: 'Administradora', dni: '44558855', payPerDay: 120.00, workedDays: 16.0 }
-      ]);
-      setSelectedEmployeeId('e1');
-      setWorkDays(14.5);
+      setError('No se pudo cargar boletas desde el backend. Las operaciones estan deshabilitadas.');
+      setSlips([]);
+      setEmployees([]);
+      setSelectedEmployeeId('');
+      setWorkDays(0);
     } finally {
       setLoading(false);
     }
@@ -114,41 +81,23 @@ export default function Boletas() {
     if (Object.keys(validationErrors).length > 0) return;
     
     const cleanPeriod = periodLabel.trim() || `Periodo-${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+    const createdByUserId = getAuthenticatedUserId();
+    if (!createdByUserId) {
+      alert('Error al generar boleta: No se pudo identificar el usuario autenticado.');
+      return;
+    }
     
     const request = {
       employeeId: selectedEmployeeId,
-      createdByUserId: '00000000-0000-0000-0000-000000000001', // Default Admin
+      createdByUserId,
       periodLabel: cleanPeriod
     };
 
     try {
       if (error) {
-        // Simulation
-        const emp = employees.find(e => e.id === selectedEmployeeId);
-        const days = parseFloat(workDays) || 0;
-        const rate = emp?.payPerDay || 50.00;
-        
-        const newSlip = {
-          id: 'sl-' + Date.now(),
-          slipNumber: `BP-${emp?.dni || '00000000'}-${cleanPeriod}`,
-          periodLabel: cleanPeriod,
-          issuedAt: new Date().toISOString(),
-          totalAmount: rate * days,
-          workedDaysSnapshot: days,
-          payPerDaySnapshot: rate,
-          employeeNameSnapshot: emp?.name || 'Empleado',
-          employeeDniSnapshot: emp?.dni || '00000000',
-          employeeRoleSnapshot: emp?.role || 'Personal',
-          usernameSnapshot: 'admin'
-        };
-        setSlips([newSlip, ...slips]);
-        
-        // Reset employee worked days locally
-        setEmployees(employees.map(e => e.id === selectedEmployeeId ? { ...e, workedDays: 0 } : e));
-      } else {
-        // Correct backend endpoint
-        await api.post('/slips', request);
+        throw new Error('No se puede generar boletas sin conexion real con el backend.');
       }
+      await api.post('/slips', request);
       alert('Boleta de pago generada con éxito.');
       setShowCreateModal(false);
       setFormErrors({});
@@ -163,24 +112,13 @@ export default function Boletas() {
   const handlePaySlip = (slipId) => {
     if (!window.confirm('¿Confirmar pago de esta boleta de sueldo?')) return;
     
-    const updatedPaidIds = [...paidSlipIds, slipId];
-    setPaidSlipIds(updatedPaidIds);
-    localStorage.setItem('meps_paid_slip_ids', JSON.stringify(updatedPaidIds));
-    alert('Boleta de pago marcada como PAGADA con éxito.');
+    alert('El backend aun no tiene un endpoint para registrar pago de boletas. No se aplico ningun cambio local.');
   };
 
   const handleUnpaySlip = (slipId) => {
     if (!window.confirm('¿Cambiar estado de esta boleta a pendiente?')) return;
     
-    const updatedPaidIds = paidSlipIds.filter(id => id !== slipId);
-    setPaidSlipIds(updatedPaidIds);
-    localStorage.setItem('meps_paid_slip_ids', JSON.stringify(updatedPaidIds));
-    alert('Boleta restablecida a estado PENDIENTE.');
-  };
-
-  const handleLocalDelete = (slipId) => {
-    if (!window.confirm('¿Desea eliminar este registro de boleta localmente?')) return;
-    setSlips(slips.filter(s => s.id !== slipId));
+    alert('El backend aun no tiene un endpoint para cambiar el estado de pago. No se aplico ningun cambio local.');
   };
 
   const selectedEmployee = employees.find(e => e.id === selectedEmployeeId);
@@ -252,7 +190,7 @@ export default function Boletas() {
                 slips.map((s) => {
                   const slipIdStr = s.id ? String(s.id) : '';
                   const shortId = slipIdStr.includes('-') ? slipIdStr.split('-')[0].toUpperCase() : slipIdStr.slice(0, 8).toUpperCase();
-                  const isPaid = s.status === 'pagada' || s.status === 'PAGADA' || paidSlipIds.includes(s.id);
+                  const isPaid = s.status === 'pagada' || s.status === 'PAGADA';
                   
                   return (
                     <tr key={s.id}>
@@ -304,16 +242,6 @@ export default function Boletas() {
                             </button>
                           ) : (
                             <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: '700', alignSelf: 'center', padding: '0 4px' }}>Cobrado</span>
-                          )}
-                          {error && (
-                            <button 
-                              className="btn-danger" 
-                              style={{ padding: '0.4rem', borderRadius: '8px', minWidth: 'auto' }}
-                              onClick={() => handleLocalDelete(s.id)}
-                              title="Eliminar Localmente"
-                            >
-                              <Trash2 size={12} />
-                            </button>
                           )}
                         </div>
                       </td>
@@ -395,17 +323,13 @@ export default function Boletas() {
                   style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: error ? '#ffffff' : '#f1f5f9' }}
                   required 
                   min="0"
-                  disabled={!error} // Only editable in offline mode, real backend reads directly from employees table count
+                  disabled
                   value={workDays}
                   onChange={(e) => setWorkDays(e.target.value)}
                 />
                 {formErrors.workDays && <div className="form-error">{formErrors.workDays}</div>}
                 <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.3rem' }}>
-                  {error ? (
-                    <span>Ajuste manual de días para modo offline.</span>
-                  ) : (
-                    <span><strong>Automático:</strong> Se liquidarán los <strong>{selectedEmployee?.workedDays ?? 0} días</strong> registrados en el sistema para este colaborador y se restablecerán a 0.</span>
-                  )}
+                  <span><strong>Automático:</strong> Se liquidarán los <strong>{selectedEmployee?.workedDays ?? 0} días</strong> registrados en el sistema para este colaborador y se restablecerán a 0.</span>
                 </div>
               </div>
 
@@ -507,9 +431,9 @@ export default function Boletas() {
                   <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Estado:</span>
                   <span style={{ 
                     fontWeight: '700', 
-                    color: (viewingSlip.status === 'pagada' || viewingSlip.status === 'PAGADA' || paidSlipIds.includes(viewingSlip.id)) ? '#16a34a' : '#ea580c' 
+                    color: (viewingSlip.status === 'pagada' || viewingSlip.status === 'PAGADA') ? '#16a34a' : '#ea580c'
                   }}>
-                    {(viewingSlip.status === 'pagada' || viewingSlip.status === 'PAGADA' || paidSlipIds.includes(viewingSlip.id)) ? 'PAGADA' : 'PENDIENTE'}
+                    {(viewingSlip.status === 'pagada' || viewingSlip.status === 'PAGADA') ? 'PAGADA' : 'PENDIENTE'}
                   </span>
                 </div>
               </div>

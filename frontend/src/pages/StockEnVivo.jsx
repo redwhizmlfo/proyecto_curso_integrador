@@ -55,42 +55,13 @@ export default function StockEnVivo() {
       setMinStocks(prev => ({ ...initialMins, ...prev }));
       setLastUpdates(prev => ({ ...initialTimes, ...prev }));
     } catch (err) {
-      console.warn("Backend offline or error loading stock data. Using local demo data.", err);
-      setError("Servidor offline. Utilizando datos de simulación en vivo.");
-
-      const localCats = [
-        { id: 'cat_esm', nombreCategoria: 'Esmeriles' },
-        { id: 'cat_tal', nombreCategoria: 'Taladros' }
-      ];
-      const localBrands = [
-        { id: 'marca_bosch', nombreMarca: 'Bosch' },
-        { id: 'marca_makita', nombreMarca: 'Makita' },
-        { id: 'marca_dewalt', nombreMarca: 'DeWalt' }
-      ];
-      const localModels = [
-        { id: 'pm_gws2200', codigoModelo: 'GWS 2200-180 LVI', modelo: 'GWS2200', sku: 'SKU-75010324', precio: 380.00, stock: 80, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
-        { id: 'pm_gws750', codigoModelo: 'GWS 750-115 PROFESSIONAL', modelo: 'GWS750', sku: 'SKU-72093104', precio: 195.00, stock: 45, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
-        { id: 'pm_m0900b', codigoModelo: 'M0900B 540W', modelo: 'M0900B', sku: 'SKU-84102941', precio: 155.00, stock: 30, categoria: { id: 'cat_esm' }, marca: { id: 'marca_makita' } }
-      ];
-
-      setCategorias(localCats);
-      setMarcas(localBrands);
-      setProductosModelos(localModels);
-
-      const initialMins = {
-        'pm_gws2200': 10,
-        'pm_gws750': 15,
-        'pm_m0900b': 8
-      };
-      const initialTimes = {};
-      const todayDate = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      const todayTime = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true });
-      localModels.forEach(m => {
-        initialTimes[m.id] = { date: todayDate, time: todayTime };
-      });
-
-      setMinStocks(prev => ({ ...initialMins, ...prev }));
-      setLastUpdates(prev => ({ ...initialTimes, ...prev }));
+      console.warn('Error loading live stock from backend.', err);
+      setError('No se pudo cargar stock desde el backend. No se muestran datos simulados.');
+      setCategorias([]);
+      setMarcas([]);
+      setProductosModelos([]);
+      setMinStocks({});
+      setLastUpdates({});
     } finally {
       setLoading(false);
     }
@@ -112,35 +83,34 @@ export default function StockEnVivo() {
   const handleStockChange = async (model, change) => {
     const newStock = model.stock + change;
     if (newStock < 0) return;
+    if (error) {
+      alert('No se puede modificar stock sin conexion real con el backend.');
+      return;
+    }
 
-    // Dynamically update timestamp for this item
     const now = new Date();
     const formattedDate = now.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const formattedTime = now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
 
-    // 1. Instantly update UI locally
-    setProductosModelos(prev => prev.map(m => m.id === model.id ? { ...m, stock: newStock } : m));
-    setLastUpdates(prev => ({
-      ...prev,
-      [model.id]: { date: formattedDate, time: formattedTime }
-    }));
+    try {
+      await api.put(`/modelos/${model.id}`, {
+        codigoModelo: model.codigoModelo,
+        modelo: model.modelo,
+        sku: model.sku,
+        precio: model.precio,
+        stock: newStock,
+        id_categoria: model.categoria?.id,
+        id_marca: model.marca?.id
+      });
 
-    // 2. Try to sync to the server if online
-    if (!error) {
-      try {
-        await api.put(`/modelos/${model.id}`, {
-          codigoModelo: model.codigoModelo,
-          modelo: model.modelo,
-          sku: model.sku,
-          precio: model.precio,
-          stock: newStock,
-          id_categoria: model.categoria?.id,
-          id_marca: model.marca?.id
-        });
-      } catch (err) {
-        console.error("Error updating stock in backend", err);
-        alert("No se pudo sincronizar el stock con el servidor: " + err.message);
-      }
+      setProductosModelos(prev => prev.map(m => m.id === model.id ? { ...m, stock: newStock } : m));
+      setLastUpdates(prev => ({
+        ...prev,
+        [model.id]: { date: formattedDate, time: formattedTime }
+      }));
+    } catch (err) {
+      console.error('Error updating stock in backend', err);
+      alert('No se pudo sincronizar el stock con el servidor: ' + err.message);
     }
   };
 

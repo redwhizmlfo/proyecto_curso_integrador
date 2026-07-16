@@ -35,12 +35,8 @@ export default function Proveedores() {
       setError(null);
     } catch (err) {
       console.error('Error fetching suppliers:', err);
-      setError('Servidor backend offline. Usando datos demo de proveedores.');
-      setSuppliers([
-        { id: 's1', name: 'Ferre-Mayorista SAC', ruc: '20503040506', contact: 'Ing. Carlos Castillo', phone: '988552211', email: 'ventas@ferremayor.com', isActive: true },
-        { id: 's2', name: 'Cementos del Perú SA', ruc: '20102030405', contact: 'Sra. Lucia Lopez', phone: '977443322', email: 'pedidos@cementosperu.pe', isActive: true },
-        { id: 's3', name: 'Pinturas Vencedor Distribuciones', ruc: '20493827162', contact: 'Don Alfredo Diaz', phone: '955331100', email: 'adiaz@vencedordist.com', isActive: false }
-      ]);
+      setError('No se pudo cargar proveedores desde el backend. Las operaciones estan deshabilitadas.');
+      setSuppliers([]);
     } finally {
       setLoading(false);
     }
@@ -96,21 +92,15 @@ export default function Proveedores() {
     try {
       if (editingSupplier) {
         if (error) {
-          setSuppliers(suppliers.map(s => s.id === editingSupplier.id ? { ...s, ...payload } : s));
-        } else {
-          await api.put(`/suppliers/${editingSupplier.id}`, payload);
+          throw new Error('No se puede actualizar proveedores sin conexion real con el backend.');
         }
+        await api.put(`/suppliers/${editingSupplier.id}`, payload);
         alert('Proveedor actualizado con éxito.');
       } else {
         if (error) {
-          const newSupp = {
-            id: String(Date.now()),
-            ...payload
-          };
-          setSuppliers([...suppliers, newSupp]);
-        } else {
-          await api.post('/suppliers', payload);
+          throw new Error('No se puede registrar proveedores sin conexion real con el backend.');
         }
+        await api.post('/suppliers', payload);
         alert('Proveedor registrado con éxito.');
       }
       setShowModal(false);
@@ -127,10 +117,9 @@ export default function Proveedores() {
 
     try {
       if (error) {
-        setSuppliers(suppliers.map(item => item.id === s.id ? { ...item, isActive: nextStatus } : item));
-      } else {
-        await api.put(`/suppliers/${s.id}`, { ...s, isActive: nextStatus });
+        throw new Error('No se puede cambiar el estado sin conexion real con el backend.');
       }
+      await api.put(`/suppliers/${s.id}`, { ...s, isActive: nextStatus });
       alert('Estado actualizado con éxito.');
       loadSuppliers();
     } catch (err) {

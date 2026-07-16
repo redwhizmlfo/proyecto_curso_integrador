@@ -55,13 +55,8 @@ export default function Clientes() {
       setError(null);
     } catch (err) {
       console.error('Error fetching customers:', err);
-      setError('Servidor backend offline. Mostrando clientes de respaldo.');
-      const backupData = [
-        { id: 'c1', name: 'Público General / Varios', docType: 'DNI', docNumber: '00000000', phone: '-', email: '-', address: 'Av. El Sol 123', preferredDiscount: 0, customerType: 'Minorista' },
-        { id: 'c2', name: 'Juan Pérez Rodríguez', docType: 'DNI', docNumber: '44558899', phone: '987654321', email: 'juan.perez@gmail.com', address: 'Av. El Sol 123, Lima', preferredDiscount: 5, customerType: 'Minorista' },
-        { id: 'c3', name: 'CONSTRUCTORA DEL NORTE S.A.C.', docType: 'RUC', docNumber: '20601234567', phone: '01 4567890', email: 'compras@construalfa.com', address: 'Industrial Area B-12, Callao', preferredDiscount: 10, customerType: 'Mayorista' }
-      ];
-      setCustomers(backupData);
+      setError('No se pudo cargar clientes desde el backend. Las operaciones estan deshabilitadas.');
+      setCustomers([]);
     }
   }, []);
 
@@ -125,24 +120,16 @@ export default function Clientes() {
     try {
       if (editingCustomer) {
         if (error) {
-          // Simulation local edit
-          setCustomers(customers.map(c => c.id === editingCustomer.id ? { ...c, ...form, address: form.address } : c));
-        } else {
-          await api.put(`/customers/${editingCustomer.id}`, payload);
+          throw new Error('No se puede actualizar clientes sin conexion real con el backend.');
         }
-        alert('Cliente actualizado con éxito.');
+        await api.put(`/customers/${editingCustomer.id}`, payload);
+        alert('Cliente actualizado con exito.');
       } else {
         if (error) {
-          // Simulation local add
-          const newCust = {
-            id: String(Date.now()),
-            ...form
-          };
-          setCustomers([...customers, newCust]);
-        } else {
-          await api.post('/customers', payload);
+          throw new Error('No se puede registrar clientes sin conexion real con el backend.');
         }
-        alert('Cliente registrado con éxito.');
+        await api.post('/customers', payload);
+        alert('Cliente registrado con exito.');
       }
       setShowModal(false);
       loadCustomers();
@@ -151,19 +138,18 @@ export default function Clientes() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (id === 'c1' || id === '00000000-0000-0000-0000-000000000001') {
-      alert('No se puede eliminar el cliente comodín de público general.');
+  const handleDelete = async (customer) => {
+    if (customer.docNumber === '00000000') {
+      alert('No se puede eliminar el cliente comodin de publico general.');
       return;
     }
-    if (!window.confirm('¿Está seguro de eliminar este cliente?')) return;
+    if (!window.confirm('Esta seguro de eliminar este cliente?')) return;
     try {
       if (error) {
-        setCustomers(customers.filter(c => c.id !== id));
-      } else {
-        await api.delete(`/customers/${id}`);
+        throw new Error('No se puede eliminar clientes sin conexion real con el backend.');
       }
-      alert('Cliente eliminado con éxito.');
+      await api.delete(`/customers/${customer.id}`);
+      alert('Cliente eliminado con exito.');
       loadCustomers();
     } catch (err) {
       alert('Error al eliminar cliente: ' + err.message);
@@ -308,8 +294,8 @@ export default function Clientes() {
                         </button>
                         <button 
                           className="action-icon-btn danger"
-                          onClick={() => handleDelete(c.id)}
-                          disabled={c.id === 'c1'}
+                          onClick={() => handleDelete(c)}
+                          disabled={c.docNumber === '00000000'}
                           title="Eliminar"
                         >
                           <Trash size={12} />

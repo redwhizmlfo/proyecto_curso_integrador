@@ -47,27 +47,11 @@ export default function Movimientos() {
       setCategorias(catList);
       setError(null);
     } catch (err) {
-      console.warn("Backend offline, using local simulation catalog.", err);
-      setError("Servidor offline. Usando datos de simulación local.");
-      
-      // Fallback local products and catalogs matching StockEnVivo & CatalogDataInitializer
-      const localBrands = [
-        { id: 'marca_bosch', nombreMarca: 'Bosch' },
-        { id: 'marca_makita', nombreMarca: 'Makita' },
-        { id: 'marca_dewalt', nombreMarca: 'DeWalt' }
-      ];
-      const localCats = [
-        { id: 'cat_esm', nombreCategoria: 'Esmeriles' },
-        { id: 'cat_tal', nombreCategoria: 'Taladros' }
-      ];
-      const localModels = [
-        { id: 'pm_gws2200', codigoModelo: 'GWS 2200-180 LVI', modelo: 'GWS2200', sku: 'SKU-75010324', precio: 380.00, stock: 80, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
-        { id: 'pm_gws750', codigoModelo: 'GWS 750-115 PROFESSIONAL', modelo: 'GWS750', sku: 'SKU-72093104', precio: 195.00, stock: 45, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
-        { id: 'pm_m0900b', codigoModelo: 'M0900B 540W', modelo: 'M0900B', sku: 'SKU-84102941', precio: 155.00, stock: 30, categoria: { id: 'cat_esm' }, marca: { id: 'marca_makita' } }
-      ];
-      setModelos(localModels);
-      setMarcas(localBrands);
-      setCategorias(localCats);
+      console.warn('Error loading inventory movements catalog from backend.', err);
+      setError('No se pudo cargar catalogo de movimientos desde el backend. No se muestran datos simulados.');
+      setModelos([]);
+      setMarcas([]);
+      setCategorias([]);
     } finally {
       setLoading(false);
     }
@@ -83,36 +67,7 @@ export default function Movimientos() {
     if (storedBoxes) {
       setBoxes(JSON.parse(storedBoxes));
     } else {
-      // Seed default boxes matching Bosch & Makita models
-      const defaultBoxes = [
-        {
-          id: 'box_bosch_1',
-          name: 'Caja de Esmeriles Bosch Pro',
-          brandId: 'marca_bosch',
-          brandName: 'Bosch',
-          status: 'SELLADA', // 'SELLADA' or 'LIBERADA'
-          origin: 'Almacén Central (Lurín)',
-          dateRegistered: '23/05/2026',
-          items: [
-            { modelId: 'pm_gws2200', modelName: 'GWS2200', codModelo: 'GWS 2200-180 LVI', qty: 8 },
-            { modelId: 'pm_gws750', modelName: 'GWS750', codModelo: 'GWS 750-115 PROFESSIONAL', qty: 12 }
-          ]
-        },
-        {
-          id: 'box_makita_1',
-          name: 'Lote de Reposición Makita',
-          brandId: 'marca_makita',
-          brandName: 'Makita',
-          status: 'SELLADA',
-          origin: 'Importaciones Callao',
-          dateRegistered: '23/05/2026',
-          items: [
-            { modelId: 'pm_m0900b', modelName: 'M0900B', codModelo: 'M0900B 540W', qty: 15 }
-          ]
-        }
-      ];
-      setBoxes(defaultBoxes);
-      localStorage.setItem('inventory_boxes', JSON.stringify(defaultBoxes));
+      setBoxes([]);
     }
 
     if (storedHistory) {
@@ -279,34 +234,9 @@ export default function Movimientos() {
       
       setUnboxingStage('done');
     } catch (err) {
-      console.error("Error releasing box stock to database:", err);
-      // Fallback simulation in case offline, but warn user
-      setUnboxingError("Ocurrió un error al guardar en la BD, se aplicó la simulación en memoria.");
-
-      // Emulate stock change locally
-      setModelos(prev => prev.map(m => {
-        const itemInCrate = activeBox.items.find(i => i.modelId === m.id);
-        if (itemInCrate) {
-          return { ...m, stock: m.stock + itemInCrate.qty };
-        }
-        return m;
-      }));
-
-      const updatedBoxes = boxes.map(b => b.id === activeBox.id ? { ...b, status: 'LIBERADA' } : b);
-      saveBoxesToLocal(updatedBoxes);
-
-      const todayDate = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      const todayTime = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true });
-      const newHistoryEntry = {
-        id: `mov_${Date.now()}`,
-        boxName: activeBox.name,
-        brandName: activeBox.brandName,
-        dateReleased: `${todayDate} ${todayTime} (Simulado)`,
-        items: activeBox.items
-      };
-      saveHistoryToLocal([newHistoryEntry, ...history]);
-
-      setUnboxingStage('done');
+      console.error('Error releasing box stock to database:', err);
+      setUnboxingError('No se pudo guardar en la base de datos. No se aplico ningun cambio local.');
+      setUnboxingStage('revealed');
     }
   };
 

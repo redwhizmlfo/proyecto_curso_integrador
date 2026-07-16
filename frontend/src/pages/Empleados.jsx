@@ -35,12 +35,8 @@ export default function Empleados() {
       setError(null);
     } catch (err) {
       console.error('Error fetching employees:', err);
-      setError('Servidor backend offline. Usando datos demo de empleados.');
-      setEmployees([
-        { id: 'e1', initials: 'CM', name: 'Carlos Mendoza', role: 'Vendedor Cajero', dni: '45678912', payPerDay: 60.00, workedDays: 14.5, isActive: true },
-        { id: 'e2', initials: 'JP', name: 'Juan Pérez Almacén', role: 'Encargado Almacén', dni: '12345678', payPerDay: 65.00, workedDays: 15.0, isActive: true },
-        { id: 'e3', initials: 'LL', name: 'Lucía Lima', role: 'Administradora', dni: '87654321', payPerDay: 120.00, workedDays: 16.0, isActive: true }
-      ]);
+      setError('No se pudo cargar empleados desde el backend. Las operaciones estan deshabilitadas.');
+      setEmployees([]);
     } finally {
       setLoading(false);
     }
@@ -96,22 +92,15 @@ export default function Empleados() {
     try {
       if (editingEmployee) {
         if (error) {
-          setEmployees(employees.map(emp => emp.id === editingEmployee.id ? { ...emp, ...payload } : emp));
-        } else {
-          await api.put(`/employees/${editingEmployee.id}`, payload);
+          throw new Error('No se puede actualizar empleados sin conexion real con el backend.');
         }
+        await api.put(`/employees/${editingEmployee.id}`, payload);
         alert('Empleado actualizado con éxito.');
       } else {
         if (error) {
-          const newEmp = {
-            id: 'e' + Date.now(),
-            ...payload,
-            workedDays: 0
-          };
-          setEmployees([...employees, newEmp]);
-        } else {
-          await api.post('/employees', payload);
+          throw new Error('No se puede registrar empleados sin conexion real con el backend.');
         }
+        await api.post('/employees', payload);
         alert('Empleado registrado con éxito.');
       }
       setShowModal(false);

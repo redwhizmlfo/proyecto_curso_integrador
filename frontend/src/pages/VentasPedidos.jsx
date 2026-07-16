@@ -45,24 +45,27 @@ export default function VentasPedidos() {
       try {
         latestModels = await api.get('/modelos');
       } catch (err) {
-        console.warn('Backend offline or error fetching models, using simulation.', err);
+        console.warn('Backend offline or error fetching models.', err);
+        throw new Error('No se pudo validar stock real contra el backend.');
       }
 
       // 2. Decrement stock for each model item
-      if (latestModels.length > 0) {
-        for (const item of ped.items) {
-          // Find model by ID or SKU
-          const modelObj = latestModels.find(m => m.id === item.productId || m.sku === item.barcode);
-          if (modelObj) {
-            const newStock = Math.max(0, modelObj.stock - item.qty);
-            await api.put(`/modelos/${modelObj.id}`, {
-              ...modelObj,
-              id_categoria: modelObj.categoria?.id,
-              id_marca: modelObj.marca?.id,
-              stock: newStock
-            });
-          }
+      if (latestModels.length === 0) {
+        throw new Error('No se encontraron modelos para validar stock.');
+      }
+      for (const item of ped.items) {
+        // Find model by ID or SKU
+        const modelObj = latestModels.find(m => m.id === item.productId || m.sku === item.barcode);
+        if (!modelObj) {
+          throw new Error(`No se encontro el producto ${item.name} en el backend.`);
         }
+        const newStock = Math.max(0, modelObj.stock - item.qty);
+        await api.put(`/modelos/${modelObj.id}`, {
+          ...modelObj,
+          id_categoria: modelObj.categoria?.id,
+          id_marca: modelObj.marca?.id,
+          stock: newStock
+        });
       }
 
       // 3. Save to inventory_dispatches in localStorage

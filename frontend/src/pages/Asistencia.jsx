@@ -14,6 +14,22 @@ export default function Asistencia() {
   const [showVoucherModal, setShowVoucherModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
+  const getAuthenticatedUserId = () => {
+    try {
+      return JSON.parse(localStorage.getItem('current_user') || 'null')?.userId || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const buildAttendanceRequest = (employeeId, extra = {}) => {
+    const markedByUserId = getAuthenticatedUserId();
+    if (!markedByUserId) {
+      throw new Error('No se pudo identificar el usuario autenticado.');
+    }
+    return { employeeId, markedByUserId, ...extra };
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -26,17 +42,9 @@ export default function Asistencia() {
       setError(null);
     } catch (err) {
       console.error('Error loading attendance data:', err);
-      setError('Servidor backend offline. Usando panel demo de asistencia.');
-      setEmployees([
-        { id: 'e1', initials: 'CM', name: 'Carlos Mendoza', role: 'Vendedor Cajero', dni: '44558899', payPerDay: 80.00, workedDays: 5.0, todayStatus: 'en turno', attendanceToday: true, canMarkExit: true },
-        { id: 'e2', initials: 'JP', name: 'Juan Pérez Almacén', role: 'Encargado Almacén', dni: '44558877', payPerDay: 90.00, workedDays: 6.0, todayStatus: 'asistio', attendanceToday: true, canMarkExit: false },
-        { id: 'e3', initials: 'LL', name: 'Lucía Lima', role: 'Administradora', dni: '44558855', payPerDay: 120.00, workedDays: 4.0, todayStatus: null, attendanceToday: false, canMarkExit: false }
-      ]);
-      setLogs([
-        { id: 'l1', employeeName: 'Carlos Mendoza', workDate: '2026-05-19', entryAt: '2026-05-19T08:00:00Z', exitAt: null, status: 'en turno', employee: { id: 'e1', name: 'Carlos Mendoza' } },
-        { id: 'l2', employeeName: 'Juan Pérez Almacén', workDate: '2026-05-19', entryAt: '2026-05-19T07:55:00Z', exitAt: '2026-05-19T17:00:00Z', status: 'asistio', employee: { id: 'e2', name: 'Juan Pérez Almacén' } },
-        { id: 'l3', employeeName: 'Lucía Lima', workDate: '2026-05-18', entryAt: '2026-05-18T08:02:00Z', exitAt: '2026-05-18T18:00:00Z', status: 'asistio', employee: { id: 'e3', name: 'Lucía Lima' } }
-      ]);
+      setError('No se pudo cargar asistencia desde el backend. Las operaciones estan deshabilitadas.');
+      setEmployees([]);
+      setLogs([]);
     } finally {
       setLoading(false);
     }
@@ -47,35 +55,11 @@ export default function Asistencia() {
   }, []);
 
   const handleEntry = async (employeeId) => {
-    const request = {
-      employeeId: employeeId,
-      markedByUserId: '00000000-0000-0000-0000-000000000001' // Default Admin
-    };
-
     try {
       if (error) {
-        // Simulation
-        setEmployees(employees.map(e => {
-          if (e.id === employeeId) {
-            return { ...e, todayStatus: 'en turno', attendanceToday: true, canMarkExit: true };
-          }
-          return e;
-        }));
-        
-        const empName = employees.find(e => e.id === employeeId)?.name || 'Empleado';
-        const newLog = {
-          id: 'log' + Date.now(),
-          employeeName: empName,
-          workDate: new Date().toISOString().split('T')[0],
-          entryAt: new Date().toISOString(),
-          exitAt: null,
-          status: 'en turno',
-          employee: { id: employeeId, name: empName }
-        };
-        setLogs([newLog, ...logs]);
-      } else {
-        await api.post('/attendance/entry', request);
+        throw new Error('No se puede marcar entrada sin conexion real con el backend.');
       }
+      await api.post('/attendance/entry', buildAttendanceRequest(employeeId));
       alert('Entrada marcada con éxito.');
       loadData();
     } catch (err) {
@@ -84,34 +68,11 @@ export default function Asistencia() {
   };
 
   const handleExit = async (employeeId) => {
-    const request = {
-      employeeId: employeeId,
-      markedByUserId: '00000000-0000-0000-0000-000000000001'
-    };
-
     try {
       if (error) {
-        // Simulation
-        setEmployees(employees.map(e => {
-          if (e.id === employeeId) {
-            return { ...e, todayStatus: 'asistio', workedDays: (e.workedDays || 0) + 1, canMarkExit: false };
-          }
-          return e;
-        }));
-        
-        // Find existing log of today and fill exit
-        const todayStr = new Date().toISOString().split('T')[0];
-        const updatedLogs = logs.map(l => {
-          const emp = employees.find(e => e.id === employeeId);
-          if ((l.employee?.id === employeeId || l.employeeName === emp?.name) && l.workDate === todayStr) {
-            return { ...l, exitAt: new Date().toISOString(), status: 'asistio' };
-          }
-          return l;
-        });
-        setLogs(updatedLogs);
-      } else {
-        await api.post('/attendance/exit', request);
+        throw new Error('No se puede marcar salida sin conexion real con el backend.');
       }
+      await api.post('/attendance/exit', buildAttendanceRequest(employeeId));
       alert('Salida marcada con éxito.');
       loadData();
     } catch (err) {
@@ -121,38 +82,14 @@ export default function Asistencia() {
 
   const handleAbsence = async (employeeId) => {
     const todayStr = new Date().toISOString().split('T')[0];
-    const request = {
-      employeeId: employeeId,
-      markedByUserId: '00000000-0000-0000-0000-000000000001',
-      workDate: todayStr
-    };
 
     if (!window.confirm('¿Registrar inasistencia (falta) para el empleado seleccionado hoy?')) return;
 
     try {
       if (error) {
-        // Simulation
-        setEmployees(employees.map(e => {
-          if (e.id === employeeId) {
-            return { ...e, todayStatus: 'falto', attendanceToday: true, canMarkExit: false };
-          }
-          return e;
-        }));
-        
-        const empName = employees.find(e => e.id === employeeId)?.name || 'Empleado';
-        const newLog = {
-          id: 'log' + Date.now(),
-          employeeName: empName,
-          workDate: todayStr,
-          entryAt: null,
-          exitAt: null,
-          status: 'falto',
-          employee: { id: employeeId, name: empName }
-        };
-        setLogs([newLog, ...logs]);
-      } else {
-        await api.post('/attendance/absence', request);
+        throw new Error('No se puede registrar inasistencia sin conexion real con el backend.');
       }
+      await api.post('/attendance/absence', buildAttendanceRequest(employeeId, { workDate: todayStr }));
       alert('Falta registrada con éxito.');
       loadData();
     } catch (err) {
@@ -162,38 +99,14 @@ export default function Asistencia() {
 
   const handlePermission = async (employeeId) => {
     const todayStr = new Date().toISOString().split('T')[0];
-    const request = {
-      employeeId: employeeId,
-      markedByUserId: '00000000-0000-0000-0000-000000000001',
-      workDate: todayStr
-    };
 
     if (!window.confirm('¿Registrar permiso para el empleado seleccionado hoy?')) return;
 
     try {
       if (error) {
-        // Simulation
-        setEmployees(employees.map(e => {
-          if (e.id === employeeId) {
-            return { ...e, todayStatus: 'permiso', attendanceToday: false, canMarkExit: false };
-          }
-          return e;
-        }));
-        
-        const empName = employees.find(e => e.id === employeeId)?.name || 'Empleado';
-        const newLog = {
-          id: 'log' + Date.now(),
-          employeeName: empName,
-          workDate: todayStr,
-          entryAt: null,
-          exitAt: null,
-          status: 'permiso',
-          employee: { id: employeeId, name: empName }
-        };
-        setLogs([newLog, ...logs]);
-      } else {
-        await api.post('/attendance/permission', request);
+        throw new Error('No se puede registrar permiso sin conexion real con el backend.');
       }
+      await api.post('/attendance/permission', buildAttendanceRequest(employeeId, { workDate: todayStr }));
       alert('Permiso registrado con éxito.');
       loadData();
     } catch (err) {

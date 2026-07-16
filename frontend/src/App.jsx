@@ -64,6 +64,31 @@ const ROUTE_PERMISSIONS = {
   '/rrhh/boletas': 'rrhh:boletas',
 };
 
+const normalizeRole = (role) => (
+  String(role || '').trim().toUpperCase().replace(/\s+/g, '_')
+);
+
+const isAdminRole = (role) => {
+  const normalizedRole = normalizeRole(role);
+  return ['ADMIN', 'ADMINISTRADOR', 'SUPER_ADMIN'].includes(normalizedRole);
+};
+
+const normalizePermissions = (permissions) => (
+  Array.isArray(permissions) ? permissions.filter(Boolean) : []
+);
+
+const normalizeSession = (session) => {
+  if (!session || !session.username || !session.role) return null;
+
+  return {
+    userId: session.userId,
+    username: session.username,
+    role: normalizeRole(session.role),
+    employeeId: session.employeeId,
+    permissions: normalizePermissions(session.permissions || session.modulePermissions),
+  };
+};
+
 const readStoredToken = () => {
   const storedToken = localStorage.getItem('token');
   if (!storedToken || storedToken === 'undefined' || storedToken === 'null') {
@@ -76,8 +101,8 @@ const readStoredToken = () => {
 
 const readStoredUser = () => {
   try {
-    const storedUser = JSON.parse(localStorage.getItem('current_user') || 'null');
-    if (!storedUser || !storedUser.username || !storedUser.role) {
+    const storedUser = normalizeSession(JSON.parse(localStorage.getItem('current_user') || 'null'));
+    if (!storedUser) {
       localStorage.removeItem('current_user');
       return null;
     }
@@ -113,7 +138,7 @@ function AccessDenied() {
 export default function App() {
   const [token, setToken] = useState(readStoredToken);
   const [currentUser, setCurrentUser] = useState(readStoredUser);
-  const [sessionLoading, setSessionLoading] = useState(() => Boolean(readStoredToken()) && !readStoredUser());
+  const [sessionLoading, setSessionLoading] = useState(() => Boolean(readStoredToken()));
   const [isCollapsed, setIsCollapsed] = useState(getInitialSidebarCollapsed);
   const [isMobileShell, setIsMobileShell] = useState(isSmallViewport);
 
@@ -140,22 +165,19 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!token || currentUser) {
+    if (!token) {
+      setSessionLoading(false);
       return;
     }
 
     let cancelled = false;
     const hydrateSession = async () => {
+      setSessionLoading(true);
       try {
         const session = await api.get('/auth/me');
         if (cancelled) return;
-        const userSession = {
-          userId: session.userId,
-          username: session.username,
-          role: session.role,
-          employeeId: session.employeeId,
-          permissions: session.permissions || [],
-        };
+        const userSession = normalizeSession(session);
+        if (!userSession) throw new Error('Sesion invalida');
         localStorage.setItem('current_user', JSON.stringify(userSession));
         setCurrentUser(userSession);
       } catch {
@@ -173,12 +195,12 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [token, currentUser]);
+  }, [token]);
 
   const hasPermission = (permissionId) => {
     if (!permissionId) return true;
     if (!currentUser) return false;
-    if (String(currentUser.role || '').toUpperCase() === 'ADMIN') return true;
+    if (isAdminRole(currentUser.role)) return true;
     return (currentUser.permissions || []).includes(permissionId);
   };
 
@@ -188,21 +210,12 @@ export default function App() {
 
   if (!token) {
     return <Login onLoginSuccess={(session) => {
+      const userSession = normalizeSession(session);
+      if (!session?.token || !userSession) return;
       localStorage.setItem('token', session.token);
-      localStorage.setItem('current_user', JSON.stringify({
-        userId: session.userId,
-        username: session.username,
-        role: session.role,
-        employeeId: session.employeeId,
-        permissions: session.permissions || [],
-      }));
-      setCurrentUser({
-        userId: session.userId,
-        username: session.username,
-        role: session.role,
-        employeeId: session.employeeId,
-        permissions: session.permissions || [],
-      });
+      localStorage.setItem('current_user', JSON.stringify(userSession));
+      setCurrentUser(userSession);
+      setSessionLoading(false);
       setToken(session.token);
     }} />;
   }

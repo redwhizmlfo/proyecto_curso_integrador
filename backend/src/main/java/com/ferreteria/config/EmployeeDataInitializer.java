@@ -1,4 +1,4 @@
-﻿package com.ferreteria.config;
+package com.ferreteria.config;
 
 import com.ferreteria.model.Employee;
 import com.ferreteria.model.EmployeeAttendance;

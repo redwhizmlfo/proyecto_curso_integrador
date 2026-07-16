@@ -1810,6 +1810,8 @@ export default function Ventas() {
                   placeholder="DNI o RUC"
                   inputMode="numeric"
                   maxLength={11}
+                  autoComplete="off"
+                  name="pos-customer-document"
                   style={{ border: '1px solid #cbd5e1', background: '#f3f4f6', borderRadius: '4px', height: '38px', padding: '0 0.8rem', width: '100%', flexGrow: 1 }}
                   value={docInput}
                   onChange={handleDocInputChange}

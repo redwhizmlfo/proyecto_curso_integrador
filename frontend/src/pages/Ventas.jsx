@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import Header from '../components/Header';
@@ -148,6 +148,29 @@ export default function Ventas() {
     loadData();
   }, []);
 
+  const docSearchDigits = docInput.replace(/\D/g, '');
+  const exactCustomerMatch = customers.find((customer) => customer.docNumber === docSearchDigits);
+  const customerSearchMatches = useMemo(() => {
+    if (!docSearchDigits) return [];
+
+    return customers
+      .filter((customer) => String(customer.docNumber || '').includes(docSearchDigits))
+      .sort((a, b) => {
+        const aDoc = String(a.docNumber || '');
+        const bDoc = String(b.docNumber || '');
+        const aExact = aDoc === docSearchDigits ? 0 : 1;
+        const bExact = bDoc === docSearchDigits ? 0 : 1;
+        if (aExact !== bExact) return aExact - bExact;
+
+        const aStarts = aDoc.startsWith(docSearchDigits) ? 0 : 1;
+        const bStarts = bDoc.startsWith(docSearchDigits) ? 0 : 1;
+        if (aStarts !== bStarts) return aStarts - bStarts;
+
+        return aDoc.localeCompare(bDoc);
+      })
+      .slice(0, 6);
+  }, [customers, docSearchDigits]);
+
   // Update documentType and series dynamically based on customer's docType
   useEffect(() => {
     if (validatedCustomer) {
@@ -160,6 +183,36 @@ export default function Ventas() {
       return () => window.clearTimeout(timer);
     }
   }, [validatedCustomer]);
+
+  useEffect(() => {
+    if (!docSearchDigits) {
+      setValidatedCustomer(null);
+      return;
+    }
+
+    if (validatedCustomer && validatedCustomer.docNumber !== docSearchDigits) {
+      setValidatedCustomer(null);
+    }
+
+    if ([8, 11].includes(docSearchDigits.length) && exactCustomerMatch && validatedCustomer?.docNumber !== docSearchDigits) {
+      setValidatedCustomer({
+        ...exactCustomerMatch,
+        status: 'Habido / Activo'
+      });
+    }
+  }, [docSearchDigits, exactCustomerMatch, validatedCustomer]);
+
+  const handleDocInputChange = (event) => {
+    setDocInput(event.target.value.replace(/\D/g, '').slice(0, 11));
+  };
+
+  const handleSelectCustomer = (customer) => {
+    setDocInput(customer.docNumber);
+    setValidatedCustomer({
+      ...customer,
+      status: 'Habido / Activo'
+    });
+  };
 
   const handleValidate = async () => {
     if (!docInput.trim()) {
@@ -1735,9 +1788,11 @@ export default function Ventas() {
                   type="text" 
                   className="form-input" 
                   placeholder="DNI o RUC"
+                  inputMode="numeric"
+                  maxLength={11}
                   style={{ border: '1px solid #cbd5e1', background: '#f3f4f6', borderRadius: '4px', height: '38px', padding: '0 0.8rem', width: '100%', flexGrow: 1 }}
                   value={docInput}
-                  onChange={(e) => setDocInput(e.target.value)}
+                  onChange={handleDocInputChange}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleValidate();
@@ -1762,6 +1817,74 @@ export default function Ventas() {
                   {customerLookupLoading ? '...' : 'VALIDAR'}
                 </button>
               </div>
+
+              {docSearchDigits && (
+                <div style={{
+                  marginTop: '0.45rem',
+                  fontSize: '0.68rem',
+                  fontWeight: '800',
+                  color: exactCustomerMatch ? '#16a34a' : ([8, 11].includes(docSearchDigits.length) ? '#dc2626' : '#b45309')
+                }}>
+                  {exactCustomerMatch
+                    ? `Documento encontrado: ${exactCustomerMatch.name}`
+                    : [8, 11].includes(docSearchDigits.length)
+                      ? 'No hay cliente local con ese documento. Puede validar para consultar/crear.'
+                      : `${docSearchDigits.length}/8 DNI o ${docSearchDigits.length}/11 RUC`}
+                </div>
+              )}
+
+              {docSearchDigits && customerSearchMatches.length > 0 && validatedCustomer?.docNumber !== docSearchDigits && (
+                <div style={{
+                  marginTop: '0.5rem',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  background: '#ffffff'
+                }}>
+                  {customerSearchMatches.map((customer) => (
+                    <button
+                      key={customer.id || customer.docNumber}
+                      type="button"
+                      onClick={() => handleSelectCustomer(customer)}
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        borderBottom: '1px solid #e2e8f0',
+                        background: customer.docNumber === docSearchDigits ? '#dcfce7' : '#ffffff',
+                        padding: '0.55rem 0.6rem',
+                        display: 'grid',
+                        gridTemplateColumns: '1fr auto',
+                        gap: '0.5rem',
+                        alignItems: 'center',
+                        textAlign: 'left',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <span style={{
+                        minWidth: 0,
+                        color: '#0a1629',
+                        fontSize: '0.72rem',
+                        fontWeight: '800',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {customer.name}
+                      </span>
+                      <span style={{
+                        color: '#003471',
+                        background: '#e9f2fd',
+                        borderRadius: '2px',
+                        padding: '0.15rem 0.35rem',
+                        fontSize: '0.62rem',
+                        fontWeight: '900'
+                      }}>
+                        {customer.docType} {customer.docNumber}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Validated client block */}
               {validatedCustomer && (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 import warehouseBg from '../assets/warehouse_bg.png';
@@ -10,37 +10,43 @@ export default function Login({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [usernameError, setUsernameError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-
-  const canLogin = loginValidators.username.isValid(username)
-    && loginValidators.password.isValid(password);
-
-  const handleUsernameChange = (event) => {
-    const value = event.target.value;
-    setUsername(value);
-    setUsernameError(
-      loginValidators.username.isValid(value) ? '' : loginValidators.username.errorMessage,
-    );
-  };
-
-  const handlePasswordChange = (event) => {
-    const value = event.target.value;
-    setPassword(value);
-    setPasswordError(
-      loginValidators.password.isValid(value) ? '' : loginValidators.password.errorMessage,
-    );
-  };
+  
+	const [usernameError, setUsernameError] = useState('');
+	const [usernameIsValid, setUsernameIsValid] = useState(false);
+	
+	const [passwordError, setPasswordError] = useState('');
+	const [passwordIsValid, setPasswordIsValid] = useState(false);
+		
+	const canLogin = usernameIsValid && passwordIsValid;
+  
+  
+	const validateUsername = (text) => {
+		setUsername(text);
+		if(!loginValidators.username.isValid(text)) {
+			setUsernameError(loginValidators.username.errorMessage);
+			setUsernameIsValid(false);
+		} else {
+			setUsernameError('');
+			setUsernameIsValid(true);
+		}		
+	};
+	
+	const validatePassword = (text) => {		
+		setPassword(text);
+		if(!loginValidators.password.isValid(text)) {
+			setPasswordError(loginValidators.password.errorMessage);
+			setPasswordIsValid(false);
+		} else {
+			setPasswordError('');
+			setPasswordIsValid(true);
+		}		
+	};  
+	
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const isUsernameValid = loginValidators.username.isValid(username);
-    const isPasswordValid = loginValidators.password.isValid(password);
-
-    setUsernameError(isUsernameValid ? '' : loginValidators.username.errorMessage);
-    setPasswordError(isPasswordValid ? '' : loginValidators.password.errorMessage);
-
-    if (!isUsernameValid || !isPasswordValid) {
+    if (!username || !password) {
+      setError('Por favor ingrese su usuario y contraseña.');
       return;
     }
 
@@ -50,7 +56,7 @@ export default function Login({ onLoginSuccess }) {
     try {
       const response = await api.post('/auth/login', { username, password });
       if (response && response.token) {
-        onLoginSuccess(response.token);
+        onLoginSuccess(response);
       } else {
         setError('Error al recibir el token de autenticación.');
       }
@@ -224,13 +230,6 @@ export default function Login({ onLoginSuccess }) {
         .login-input::placeholder {
           color: #94a3b8;
           font-weight: 300;
-        }
-
-        .login-field-error {
-          margin: 0.45rem 0 0;
-          color: #dc2626;
-          font-size: 0.8rem;
-          font-weight: 600;
         }
 
         .login-eye-toggle {
@@ -411,17 +410,15 @@ export default function Login({ onLoginSuccess }) {
                     type="text"
                     className="login-input"
                     placeholder="nombre de usuario"
-                    value={username}
-                    onChange={handleUsernameChange}
+                    value={username}					
+					onChange={(e) => validateUsername(e.target.value)}
                     autoFocus
                     disabled={loading}
                     autoComplete="username"
-                    aria-invalid={Boolean(usernameError)}
-                    aria-describedby={usernameError ? 'username-error' : undefined}
-                  />
+                  />				  				  				  
                 </div>
 				
-				{usernameError && <p id="username-error" className="login-field-error">{usernameError}</p>}
+				{usernameError ? <p style={{ color: 'red', fontWeight: 'bold' }}>{usernameError}</p> : null}
 				
               </div>
 
@@ -434,12 +431,10 @@ export default function Login({ onLoginSuccess }) {
                     type={showPassword ? 'text' : 'password'}
                     className="login-input"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={handlePasswordChange}
+                    value={password}					
+					onChange={(e) => validatePassword(e.target.value)}
                     disabled={loading}
                     autoComplete="current-password"
-                    aria-invalid={Boolean(passwordError)}
-                    aria-describedby={passwordError ? 'password-error' : undefined}
                   />
                   <button
                     type="button"
@@ -452,7 +447,7 @@ export default function Login({ onLoginSuccess }) {
                   </button>				 
                 </div>
 				
-				{passwordError && <p id="password-error" className="login-field-error">{passwordError}</p>}
+				{passwordError ? <p style={{ color: 'red', fontWeight: 'bold' }}>{passwordError}</p> : null}
 				
               </div>
 

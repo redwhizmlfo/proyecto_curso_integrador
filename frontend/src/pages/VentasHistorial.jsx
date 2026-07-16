@@ -360,7 +360,7 @@ export default function VentasHistorial() {
             </div>
 
             {/* Client Info Block */}
-            <div style={{ background: '#f8fafc', padding: '0.8rem 1rem', borderRadius: '6px', border: '1px solid #e2e8f0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.8rem', marginBottom: '1rem', textAlign: 'left' }}>
+            <div style={{ background: '#f8fafc', padding: '0.8rem 1rem', borderRadius: '6px', border: '1px solid #e2e8f0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '0.5rem', fontSize: '0.8rem', marginBottom: '1rem', textAlign: 'left' }}>
               <div>
                 <strong>Cliente:</strong> {selectedSale.clientNameSnapshot}
               </div>

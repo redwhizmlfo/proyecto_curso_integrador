@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
+import FieldValidationHint from '../components/FieldValidationHint';
 import { 
   Search, Plus, AlertTriangle, Trash, Edit, RefreshCw, 
   ChevronRight, ChevronDown, Folder, FolderOpen, Tag, 
   Cpu, ZoomIn, Info, Package
 } from 'lucide-react';
+import { liveFieldValidators, validateProductModelForm } from '../services/validators';
 
 // Sub-component to manage interactive Carousel, Gallery and Zoom (Lightbox) inside the table row
 // Sub-component to manage interactive Carousel, Gallery and Zoom (Lightbox) inside the product card
@@ -75,6 +77,10 @@ function ModelCard({ model, specs, images, onEdit, onDelete, onZoom }) {
         <img 
           src={currentImage} 
           alt={model.modelo} 
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = '/src/assets/taladro.png';
+          }}
           style={{ 
             maxHeight: '90%', 
             maxWidth: '90%', 
@@ -288,6 +294,7 @@ export default function Inventario() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   // Overlay Modal Toggles
   const [showModelModal, setShowModelModal] = useState(false);
@@ -456,6 +463,7 @@ export default function Inventario() {
       specs: [{ atributo: '', valor: '' }],
       imageUrl: ''
     });
+    setFormErrors({});
     setShowModelModal(true);
   };
 
@@ -505,6 +513,14 @@ export default function Inventario() {
 
   const handleModelSubmit = async (e) => {
     e.preventDefault();
+    const validationErrors = validateProductModelForm(modelForm, {
+      models: productosModelos,
+      newCategoryName,
+      newBrandName,
+    });
+    setFormErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
+
     try {
       // Resolve Category and Brand inline additions first
       const { categoryId, brandId } = await resolveCategoryAndBrand();
@@ -606,12 +622,21 @@ export default function Inventario() {
       specs: modelSpecs.length > 0 ? modelSpecs.map(s => ({ atributo: s.atributo, valor: s.valor })) : [{ atributo: '', valor: '' }],
       imageUrl: modelImages[0]?.urlImagen || ''
     });
+    setFormErrors({});
     setShowModelModal(true);
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     const modelId = modelForm.id;
+    const validationErrors = validateProductModelForm(modelForm, {
+      models: productosModelos,
+      newCategoryName,
+      newBrandName,
+    });
+    setFormErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
+
     try {
       // Resolve Category and Brand inline additions first
       const { categoryId, brandId } = await resolveCategoryAndBrand();
@@ -886,7 +911,7 @@ export default function Inventario() {
                               {isBrandExpanded && (
                                 <div style={{ 
                                   display: 'grid',
-                                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))',
                                   gap: '1.2rem',
                                   padding: '0.8rem 0 0.8rem 1rem',
                                   marginTop: '0.8rem'
@@ -930,7 +955,7 @@ export default function Inventario() {
             <h2 style={{ color: 'var(--accent)', marginBottom: '1.5rem', fontWeight: '400', letterSpacing: '1px' }}>
               {modalMode === 'edit' ? 'Editar Producto Modelo' : 'Registrar Nuevo Producto Modelo'}
             </h2>
-            <form onSubmit={modalMode === 'edit' ? handleEditSubmit : handleModelSubmit}>
+            <form onSubmit={modalMode === 'edit' ? handleEditSubmit : handleModelSubmit} noValidate>
               
               <div className="form-row">
                 {/* Category select dropdown with "+ Registrar nueva" option */}
@@ -954,11 +979,21 @@ export default function Inventario() {
                         className="form-input" 
                         required 
                         placeholder="Escriba nombre de nueva categoría"
+                        maxLength={180}
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                       />
+                      <FieldValidationHint
+                        value={newCategoryName}
+                        isValid={liveFieldValidators.technicalText}
+                        validMessage="Categoria correcta."
+                        invalidMessage="Escribe entre 2 y 180 caracteres. Puedes usar letras, numeros, espacios y estos signos: . , _ + / # -"
+                        maxLength={180}
+                      />
+                      {formErrors.newCategoryName && <div className="form-error">{formErrors.newCategoryName}</div>}
                     </div>
                   )}
+                  {formErrors.id_categoria && <div className="form-error">{formErrors.id_categoria}</div>}
                 </div>
 
                 {/* Brand select dropdown with "+ Registrar nueva" option */}
@@ -982,11 +1017,21 @@ export default function Inventario() {
                         className="form-input" 
                         required 
                         placeholder="Escriba nombre de nueva marca"
+                        maxLength={180}
                         value={newBrandName}
                         onChange={(e) => setNewBrandName(e.target.value)}
                       />
+                      <FieldValidationHint
+                        value={newBrandName}
+                        isValid={liveFieldValidators.technicalText}
+                        validMessage="Marca correcta."
+                        invalidMessage="Escribe entre 2 y 180 caracteres. Puedes usar letras, numeros, espacios y estos signos: . , _ + / # -"
+                        maxLength={180}
+                      />
+                      {formErrors.newBrandName && <div className="form-error">{formErrors.newBrandName}</div>}
                     </div>
                   )}
+                  {formErrors.id_marca && <div className="form-error">{formErrors.id_marca}</div>}
                 </div>
               </div>
 
@@ -997,9 +1042,18 @@ export default function Inventario() {
                   className="form-input" 
                   placeholder="Ej. GWS2200"
                   required 
+                  maxLength={180}
                   value={modelForm.modelo}
                   onChange={(e) => setModelForm({ ...modelForm, modelo: e.target.value })}
                 />
+                <FieldValidationHint
+                  value={modelForm.modelo}
+                  isValid={liveFieldValidators.technicalText}
+                  validMessage="Modelo correcto."
+                  invalidMessage="Escribe entre 2 y 180 caracteres. No uses <, >, @ ni simbolos raros."
+                  maxLength={180}
+                />
+                {formErrors.modelo && <div className="form-error">{formErrors.modelo}</div>}
               </div>
 
               <div className="form-group">
@@ -1009,9 +1063,18 @@ export default function Inventario() {
                   className="form-input" 
                   placeholder="Ej. GWS 22-180 H"
                   required 
+                  maxLength={180}
                   value={modelForm.codigoModelo}
                   onChange={(e) => setModelForm({ ...modelForm, codigoModelo: e.target.value })}
                 />
+                <FieldValidationHint
+                  value={modelForm.codigoModelo}
+                  isValid={liveFieldValidators.technicalText}
+                  validMessage="Codigo tecnico correcto."
+                  invalidMessage="Escribe entre 2 y 180 caracteres. Puedes usar letras, numeros, espacios y estos signos: . , _ + / # -"
+                  maxLength={180}
+                />
+                {formErrors.codigoModelo && <div className="form-error">{formErrors.codigoModelo}</div>}
               </div>
 
               <div className="form-group">
@@ -1021,9 +1084,18 @@ export default function Inventario() {
                   className="form-input" 
                   placeholder="Ej. SKU-75010324"
                   required 
+                  maxLength={80}
                   value={modelForm.sku}
                   onChange={(e) => setModelForm({ ...modelForm, sku: e.target.value })}
                 />
+                <FieldValidationHint
+                  value={modelForm.sku}
+                  isValid={liveFieldValidators.sku}
+                  validMessage="SKU correcto."
+                  invalidMessage="Escribe entre 3 y 80 caracteres, sin espacios. Usa letras, numeros, punto, guion o guion bajo."
+                  maxLength={80}
+                />
+                {formErrors.sku && <div className="form-error">{formErrors.sku}</div>}
               </div>
 
               <div className="form-row">
@@ -1037,6 +1109,14 @@ export default function Inventario() {
                     value={modelForm.precio}
                     onChange={(e) => setModelForm({ ...modelForm, precio: e.target.value })}
                   />
+                  <FieldValidationHint
+                    value={modelForm.precio}
+                    isValid={liveFieldValidators.price}
+                    validMessage="Precio correcto."
+                    invalidMessage="Escribe un precio mayor a 0. Puedes usar hasta 2 decimales."
+                    limitLabel="Formato: 999.99"
+                  />
+                  {formErrors.precio && <div className="form-error">{formErrors.precio}</div>}
                 </div>
                 <div className="form-group">
                   <label>{modalMode === 'edit' ? 'Stock Actual *' : 'Stock Inicial *'}</label>
@@ -1047,6 +1127,14 @@ export default function Inventario() {
                     value={modelForm.stock}
                     onChange={(e) => setModelForm({ ...modelForm, stock: e.target.value })}
                   />
+                  <FieldValidationHint
+                    value={modelForm.stock}
+                    isValid={liveFieldValidators.stock}
+                    validMessage="Stock correcto."
+                    invalidMessage="Escribe solo numeros enteros. El minimo permitido es 0."
+                    limitLabel="Entero >= 0"
+                  />
+                  {formErrors.stock && <div className="form-error">{formErrors.stock}</div>}
                 </div>
               </div>
 
@@ -1059,6 +1147,7 @@ export default function Inventario() {
                   value={modelForm.imageUrl}
                   onChange={(e) => setModelForm({ ...modelForm, imageUrl: e.target.value })}
                 />
+                {formErrors.imageUrl && <div className="form-error">{formErrors.imageUrl}</div>}
               </div>
 
               {/* Dynamic specifications list addition */}
@@ -1075,7 +1164,7 @@ export default function Inventario() {
                   </button>
                 </div>
                 {modelForm.specs.map((spec, i) => (
-                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 30px', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <div key={i} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '0.5rem', marginBottom: '0.5rem' }}>
                     <input 
                       type="text" 
                       className="form-input" 
@@ -1110,6 +1199,7 @@ export default function Inventario() {
                     </button>
                   </div>
                 ))}
+                {formErrors.specs && <div className="form-error">{formErrors.specs}</div>}
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.8rem' }}>

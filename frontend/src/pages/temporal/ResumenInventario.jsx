@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import AnimatedKpiValue from '../../components/AnimatedKpiValue';
 
 /* ─── Datos base de la aplicación (los mismos originales) ─────────── */
 
@@ -218,7 +219,7 @@ function KpiCard({ kpi, delay, isSelected, onClick }) {
         fontSize: '1.9rem', fontWeight: 800,
         color: tok.text, lineHeight: 1.1, margin: '0.5rem 0 0.15rem',
       }}>
-        {kpi.format(kpi.value)}
+        <AnimatedKpiValue value={kpi.value} format={kpi.format} />
       </div>
 
       {/* Sub label */}
@@ -783,7 +784,7 @@ export default function ResumenInventario() {
       {/* 8 KPI Cards — 4 por fila */}
       <section style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
         gap: '1.1rem',
         marginBottom: '2rem',
       }}>
@@ -799,7 +800,7 @@ export default function ResumenInventario() {
       </section>
 
       {/* Gráficos */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '1.5rem', alignItems: 'start' }}>
 
         {/* Barras: Stock por Categoría */}
         <div className="luxury-card" style={{ marginBottom: 0 }}>
@@ -869,7 +870,7 @@ export default function ResumenInventario() {
             kpiColor={ALERT_TOKENS[activeKpiObj.alert].text}
           />
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.7rem', marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px solid var(--glass-border)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '0.7rem', marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px solid var(--glass-border)' }}>
             {[
               { label: 'Mín.', value: activeKpiObj.format(Math.min(...dynamicLineData.map(d => d.valor))), color: 'var(--danger)' },
               { label: 'Prom.', value: activeKpiObj.format(Math.round(dynamicLineData.reduce((s,d)=>s+d.valor,0)/dynamicLineData.length)), color: '#ff6b00' },

@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import AnimatedKpiValue from '../../components/AnimatedKpiValue';
+import SummaryControls, { downloadCsv, makeCsv } from '../../components/SummaryControls';
 
 /* ─── Datos simulados ─────────────────────────────────────────── */
 
@@ -232,7 +234,7 @@ function KpiCard({ kpi, delay }) {
         fontWeight: 800, color: tok.text,
         lineHeight: 1.1, margin: '0.5rem 0 0.1rem',
       }}>
-        {kpi.format(kpi.value)}
+        <AnimatedKpiValue value={kpi.value} format={kpi.format} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.7rem' }}>
@@ -514,6 +516,10 @@ function TopProveedores({ data }) {
 
 export default function ResumenProveedores() {
   const [dbData, setDbData] = useState(null);
+  const [selectedSupplierView, setSelectedSupplierView] = useState('Todos');
+  const [dateRange, setDateRange] = useState('30');
+  const [exporting, setExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   useEffect(() => {
     const fetchDbSummary = async () => {
@@ -541,13 +547,35 @@ export default function ResumenProveedores() {
     }
   };
 
-  const currentKpis = KPI_DATA.map(kpi => ({
-    ...kpi,
-    value: getBaseKpiValue(kpi.id, kpi.value),
-    sparkData: typeof kpi.value === 'number' && getBaseKpiValue(kpi.id, kpi.value) !== kpi.value
-      ? kpi.sparkData.map(v => Math.round(v * (getBaseKpiValue(kpi.id, kpi.value) / kpi.value)))
-      : kpi.sparkData
-  }));
+  const viewFactor = selectedSupplierView === 'Activos' ? 0.82 : selectedSupplierView === 'Con ordenes' ? 0.46 : selectedSupplierView === 'Incidencias' ? 0.22 : 1;
+  const rangeFactor = dateRange === '7' ? 0.4 : dateRange === '365' ? 2.2 : 1;
+
+  const currentKpis = KPI_DATA.map(kpi => {
+    const baseValue = getBaseKpiValue(kpi.id, kpi.value);
+    const shouldScale = typeof baseValue === 'number' && ['activos', 'frecuentes', 'volumen', 'costos', 'incidencias'].includes(kpi.id);
+    const value = shouldScale ? Math.max(0, Math.round(baseValue * viewFactor * rangeFactor)) : baseValue;
+    return {
+      ...kpi,
+      value,
+      sparkData: typeof kpi.value === 'number' && value !== kpi.value
+        ? kpi.sparkData.map(v => Math.round(v * (value / kpi.value)))
+        : kpi.sparkData
+    };
+  });
+
+  const handleExport = () => {
+    setExporting(true);
+    setExportSuccess(false);
+    setTimeout(() => {
+      downloadCsv(`reporte_proveedores_${selectedSupplierView.toLowerCase().replace(/\s+/g, '-')}_${dateRange}dias.csv`, makeCsv(
+        ['ID', 'Metrica', 'Valor', 'Detalle', 'Vista', 'Rango'],
+        currentKpis.map(kpi => [kpi.id, kpi.label, kpi.format(kpi.value), kpi.valueSub, selectedSupplierView, `${dateRange} dias`])
+      ));
+      setExporting(false);
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 2200);
+    }, 350);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
@@ -556,7 +584,7 @@ export default function ResumenProveedores() {
         subtitle="KPIs, rendimiento y volumen de compras del período"
       />
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         <Link to="/" style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
           color: 'var(--accent-gold)', textDecoration: 'none',
@@ -564,6 +592,21 @@ export default function ResumenProveedores() {
         }}>
           <ArrowLeft size={14} /> Volver al Dashboard
         </Link>
+        <SummaryControls
+          filterValue={selectedSupplierView}
+          onFilterChange={setSelectedSupplierView}
+          filterOptions={[
+            { value: 'Todos', label: 'Todos los Proveedores' },
+            { value: 'Activos', label: 'Proveedores Activos' },
+            { value: 'Con ordenes', label: 'Con ordenes' },
+            { value: 'Incidencias', label: 'Incidencias' },
+          ]}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          onExport={handleExport}
+          exporting={exporting}
+          exportSuccess={exportSuccess}
+        />
       </div>
 
       <div style={{
@@ -571,13 +614,13 @@ export default function ResumenProveedores() {
         textTransform: 'uppercase', color: 'var(--text-muted)',
         marginBottom: '0.8rem',
       }}>
-        Dashboard Desglosado (Sincronizado con Base de Datos)
+        Dashboard Desglosado - Mostrando: {selectedSupplierView} / {dateRange} dias
       </div>
 
       {/* ── 8 KPI Cards ── */}
       <section style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
         gap: '1.1rem',
         marginBottom: '2rem',
       }}>
@@ -589,7 +632,7 @@ export default function ResumenProveedores() {
       {/* ── Gráficos fila 1 ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '1.2fr 1fr',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
         gap: '1.5rem',
         marginBottom: '1.5rem',
       }}>
@@ -654,7 +697,7 @@ export default function ResumenProveedores() {
       {/* ── Gráficos fila 2 ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 1.5fr',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
         gap: '1.5rem',
       }}>
         {/* Incidencias por tipo */}

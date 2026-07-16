@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { DollarSign, FileText, CheckCircle, Plus, Eye, Printer, Trash2 } from 'lucide-react';
+import { validatePayrollSlipForm } from '../services/validators';
 
 export default function Boletas() {
   const [slips, setSlips] = useState([]);
@@ -29,6 +30,7 @@ export default function Boletas() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const loadData = async () => {
     try {
@@ -102,6 +104,14 @@ export default function Boletas() {
 
   const handleGenerateSlip = async (e) => {
     e.preventDefault();
+    const validationErrors = validatePayrollSlipForm({
+      selectedEmployeeId,
+      periodLabel,
+      workDays,
+      slips,
+    });
+    setFormErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
     
     const cleanPeriod = periodLabel.trim() || `Periodo-${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
     
@@ -141,6 +151,7 @@ export default function Boletas() {
       }
       alert('Boleta de pago generada con éxito.');
       setShowCreateModal(false);
+      setFormErrors({});
       setPeriodLabel('');
       setNotes('');
       loadData();
@@ -343,7 +354,7 @@ export default function Boletas() {
             <h2 style={{ color: '#003471', marginBottom: '1.5rem', fontWeight: '700', fontSize: '1.4rem' }}>
               Emitir Boleta de Pago
             </h2>
-            <form onSubmit={handleGenerateSlip}>
+            <form onSubmit={handleGenerateSlip} noValidate>
               <div className="form-group" style={{ marginBottom: '1.2rem' }}>
                 <label style={{ display: 'block', fontWeight: '600', fontSize: '0.85rem', marginBottom: '0.4rem' }}>Seleccionar Empleado *</label>
                 <select 
@@ -358,6 +369,7 @@ export default function Boletas() {
                     </option>
                   ))}
                 </select>
+                {formErrors.selectedEmployeeId && <div className="form-error">{formErrors.selectedEmployeeId}</div>}
               </div>
 
               <div className="form-group" style={{ marginBottom: '1.2rem' }}>
@@ -371,6 +383,7 @@ export default function Boletas() {
                   value={periodLabel}
                   onChange={(e) => setPeriodLabel(e.target.value)}
                 />
+                {formErrors.periodLabel && <div className="form-error">{formErrors.periodLabel}</div>}
               </div>
 
               <div className="form-group" style={{ marginBottom: '1.2rem' }}>
@@ -386,6 +399,7 @@ export default function Boletas() {
                   value={workDays}
                   onChange={(e) => setWorkDays(e.target.value)}
                 />
+                {formErrors.workDays && <div className="form-error">{formErrors.workDays}</div>}
                 <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.3rem' }}>
                   {error ? (
                     <span>Ajuste manual de días para modo offline.</span>
@@ -468,7 +482,7 @@ export default function Boletas() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.85rem', marginBottom: '1.2rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '0.8rem', fontSize: '0.85rem', marginBottom: '1.2rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                 <div>
                   <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Empleado:</span>
                   <span style={{ fontWeight: '700', color: '#0f172a' }}>{viewingSlip.employeeNameSnapshot || viewingSlip.employeeName}</span>

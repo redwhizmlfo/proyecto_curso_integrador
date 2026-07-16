@@ -230,7 +230,7 @@ export default function Alertas() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           {/* STATS SUMMARY CARDS */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.2rem' }}>
             
             {/* Card 1: Critical out of stock */}
             <div className="luxury-card" style={{

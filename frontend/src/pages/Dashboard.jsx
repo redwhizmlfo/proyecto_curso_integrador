@@ -1,7 +1,93 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
-import { DollarSign, PackageOpen, Users, ArrowUp, ArrowDown, TrendingUp } from 'lucide-react';
+import { AlertTriangle, DollarSign, Package, PackageOpen, Users } from 'lucide-react';
+import AnimatedKpiValue from '../components/AnimatedKpiValue';
+
+const KPI_TONES = {
+  green: {
+    bg: '#f1fbef',
+    border: '#bdeebc',
+    text: '#10a91b',
+    iconBg: '#c9f8c5',
+    iconBorder: '#a7eba6',
+  },
+  red: {
+    bg: '#fff4ef',
+    border: '#ffc4b5',
+    text: '#e84118',
+    iconBg: '#ffc8bc',
+    iconBorder: '#ffad9b',
+  },
+  blue: {
+    bg: '#f3f8ff',
+    border: '#c5dcff',
+    text: '#003471',
+    iconBg: '#dceaff',
+    iconBorder: '#bad4ff',
+  },
+  gold: {
+    bg: '#fffaf0',
+    border: '#f3dfac',
+    text: '#b7791f',
+    iconBg: '#fff0bd',
+    iconBorder: '#f1d47c',
+  },
+};
+
+function MiniTrend({ color, points = [30, 42, 37, 51, 48, 62, 58, 74, 70, 86] }) {
+  const width = 96;
+  const height = 34;
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min || 1;
+  const path = points.map((point, index) => {
+    const x = (index / (points.length - 1)) * width;
+    const y = height - ((point - min) / range) * (height - 8) - 4;
+    return `${index === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} style={{ width, height, display: 'block' }} aria-hidden="true">
+      <path d={path} fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function MetricCard({ label, value, format = (nextValue) => nextValue, hint, trend, icon: Icon, tone = 'green', spark }) {
+  const palette = KPI_TONES[tone] || KPI_TONES.green;
+
+  return (
+    <article className="dashboard-metric-card" style={{ background: palette.bg, borderColor: palette.border }}>
+      <div className="dashboard-metric-head">
+        <p>{label}</p>
+        <div
+          className="dashboard-metric-icon"
+          style={{
+            background: palette.iconBg,
+            borderColor: palette.iconBorder,
+            color: palette.text,
+          }}
+        >
+          <Icon size={18} />
+        </div>
+      </div>
+
+      <strong style={{ color: palette.text }}>
+        <AnimatedKpiValue value={value} format={format} duration={950} />
+      </strong>
+      <span>{hint}</span>
+
+      <div className="dashboard-metric-foot">
+        <div>
+          <em style={{ color: palette.text }}>↗ {trend}</em>
+          <small>vs mes anterior</small>
+        </div>
+        <MiniTrend color={palette.text} points={spark} />
+      </div>
+    </article>
+  );
+}
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -10,7 +96,7 @@ export default function Dashboard() {
     totalSalesRevenue: 0,
     totalCustomers: 0,
     recentSales: [],
-    lowStockItems: []
+    lowStockItems: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,25 +110,14 @@ export default function Dashboard() {
         setError(null);
       } catch (err) {
         console.error('Error fetching dashboard summary:', err);
-        setError('No se pudo conectar con el servidor. Mostrando datos locales de respaldo.');
-        // Populate fallback luxury demonstration data
+        setError('No se pudo conectar con el servidor. Los indicadores se muestran vacios hasta recuperar la conexion.');
         setData({
-          totalProducts: 45,
-          lowStockAlerts: 3,
-          totalSalesRevenue: 12450.80,
-          totalCustomers: 18,
-          recentSales: [
-            { id: '1', clientNameSnapshot: 'Juan Pérez', soldAt: '2026-05-19T18:30:00Z', total: 420.50, series: 'F001-00021' },
-            { id: '2', clientNameSnapshot: 'Maria Garcia', soldAt: '2026-05-19T14:15:00Z', total: 185.00, series: 'B001-00045' },
-            { id: '3', clientNameSnapshot: 'Carlos Mendoza', soldAt: '2026-05-18T16:45:00Z', total: 1250.00, series: 'F001-00020' },
-            { id: '4', clientNameSnapshot: 'Sofía Castro', soldAt: '2026-05-18T10:05:00Z', total: 95.80, series: 'B001-00044' },
-            { id: '5', clientNameSnapshot: 'Distribuidora Norte', soldAt: '2026-05-17T11:20:00Z', total: 3200.00, series: 'F001-00019' }
-          ],
-          lowStockItems: [
-            { id: '101', name: 'Martillo de Acero 16oz', barcode: '75010324', category: 'Herramientas', stock: 2, minStock: 5, unit: 'pza' },
-            { id: '102', name: 'Cemento Sol Tipo 1 (42.5kg)', barcode: '77502310', category: 'Materiales', stock: 8, minStock: 20, unit: 'bolsa' },
-            { id: '103', name: 'Tornillo de Madera 2"', barcode: '84102941', category: 'Tornillería', stock: 12, minStock: 50, unit: 'caja' }
-          ]
+          totalProducts: 0,
+          lowStockAlerts: 0,
+          totalSalesRevenue: 0,
+          totalCustomers: 0,
+          recentSales: [],
+          lowStockItems: [],
         });
       } finally {
         setLoading(false);
@@ -54,8 +129,61 @@ export default function Dashboard() {
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString('es-PE', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
+
+  const revenue = Number(data.totalSalesRevenue || 0);
+  const criticalTone = data.lowStockAlerts > 0 ? 'red' : 'green';
+  const metricCards = [
+    {
+      label: 'Productos Registrados',
+      value: data.totalProducts,
+      format: (value) => Math.round(value).toLocaleString('es-PE'),
+      hint: 'activos en catalogo',
+      trend: '+4.2%',
+      icon: Package,
+      tone: 'green',
+      spark: [22, 20, 27, 25, 31, 29, 36, 34, 42, 48],
+    },
+    {
+      label: 'Ventas Totales',
+      value: revenue,
+      format: (value) => `S/ ${Math.round(value).toLocaleString('es-PE')}`,
+      hint: 'ingresos registrados',
+      trend: '+8.3%',
+      icon: DollarSign,
+      tone: revenue > 0 ? 'green' : 'gold',
+      spark: [30, 28, 36, 32, 40, 45, 43, 51, 55, 62],
+    },
+    {
+      label: 'Clientes Activos',
+      value: data.totalCustomers,
+      format: (value) => Math.round(value).toLocaleString('es-PE'),
+      hint: 'clientes registrados',
+      trend: '+5.1%',
+      icon: Users,
+      tone: 'blue',
+      spark: [18, 21, 24, 22, 26, 28, 31, 34, 33, 39],
+    },
+    {
+      label: 'Stock Critico',
+      value: data.lowStockAlerts,
+      format: (value) => Math.round(value).toLocaleString('es-PE'),
+      hint: data.lowStockAlerts > 0 ? 'requieren reposicion' : 'sin alertas activas',
+      trend: data.lowStockAlerts > 0 ? '+16.7%' : '0.0%',
+      icon: data.lowStockAlerts > 0 ? AlertTriangle : PackageOpen,
+      tone: criticalTone,
+      spark: data.lowStockAlerts > 0
+        ? [18, 30, 25, 38, 32, 46, 41, 52, 48, 58]
+        : [28, 24, 22, 20, 18, 16, 15, 13, 12, 10],
+    },
+  ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
@@ -63,76 +191,31 @@ export default function Dashboard() {
 
       {error && (
         <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid var(--accent-gold)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-gold)', fontSize: '0.9rem' }}>
-          ⚠️ {error}
+          {error}
         </div>
       )}
 
-      {/* Stats Cards */}
-      <section className="stats-grid">
-        <div className="luxury-card interactive">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Ventas Totales</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: '700', margin: '0.5rem 0', color: 'var(--accent-gold)' }}>
-                S/ {data.totalSalesRevenue.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </div>
-            <div style={{ background: 'rgba(212, 175, 55, 0.1)', padding: '0.6rem', borderRadius: '12px' }}>
-              <DollarSign color="var(--accent-gold)" />
-            </div>
-          </div>
-          <div style={{ color: 'var(--success)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.5rem' }}>
-            <TrendingUp size={14} /> <span>+12.4% vs mes anterior</span>
-          </div>
-        </div>
+      <div className="dashboard-metric-eyebrow">
+        <span>Panel metrico interactivo</span>
+        <span>Mostrando: todo</span>
+      </div>
 
-        <div className="luxury-card interactive">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Stock Crítico</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: '700', margin: '0.5rem 0', color: data.lowStockAlerts > 0 ? 'var(--danger)' : 'var(--success)' }}>
-                {data.lowStockAlerts} {data.lowStockAlerts === 1 ? 'Producto' : 'Productos'}
-              </div>
-            </div>
-            <div style={{ background: data.lowStockAlerts > 0 ? 'rgba(232, 65, 24, 0.1)' : 'rgba(76, 209, 55, 0.1)', padding: '0.6rem', borderRadius: '12px' }}>
-              <PackageOpen color={data.lowStockAlerts > 0 ? 'var(--danger)' : 'var(--success)'} />
-            </div>
-          </div>
-          <div style={{ color: data.lowStockAlerts > 0 ? 'var(--danger)' : 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-            {data.lowStockAlerts > 0 ? '⚠️ Requieren reposición inmediata' : '✓ Niveles de stock estables'}
-          </div>
-        </div>
-
-        <div className="luxury-card interactive">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Clientes Activos</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: '700', margin: '0.5rem 0', color: 'var(--accent)' }}>
-                {data.totalCustomers}
-              </div>
-            </div>
-            <div style={{ background: 'rgba(0, 242, 255, 0.1)', padding: '0.6rem', borderRadius: '12px' }}>
-              <Users color="var(--accent)" />
-            </div>
-          </div>
-          <div style={{ color: 'var(--accent)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-            Clientes registrados en el sistema
-          </div>
-        </div>
+      <section className="dashboard-metrics-grid" aria-busy={loading}>
+        {metricCards.map((metric) => (
+          <MetricCard key={metric.label} {...metric} />
+        ))}
       </section>
 
-      {/* Main Content Split */}
       <div className="dashboard-main-grid">
-        {/* Left Side: Recent Sales */}
         <div className="luxury-card" style={{ marginBottom: 0, minWidth: 0 }}>
           <h2 style={{ fontSize: '1.2rem', fontWeight: '400', letterSpacing: '1px', marginBottom: '1rem', color: 'var(--accent)' }}>
-            Últimas Ventas Realizadas
+            Ultimas Ventas Realizadas
           </h2>
           <div className="table-container">
             <table className="luxury-table recent-sales-table">
               <thead>
                 <tr>
-                  <th>Nº Boleta/Factura</th>
+                  <th>Nro. Boleta/Factura</th>
                   <th>Cliente</th>
                   <th>Fecha</th>
                   <th style={{ textAlign: 'right' }}>Total</th>
@@ -148,11 +231,11 @@ export default function Dashboard() {
                 ) : (
                   data.recentSales.map((sale) => (
                     <tr key={sale.id}>
-                      <td style={{ fontWeight: '600' }}>{sale.series || `#VEN-${sale.id.slice(0,5)}`}</td>
+                      <td style={{ fontWeight: '600' }}>{sale.series || `#VEN-${String(sale.id).slice(0, 5)}`}</td>
                       <td>{sale.clientNameSnapshot}</td>
                       <td style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{formatDate(sale.soldAt)}</td>
                       <td style={{ textAlign: 'right', fontWeight: '600', color: 'var(--accent-gold)' }}>
-                        S/ {sale.total.toFixed(2)}
+                        S/ {Number(sale.total || 0).toFixed(2)}
                       </td>
                     </tr>
                   ))
@@ -162,10 +245,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right Side: Low Stock Items */}
         <div className="luxury-card" style={{ marginBottom: 0, minWidth: 0 }}>
           <h2 style={{ fontSize: '1.2rem', fontWeight: '400', letterSpacing: '1px', marginBottom: '1rem', color: 'var(--danger)' }}>
-            Alertas de Stock Crítico
+            Alertas de Stock Critico
           </h2>
           <div className="table-container">
             <table className="luxury-table stock-alerts-table">
@@ -173,14 +255,14 @@ export default function Dashboard() {
                 <tr>
                   <th>Producto</th>
                   <th style={{ textAlign: 'right' }}>Stock</th>
-                  <th style={{ textAlign: 'right' }}>Mínimo</th>
+                  <th style={{ textAlign: 'right' }}>Minimo</th>
                 </tr>
               </thead>
               <tbody>
                 {data.lowStockItems.length === 0 ? (
                   <tr>
                     <td colSpan="3" style={{ textAlign: 'center', color: 'var(--success)', padding: '2rem', fontWeight: '600' }}>
-                      ✓ Todo el inventario está abastecido.
+                      Todo el inventario esta abastecido.
                     </td>
                   </tr>
                 ) : (
@@ -188,7 +270,7 @@ export default function Dashboard() {
                     <tr key={item.id}>
                       <td>
                         <div style={{ fontWeight: '600' }}>{item.name}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Categoría: {item.category}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Categoria: {item.category}</div>
                       </td>
                       <td style={{ textAlign: 'right', fontWeight: '600', color: 'var(--danger)' }}>
                         {item.stock} {item.unit}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { 
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 export default function Movimientos() {
+  const ADD_BRAND_VALUE = '__add_brand__';
   const [modelos, setModelos] = useState([]);
   const [marcas, setMarcas] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -27,6 +28,7 @@ export default function Movimientos() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [newBoxName, setNewBoxName] = useState('');
   const [selectedBrandId, setSelectedBrandId] = useState('');
+  const [newBrandName, setNewBrandName] = useState('');
   const [selectedModelId, setSelectedModelId] = useState('');
   const [selectedModelQty, setSelectedModelQty] = useState(5);
   const [newBoxItems, setNewBoxItems] = useState([]);
@@ -177,8 +179,14 @@ export default function Movimientos() {
       alert("Debes agregar al menos un producto a la caja.");
       return;
     }
+    if (selectedBrandId === ADD_BRAND_VALUE && !newBrandName.trim()) {
+      alert("Introduce el nombre de la nueva marca.");
+      return;
+    }
 
-    const brand = marcas.find(b => b.id === selectedBrandId) || marcas[0];
+    const brand = selectedBrandId === ADD_BRAND_VALUE
+      ? { id: `marca_${Date.now()}`, nombreMarca: newBrandName.trim() }
+      : (marcas.find(b => b.id === selectedBrandId) || marcas[0]);
     const newBox = {
       id: `box_${Date.now()}`,
       name: newBoxName,
@@ -195,6 +203,8 @@ export default function Movimientos() {
 
     // Reset Form states
     setNewBoxName('');
+    setSelectedBrandId('');
+    setNewBrandName('');
     setNewBoxItems([]);
     setIsFormOpen(false);
   };
@@ -307,17 +317,8 @@ export default function Movimientos() {
     setUnboxingError(null);
   };
 
-  // Clear simulated history and boxes (to reset demo)
-  const resetSimulation = () => {
-    if (window.confirm("¿Seguro que deseas reiniciar el inventario de movimientos a su estado por defecto?")) {
-      localStorage.removeItem('inventory_boxes');
-      localStorage.removeItem('inventory_history');
-      window.location.reload();
-    }
-  };
-
   // Filter models based on selected brand in form
-  const formModels = modelos.filter(m => m.marca?.id === selectedBrandId || !selectedBrandId);
+  const formModels = modelos.filter(m => selectedBrandId === ADD_BRAND_VALUE || m.marca?.id === selectedBrandId || !selectedBrandId);
 
   // Helper to resolve fallback or real images
   const getProductImage = (modelId) => {
@@ -474,6 +475,21 @@ export default function Movimientos() {
           pointer-events: none;
           z-index: 5;
         }
+
+        .box-drawer-panel .form-group {
+          margin-bottom: 0;
+        }
+
+        .box-drawer-panel .form-input {
+          padding: 0.58rem 0.75rem;
+          border-radius: 7px;
+          font-size: 0.86rem;
+        }
+
+        .box-drawer-panel h3 {
+          font-size: 1.12rem !important;
+          line-height: 1.2;
+        }
       `}</style>
 
       {/* HEADER SECTION */}
@@ -483,16 +499,9 @@ export default function Movimientos() {
       >
         <div style={{ display: 'flex', gap: '0.8rem' }}>
           <button 
-            onClick={resetSimulation} 
-            className="btn btn-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px dashed var(--danger)', color: 'var(--danger)', height: '38px', padding: '0 1rem' }}
-          >
-            Reiniciar Simulación
-          </button>
-          <button 
             onClick={() => setIsFormOpen(true)} 
-            className="btn btn-primary"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--accent)', height: '38px', padding: '0 1rem' }}
+            className="btn-premium"
+            style={{ height: '38px', padding: '0 1rem' }}
           >
             <Plus size={16} /> Registrar Caja de Almacén
           </button>
@@ -514,7 +523,7 @@ export default function Movimientos() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           {/* TOP SUMMARY CARDS GRID */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.2rem' }}>
             {/* Card 1: Cajas Pendientes */}
             <div className="luxury-card" style={{ padding: '1.2rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--glass-border)' }}>
               <div style={{
@@ -634,7 +643,7 @@ export default function Movimientos() {
                 <p style={{ fontSize: '0.78rem', marginTop: '0.3rem' }}>Utiliza el botón de arriba para registrar una nueva caja.</p>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '1.2rem' }}>
                 {boxes.filter(b => b.status === 'SELLADA').map((box) => (
                   <div 
                     key={box.id} 
@@ -812,36 +821,40 @@ export default function Movimientos() {
           background: 'rgba(10, 22, 41, 0.4)',
           backdropFilter: 'blur(4px)',
           display: 'flex',
-          justifyContent: 'flex-end',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
           zIndex: 999,
           animation: 'fadeIn 0.25s ease-out'
         }}>
-          <div style={{
+          <div className="box-drawer-panel" style={{
             width: '100%',
-            maxWidth: '460px',
+            maxWidth: '520px',
             background: '#ffffff',
-            height: '100%',
-            boxShadow: '-4px 0 30px rgba(0,0,0,0.1)',
-            padding: '2.5rem 2rem',
+            maxHeight: 'calc(100vh - 48px)',
+            boxShadow: '0 24px 70px rgba(10,22,41,0.22)',
+            boxSizing: 'border-box',
+            borderRadius: '12px',
+            padding: '1.35rem 1.5rem',
             display: 'flex',
             flexDirection: 'column',
-            gap: '1.5rem',
-            overflowY: 'auto'
+            gap: '0.85rem',
+            overflowY: 'visible'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.65rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <PlusCircle size={20} style={{ color: 'var(--accent)' }} />
                 <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-primary)' }}>Registrar Caja de Almacén</h3>
               </div>
               <button 
-                onClick={() => { setIsFormOpen(false); setNewBoxItems([]); }}
+                onClick={() => { setIsFormOpen(false); setNewBoxItems([]); setSelectedBrandId(''); setNewBrandName(''); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleRegisterBox} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+            <form onSubmit={handleRegisterBox} style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
               <div className="form-group">
                 <label style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>
                   Nombre / Lote de la Caja
@@ -865,18 +878,39 @@ export default function Movimientos() {
                   value={selectedBrandId} 
                   onChange={(e) => {
                     setSelectedBrandId(e.target.value);
+                    if (e.target.value !== ADD_BRAND_VALUE) {
+                      setNewBrandName('');
+                    }
                     setSelectedModelId('');
                   }}
                   required
                 >
                   <option value="">Selecciona una marca...</option>
+                  <option value={ADD_BRAND_VALUE}>+ Añadir marca</option>
                   {marcas.map(b => (
                     <option key={b.id} value={b.id}>{b.nombreMarca}</option>
                   ))}
                 </select>
+                <div style={{
+                  maxHeight: selectedBrandId === ADD_BRAND_VALUE ? '64px' : '0',
+                  opacity: selectedBrandId === ADD_BRAND_VALUE ? 1 : 0,
+                  transform: selectedBrandId === ADD_BRAND_VALUE ? 'translateY(0)' : 'translateY(-4px)',
+                  overflow: 'hidden',
+                  transition: 'max-height 0.28s ease, opacity 0.22s ease, transform 0.28s ease',
+                  marginTop: selectedBrandId === ADD_BRAND_VALUE ? '0.55rem' : '0'
+                }}>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Nombre de la nueva marca"
+                    value={newBrandName}
+                    onChange={(e) => setNewBrandName(e.target.value)}
+                    required={selectedBrandId === ADD_BRAND_VALUE}
+                  />
+                </div>
               </div>
 
-              <div style={{ border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '1rem', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '0.75rem', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: '800', color: 'var(--accent)' }}>AGREGAR PRODUCTOS MODELOS</span>
                 
                 <div className="form-group">
@@ -926,7 +960,7 @@ export default function Movimientos() {
                     border: 'none',
                     fontWeight: '700',
                     fontSize: '0.78rem',
-                    padding: '8px',
+                    padding: '7px',
                     borderRadius: '6px',
                     cursor: selectedModelId ? 'pointer' : 'default',
                     display: 'flex',
@@ -943,11 +977,11 @@ export default function Movimientos() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--text-secondary)' }}>Productos en la Caja:</span>
                 {newBoxItems.length === 0 ? (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', padding: '0.5rem', textAlign: 'center', background: '#f8fafc', borderRadius: '6px', border: '1px dashed var(--glass-border)' }}>
+                  <div style={{ minHeight: '78px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic', padding: '0.45rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', border: '1px dashed var(--glass-border)' }}>
                     Caja vacía. Agrega productos arriba.
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minHeight: '78px', maxHeight: '132px', overflowY: 'auto', background: '#f8fafc', borderRadius: '8px', border: '1px dashed var(--glass-border)', padding: '0.45rem' }}>
                     {newBoxItems.map(item => (
                       <div key={item.modelId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#ffffff', border: '1px solid var(--glass-border)', padding: '6px 10px', borderRadius: '6px', fontSize: '0.78rem' }}>
                         <span>
@@ -968,13 +1002,16 @@ export default function Movimientos() {
 
               <button 
                 type="submit" 
-                className="btn btn-primary"
+                className="btn-premium"
                 disabled={newBoxItems.length === 0}
                 style={{
-                  background: 'linear-gradient(135deg, var(--accent) 0%, #0056b3 100%)',
-                  padding: '12px',
+                  width: '100%',
+                  minHeight: '40px',
+                  padding: '0 1rem',
+                  color: '#ffffff',
+                  borderRadius: '8px',
                   fontWeight: '700',
-                  marginTop: '1rem',
+                  marginTop: '0.25rem',
                   opacity: newBoxItems.length === 0 ? 0.6 : 1
                 }}
               >

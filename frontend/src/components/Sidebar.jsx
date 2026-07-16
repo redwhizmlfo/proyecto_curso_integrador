@@ -2,29 +2,37 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
-  ShoppingCart,
+  ShoppingBasket,
   Boxes,
   AlertTriangle,
-  RefreshCw,
-  Users,
-  Truck,
-  FileText,
+  UsersRound,
   Briefcase,
-  Calendar,
-  DollarSign,
+  CalendarCheck,
   ChevronDown,
   ChevronUp,
-  Package,
+  PackageSearch,
+  PackageX,
   TrendingUp,
   History,
   Menu,
   ClipboardList,
-  ShieldCheck,
-  ReceiptText,
+  ClipboardCheck,
+  ClipboardPenLine,
+  ShieldUser,
+  Receipt,
   FileClock,
   Send,
   RotateCcw,
-  BadgeCheck
+  BadgeCheck,
+  ChartColumnBig,
+  ChartNoAxesCombined,
+  ScanBarcode,
+  UserRoundCheck,
+  Building2,
+  BookOpenCheck,
+  IdCard,
+  CircleDollarSign,
+  Warehouse,
 } from 'lucide-react';
 
 export default function Sidebar({ isCollapsed, onToggleCollapse }) {
@@ -35,13 +43,28 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
     dashboard: true, // Expanded by default
     ventas: true,
     inventario: true, // Expanded by default
-    almacen: true,
     operaciones: true,
     rrhh: true,
   });
 
   const toggleSection = (section) => {
     setSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const closeMobileSidebar = () => {
+    if (
+      !isCollapsed &&
+      typeof window !== 'undefined' &&
+      window.matchMedia('(max-width: 1024px)').matches
+    ) {
+      onToggleCollapse();
+    }
+  };
+
+  const handleSidebarClick = (event) => {
+    if (event.target.closest('a')) {
+      closeMobileSidebar();
+    }
   };
 
   const handleCategoryClick = (sectionName) => {
@@ -55,13 +78,12 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
 
   const isDashboardActive = currentPath === '/' || currentPath.startsWith('/dashboard');
   const isVentasActive = currentPath.startsWith('/ventas');
-  const isInventarioActive = currentPath.startsWith('/inventario') && !currentPath.startsWith('/inventario/mermas') && !currentPath.startsWith('/inventario/kardex');
-  const isAlmacenActive = currentPath.startsWith('/inventario/mermas') || currentPath.startsWith('/inventario/kardex');
+  const isInventarioActive = currentPath.startsWith('/inventario');
   const isRrhhActive = currentPath.startsWith('/rrhh');
   
   if (isCollapsed) {
     return (
-      <nav className="sidebar collapsed">
+      <nav className="sidebar collapsed" onClick={handleSidebarClick}>
         {/* Collapsed Logo */}
         <div style={{ 
           display: 'flex', 
@@ -111,7 +133,7 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
               onClick={() => handleCategoryClick('ventas')}
               className={`nav-item-collapsed ${isVentasActive ? 'active' : ''}`}
             >
-              <ShoppingCart size={20} />
+              <ShoppingBasket size={20} />
             </button>
           </li>
 
@@ -121,7 +143,7 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
               onClick={() => handleCategoryClick('inventario')}
               className={`nav-item-collapsed ${isInventarioActive ? 'active' : ''}`}
             >
-              <Boxes size={20} />
+              <Warehouse size={20} />
             </button>
           </li>
 
@@ -131,7 +153,7 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
               to="/ordenes-compra" 
               className={({ isActive }) => `nav-item-collapsed ${isActive ? 'active' : ''}`}
             >
-              <FileText size={20} />
+              <ClipboardCheck size={20} />
             </NavLink>
           </li>
 
@@ -141,7 +163,7 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
               to="/clientes" 
               className={({ isActive }) => `nav-item-collapsed ${isActive ? 'active' : ''}`}
             >
-              <Users size={20} />
+              <UsersRound size={20} />
             </NavLink>
           </li>
 
@@ -151,18 +173,8 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
               to="/proveedores" 
               className={({ isActive }) => `nav-item-collapsed ${isActive ? 'active' : ''}`}
             >
-              <Truck size={20} />
+              <Building2 size={20} />
             </NavLink>
-          </li>
-
-          {/* Avanzado Almacén */}
-          <li title="Avanzado Almacén">
-            <button 
-              onClick={() => handleCategoryClick('almacen')}
-              className={`nav-item-collapsed ${isAlmacenActive ? 'active' : ''}`}
-            >
-              <Package size={20} />
-            </button>
           </li>
 
           {/* Empleados */}
@@ -174,13 +186,22 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
               <Briefcase size={20} />
             </button>
           </li>
+
+          <li title="Panel de Permisos">
+            <NavLink 
+              to="/panel-permisos" 
+              className={({ isActive }) => `nav-item-collapsed ${isActive ? 'active' : ''}`}
+            >
+              <ShieldUser size={20} />
+            </NavLink>
+          </li>
         </ul>
       </nav>
     );
   }
 
   return (
-    <nav className="sidebar">
+    <nav className="sidebar" onClick={handleSidebarClick}>
       <div className="logo" style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -224,41 +245,42 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
               justifyContent: 'space-between', 
               alignItems: 'center', 
               cursor: 'pointer', 
-              margin: '0.5rem 1.5rem 0.5rem 1.5rem',
+              margin: '0.72rem 1.35rem 0.68rem 1.35rem',
               color: 'var(--accent)',
-              fontSize: '0.75rem',
+              fontSize: '0.9rem',
               fontWeight: '800',
               textTransform: 'uppercase',
-              letterSpacing: '1px'
+              letterSpacing: '0.8px',
+              lineHeight: '1.25'
             }} 
             onClick={() => toggleSection('dashboard')}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <LayoutDashboard size={16} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', minWidth: 0 }}>
+              <LayoutDashboard size={18} />
               <span>Dashboard</span>
             </div>
-            {sections.dashboard ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            {sections.dashboard ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </div>
-          {sections.dashboard && (
-            <div style={{ paddingLeft: '0.5rem' }}>
+          <div className={`nav-submenu ${sections.dashboard ? 'open' : ''}`}>
+            <div className="nav-submenu-inner">
               <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end>
-                <LayoutDashboard size={14} style={{ marginRight: '8px' }} />
+                <ChartNoAxesCombined size={14} style={{ marginRight: '8px' }} />
                 <span>Resumen General</span>
               </NavLink>
               <NavLink to="/dashboard/resumen-inventario" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <Boxes size={14} style={{ marginRight: '8px' }} />
+                <Warehouse size={14} style={{ marginRight: '8px' }} />
                 <span style={{ fontSize: '0.85rem' }}>Resumen Inventario</span>
               </NavLink>
               <NavLink to="/dashboard/resumen-ventas" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <ShoppingCart size={14} style={{ marginRight: '8px' }} />
+                <ChartColumnBig size={14} style={{ marginRight: '8px' }} />
                 <span style={{ fontSize: '0.85rem' }}>Resumen Ventas</span>
               </NavLink>
               <NavLink to="/dashboard/resumen-clientes" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <Users size={14} style={{ marginRight: '8px' }} />
+                <UsersRound size={14} style={{ marginRight: '8px' }} />
                 <span style={{ fontSize: '0.85rem' }}>Resumen Clientes</span>
               </NavLink>
               <NavLink to="/dashboard/resumen-proveedores" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <Truck size={14} style={{ marginRight: '8px' }} />
+                <Building2 size={14} style={{ marginRight: '8px' }} />
                 <span style={{ fontSize: '0.85rem' }}>Resumen Proveedores</span>
               </NavLink>
               <NavLink to="/dashboard/resumen-pedidos-compra" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
@@ -266,15 +288,15 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
                 <span style={{ fontSize: '0.85rem' }}>Resumen Pedidos</span>
               </NavLink>
               <NavLink to="/dashboard/resumen-empleados" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <Briefcase size={14} style={{ marginRight: '8px' }} />
+                <UserRoundCheck size={14} style={{ marginRight: '8px' }} />
                 <span style={{ fontSize: '0.85rem' }}>Resumen Empleados</span>
               </NavLink>
               <NavLink to="/dashboard/resumen-usuarios-roles" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <ShieldCheck size={14} style={{ marginRight: '8px' }} />
+                <ShieldUser size={14} style={{ marginRight: '8px' }} />
                 <span style={{ fontSize: '0.85rem' }}>Usuarios y Roles</span>
               </NavLink>
             </div>
-          )}
+          </div>
         </li>
 
         {/* Ventas Collapsible Menu */}
@@ -286,25 +308,26 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
               justifyContent: 'space-between', 
               alignItems: 'center', 
               cursor: 'pointer', 
-              margin: '0.5rem 1.5rem 0.5rem 1.5rem',
+              margin: '0.72rem 1.35rem 0.68rem 1.35rem',
               color: 'var(--accent)',
-              fontSize: '0.75rem',
+              fontSize: '0.9rem',
               fontWeight: '800',
               textTransform: 'uppercase',
-              letterSpacing: '1px'
+              letterSpacing: '0.8px',
+              lineHeight: '1.25'
             }} 
             onClick={() => toggleSection('ventas')}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <ShoppingCart size={16} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', minWidth: 0 }}>
+              <ShoppingBasket size={18} />
               <span>Ventas</span>
             </div>
-            {sections.ventas ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            {sections.ventas ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </div>
-          {sections.ventas && (
-            <div style={{ paddingLeft: '0.5rem' }}>
+          <div className={`nav-submenu ${sections.ventas ? 'open' : ''}`}>
+            <div className="nav-submenu-inner">
               <NavLink to="/ventas/pos" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <ShoppingCart size={14} style={{ marginRight: '8px' }} />
+                <ScanBarcode size={14} style={{ marginRight: '8px' }} />
                 <span style={{ fontSize: '0.85rem' }}>Ventas POS</span>
               </NavLink>
               <NavLink to="/ventas/historial" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
@@ -312,7 +335,7 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
                 <span style={{ fontSize: '0.85rem' }}>Historial de Ventas</span>
               </NavLink>
               <NavLink to="/ventas/cotizaciones" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <ReceiptText size={14} style={{ marginRight: '8px' }} />
+                <Receipt size={14} style={{ marginRight: '8px' }} />
                 <span style={{ fontSize: '0.85rem' }}>Cotizaciones</span>
               </NavLink>
               <NavLink to="/ventas/pedidos" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
@@ -332,7 +355,7 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
                 <span style={{ fontSize: '0.85rem' }}>Garantías</span>
               </NavLink>
             </div>
-          )}
+          </div>
         </li>
 
         {/* Inventario Activo Collapsible Menu */}
@@ -344,16 +367,17 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
               justifyContent: 'space-between', 
               alignItems: 'center', 
               cursor: 'pointer', 
-              margin: '0.5rem 1.5rem 0.5rem 1.5rem',
+              margin: '0.72rem 1.35rem 0.68rem 1.35rem',
               color: 'var(--accent)',
-              fontSize: '0.75rem',
+              fontSize: '0.9rem',
               fontWeight: '800',
               textTransform: 'uppercase',
-              letterSpacing: '1px'
+              letterSpacing: '0.8px',
+              lineHeight: '1.25'
             }} 
             onClick={() => toggleSection('inventario')}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', minWidth: 0 }}>
               {sections.inventario && (
                 <span 
                   style={{ 
@@ -365,20 +389,20 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
                   }} 
                 />
               )}
-              <Boxes size={16} />
+              <Boxes size={18} />
               <span>Inventario Activo</span>
             </div>
-            {sections.inventario ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            {sections.inventario ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </div>
-          {sections.inventario && (
-            <div style={{ paddingLeft: '0.5rem' }}>
+          <div className={`nav-submenu ${sections.inventario ? 'open' : ''}`}>
+            <div className="nav-submenu-inner">
               <NavLink to="/inventario/catalogo" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 {({ isActive }) => (
                   <>
                     {isActive && (
                       <span style={{ width: '6px', height: '6px', backgroundColor: 'currentColor', borderRadius: '50%', marginRight: '8px', flexShrink: 0 }} />
                     )}
-                    <Package size={14} />
+                    <PackageSearch size={14} />
                     <span style={{ fontSize: '0.85rem' }}>Catálogo de Productos</span>
                   </>
                 )}
@@ -400,7 +424,7 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
                     {isActive && (
                       <span style={{ width: '6px', height: '6px', backgroundColor: 'currentColor', borderRadius: '50%', marginRight: '8px', flexShrink: 0 }} />
                     )}
-                    <History size={14} />
+                    <ClipboardPenLine size={14} />
                     <span style={{ fontSize: '0.85rem' }}>Movimientos</span>
                   </>
                 )}
@@ -416,14 +440,36 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
                   </>
                 )}
               </NavLink>
+              <NavLink to="/inventario/mermas" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <span style={{ width: '6px', height: '6px', backgroundColor: 'currentColor', borderRadius: '50%', marginRight: '8px', flexShrink: 0 }} />
+                    )}
+                    <PackageX size={14} />
+                    <span style={{ fontSize: '0.85rem' }}>Mermas</span>
+                  </>
+                )}
+              </NavLink>
+              <NavLink to="/inventario/kardex" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <span style={{ width: '6px', height: '6px', backgroundColor: 'currentColor', borderRadius: '50%', marginRight: '8px', flexShrink: 0 }} />
+                    )}
+                    <BookOpenCheck size={14} />
+                    <span style={{ fontSize: '0.85rem' }}>Kardex</span>
+                  </>
+                )}
+              </NavLink>
             </div>
-          )}
+          </div>
         </li>
 
         {/* Pedidos */}
         <li>
           <NavLink to="/ordenes-compra" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <FileText />
+            <ClipboardCheck />
             <span>Pedidos</span>
           </NavLink>
         </li>
@@ -431,7 +477,7 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
         {/* Clientes */}
         <li>
           <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Users />
+            <UsersRound />
             <span>Clientes</span>
           </NavLink>
         </li>
@@ -439,53 +485,40 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
         {/* Proveedores */}
         <li>
           <NavLink to="/proveedores" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Truck />
+            <Building2 />
             <span>Proveedores</span>
           </NavLink>
-        </li>
-
-        {/* Mermas & Kardex */}
-        <li>
-          <div className="nav-category" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => toggleSection('almacen')}>
-            <span>Avanzado Almacén</span>
-            {sections.almacen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </div>
-          {sections.almacen && (
-            <div style={{ paddingLeft: '0.5rem' }}>
-              <NavLink to="/inventario/mermas" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <AlertTriangle />
-                <span>Mermas</span>
-              </NavLink>
-              <NavLink to="/inventario/kardex" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <RefreshCw />
-                <span>Kardex</span>
-              </NavLink>
-            </div>
-          )}
         </li>
 
         {/* Empleados */}
         <li>
           <div className="nav-category" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => toggleSection('rrhh')}>
-            <span>Empleados</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', minWidth: 0 }}>
+              <Briefcase size={18} />
+              <span>Empleados</span>
+            </div>
             {sections.rrhh ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
           </div>
-          {sections.rrhh && (
-            <div style={{ paddingLeft: '0.5rem' }}>
+          <div className={`nav-submenu ${sections.rrhh ? 'open' : ''}`}>
+            <div className="nav-submenu-inner">
               <NavLink to="/rrhh/empleados" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <Briefcase />
+                <IdCard />
                 <span>Personal</span>
               </NavLink>
               <NavLink to="/rrhh/asistencia" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <Calendar />
+                <CalendarCheck />
                 <span>Asistencia</span>
               </NavLink>
               <NavLink to="/rrhh/boletas" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <DollarSign />
+                <CircleDollarSign />
                 <span>Boletas de Pago</span>
               </NavLink>
+              <NavLink to="/panel-permisos" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <ShieldUser />
+                <span>Panel de Permisos</span>
+              </NavLink>
             </div>
-          )}
+          </div>
         </li>
       </ul>
     </nav>

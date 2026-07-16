@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
+import FieldValidationHint from '../components/FieldValidationHint';
 import { Search, Plus, Edit, Trash, HelpCircle, Truck } from 'lucide-react';
+import { liveFieldValidators, onlyDigits, validateSupplierForm } from '../services/validators';
 
 export default function Proveedores() {
   const [suppliers, setSuppliers] = useState([]);
@@ -23,6 +25,7 @@ export default function Proveedores() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const loadSuppliers = async () => {
     try {
@@ -57,6 +60,7 @@ export default function Proveedores() {
       email: '',
       isActive: true
     });
+    setFormErrors({});
     setShowModal(true);
   };
 
@@ -70,28 +74,42 @@ export default function Proveedores() {
       email: s.email || '',
       isActive: s.isActive ?? true
     });
+    setFormErrors({});
     setShowModal(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationErrors = validateSupplierForm(form, suppliers, editingSupplier?.id);
+    setFormErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
+
+    const payload = {
+      ...form,
+      name: form.name.trim(),
+      ruc: onlyDigits(form.ruc),
+      contact: form.contact.trim(),
+      phone: onlyDigits(form.phone),
+      email: form.email.trim(),
+    };
+
     try {
       if (editingSupplier) {
         if (error) {
-          setSuppliers(suppliers.map(s => s.id === editingSupplier.id ? { ...s, ...form } : s));
+          setSuppliers(suppliers.map(s => s.id === editingSupplier.id ? { ...s, ...payload } : s));
         } else {
-          await api.put(`/suppliers/${editingSupplier.id}`, form);
+          await api.put(`/suppliers/${editingSupplier.id}`, payload);
         }
         alert('Proveedor actualizado con éxito.');
       } else {
         if (error) {
           const newSupp = {
             id: String(Date.now()),
-            ...form
+            ...payload
           };
           setSuppliers([...suppliers, newSupp]);
         } else {
-          await api.post('/suppliers', form);
+          await api.post('/suppliers', payload);
         }
         alert('Proveedor registrado con éxito.');
       }
@@ -227,16 +245,25 @@ export default function Proveedores() {
             <h2 style={{ color: 'var(--accent)', marginBottom: '1.5rem', fontWeight: '400', letterSpacing: '1px' }}>
               {editingSupplier ? 'Editar Registro de Proveedor' : 'Registrar Nuevo Proveedor'}
             </h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="form-group">
                 <label>Razón Social (Nombre Empresa) *</label>
                 <input 
                   type="text" 
                   className="form-input" 
                   required 
+                  maxLength={180}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
+                <FieldValidationHint
+                  value={form.name}
+                  isValid={liveFieldValidators.customerName}
+                  validMessage="Correcto. La razon social tiene un formato permitido."
+                  invalidMessage="Escribe entre 3 y 180 caracteres. Puedes usar letras, numeros, espacios y estos signos: . , ' & ( ) / -"
+                  maxLength={180}
+                />
+                {formErrors.name && <div className="form-error">{formErrors.name}</div>}
               </div>
 
               <div className="form-row">
@@ -250,6 +277,15 @@ export default function Proveedores() {
                     value={form.ruc}
                     onChange={(e) => setForm({ ...form, ruc: e.target.value.replace(/\D/g, '') })}
                   />
+                  <FieldValidationHint
+                    value={form.ruc}
+                    isValid={liveFieldValidators.ruc}
+                    validMessage="RUC correcto."
+                    invalidMessage="Escribe 11 digitos. El RUC debe empezar con 10 o 20."
+                    maxLength={11}
+                    unit="digitos"
+                  />
+                  {formErrors.ruc && <div className="form-error">{formErrors.ruc}</div>}
                 </div>
                 <div className="form-group">
                   <label>Persona de Contacto</label>
@@ -257,9 +293,18 @@ export default function Proveedores() {
                     type="text" 
                     className="form-input" 
                     placeholder="Ej. Ing. Juan López"
+                    maxLength={180}
                     value={form.contact}
                     onChange={(e) => setForm({ ...form, contact: e.target.value })}
                   />
+                  <FieldValidationHint
+                    value={form.contact}
+                    isValid={liveFieldValidators.contact}
+                    validMessage="Contacto correcto."
+                    invalidMessage="Escribe entre 3 y 180 caracteres. Solo letras, espacios, apostrofe o guion."
+                    maxLength={180}
+                  />
+                  {formErrors.contact && <div className="form-error">{formErrors.contact}</div>}
                 </div>
               </div>
 
@@ -269,18 +314,37 @@ export default function Proveedores() {
                   <input 
                     type="text" 
                     className="form-input" 
+                    maxLength={15}
                     value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '') })}
                   />
+                  <FieldValidationHint
+                    value={form.phone}
+                    isValid={liveFieldValidators.phone}
+                    validMessage="Telefono correcto."
+                    invalidMessage="Escribe solo numeros, entre 7 y 15 digitos."
+                    maxLength={15}
+                    unit="digitos"
+                  />
+                  {formErrors.phone && <div className="form-error">{formErrors.phone}</div>}
                 </div>
                 <div className="form-group">
                   <label>Email de Pedidos</label>
                   <input 
                     type="email" 
                     className="form-input" 
+                    maxLength={120}
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                   />
+                  <FieldValidationHint
+                    value={form.email}
+                    isValid={liveFieldValidators.email}
+                    validMessage="Correo correcto."
+                    invalidMessage="Usa un correo valido, por ejemplo nombre@dominio.com. Maximo 120 caracteres."
+                    maxLength={120}
+                  />
+                  {formErrors.email && <div className="form-error">{formErrors.email}</div>}
                 </div>
               </div>
 

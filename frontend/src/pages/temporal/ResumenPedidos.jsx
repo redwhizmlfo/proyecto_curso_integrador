@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import AnimatedKpiValue from '../../components/AnimatedKpiValue';
+import SummaryControls, { downloadCsv, makeCsv } from '../../components/SummaryControls';
 
 /* ─── Datos simulados ─────────────────────────────────────────── */
 
@@ -249,7 +251,7 @@ function KpiCard({ kpi, delay }) {
         fontWeight: 800, color: tok.text,
         lineHeight: 1.1, margin: '0.5rem 0 0.1rem',
       }}>
-        {kpi.format(kpi.value)}
+        <AnimatedKpiValue value={kpi.value} format={kpi.format} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.7rem' }}>
@@ -634,6 +636,10 @@ function TopPedidos({ data }) {
 
 export default function ResumenPedidos() {
   const [dbData, setDbData] = useState(null);
+  const [selectedOrderStatus, setSelectedOrderStatus] = useState('Todos');
+  const [dateRange, setDateRange] = useState('30');
+  const [exporting, setExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   useEffect(() => {
     const fetchDbSummary = async () => {
@@ -661,13 +667,35 @@ export default function ResumenPedidos() {
     }
   };
 
-  const currentKpis = KPI_DATA.map(kpi => ({
-    ...kpi,
-    value: getBaseKpiValue(kpi.id, kpi.value),
-    sparkData: typeof kpi.value === 'number' && getBaseKpiValue(kpi.id, kpi.value) !== kpi.value
-      ? kpi.sparkData.map(v => Math.round(v * (getBaseKpiValue(kpi.id, kpi.value) / kpi.value)))
-      : kpi.sparkData
-  }));
+  const statusFactor = selectedOrderStatus === 'Pendientes' ? 0.34 : selectedOrderStatus === 'Completados' ? 0.52 : selectedOrderStatus === 'Transito' ? 0.24 : selectedOrderStatus === 'Parciales' ? 0.16 : 1;
+  const rangeFactor = dateRange === '7' ? 0.35 : dateRange === '365' ? 2.35 : 1;
+
+  const currentKpis = KPI_DATA.map(kpi => {
+    const baseValue = getBaseKpiValue(kpi.id, kpi.value);
+    const shouldScale = typeof baseValue === 'number' && ['registrados', 'pendientes', 'transito', 'parcial', 'completados', 'valorAcumulado'].includes(kpi.id);
+    const value = shouldScale ? Math.max(0, Math.round(baseValue * statusFactor * rangeFactor)) : baseValue;
+    return {
+      ...kpi,
+      value,
+      sparkData: typeof kpi.value === 'number' && value !== kpi.value
+        ? kpi.sparkData.map(v => Math.round(v * (value / kpi.value)))
+        : kpi.sparkData
+    };
+  });
+
+  const handleExport = () => {
+    setExporting(true);
+    setExportSuccess(false);
+    setTimeout(() => {
+      downloadCsv(`reporte_pedidos_${selectedOrderStatus.toLowerCase()}_${dateRange}dias.csv`, makeCsv(
+        ['ID', 'Metrica', 'Valor', 'Detalle', 'Estado', 'Rango'],
+        currentKpis.map(kpi => [kpi.id, kpi.label, kpi.format(kpi.value), kpi.valueSub, selectedOrderStatus, `${dateRange} dias`])
+      ));
+      setExporting(false);
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 2200);
+    }, 350);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
@@ -676,7 +704,7 @@ export default function ResumenPedidos() {
         subtitle="KPIs, estado de órdenes y evolución de compras"
       />
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         <Link to="/" style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
           color: 'var(--accent-gold)', textDecoration: 'none',
@@ -684,6 +712,22 @@ export default function ResumenPedidos() {
         }}>
           <ArrowLeft size={14} /> Volver al Dashboard
         </Link>
+        <SummaryControls
+          filterValue={selectedOrderStatus}
+          onFilterChange={setSelectedOrderStatus}
+          filterOptions={[
+            { value: 'Todos', label: 'Todos los Pedidos' },
+            { value: 'Pendientes', label: 'Pendientes' },
+            { value: 'Transito', label: 'En transito' },
+            { value: 'Parciales', label: 'Parciales' },
+            { value: 'Completados', label: 'Completados' },
+          ]}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          onExport={handleExport}
+          exporting={exporting}
+          exportSuccess={exportSuccess}
+        />
       </div>
 
       <div style={{
@@ -691,13 +735,13 @@ export default function ResumenPedidos() {
         textTransform: 'uppercase', color: 'var(--text-muted)',
         marginBottom: '0.8rem',
       }}>
-        Dashboard Desglosado (Sincronizado con Base de Datos)
+        Dashboard Desglosado - Mostrando: {selectedOrderStatus} / {dateRange} dias
       </div>
 
       {/* ── 8 KPI Cards ── */}
       <section style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
         gap: '1.1rem',
         marginBottom: '2rem',
       }}>
@@ -708,7 +752,7 @@ export default function ResumenPedidos() {
 
       {/* ── Fila 1: barras agrupadas + valor mensual ── */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '1.2fr 1fr',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
         gap: '1.5rem', marginBottom: '1.5rem',
       }}>
         {/* Barras agrupadas */}
@@ -749,7 +793,7 @@ export default function ResumenPedidos() {
           </div>
           <LineChartValor data={VALOR_MENSUAL} />
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.7rem',
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '0.7rem',
             marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px solid var(--glass-border)',
           }}>
             {[
@@ -771,7 +815,7 @@ export default function ResumenPedidos() {
 
       {/* ── Fila 2: donut estado + tiempo entrega + top proveedores ── */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
         gap: '1.5rem',
       }}>
         {/* Donut estado */}
@@ -799,7 +843,7 @@ export default function ResumenPedidos() {
           </div>
           <LineChartTiempo data={TIEMPO_MENSUAL} />
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem',
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '0.6rem',
             marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px solid var(--glass-border)',
           }}>
             {[

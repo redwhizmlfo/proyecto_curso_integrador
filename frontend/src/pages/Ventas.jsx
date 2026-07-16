@@ -55,15 +55,13 @@ export default function Ventas() {
   const [modelos, setModelos] = useState([]);
   const [especificaciones, setEspecificaciones] = useState([]);
   const [productosImagenes, setProductosImagenes] = useState([]);
-  const [categorias, setCategorias] = useState([]);
-  const [marcas, setMarcas] = useState([]);
-  const [suppliers, setSuppliers] = useState([]);
 
   // Variant selector modal states
   const [showVariantModal, setShowVariantModal] = useState(false);
   const [selectedProductForVariant, setSelectedProductForVariant] = useState(null);
   const [variantSearch, setVariantSearch] = useState('');
   const [activeVariantBrand, setActiveVariantBrand] = useState('ALL');
+  const [transferReferenceHint] = useState(() => `TRF-${Date.now().toString().slice(-6)}`);
 
   // Helper to resolve product image
   const getProductImage = (barcode, name) => {
@@ -80,11 +78,22 @@ export default function Ventas() {
     return taladroImg;
   };
 
+  const getModelImageFallback = (model) => {
+    const brand = model?.marca?.nombreMarca?.toLowerCase() || '';
+    const name = `${model?.modelo || ''} ${model?.codigoModelo || ''}`.toLowerCase();
+
+    if (name.includes('gbh') || name.includes('rotomartillo')) return rotomartilloBoschImg;
+    if (brand.includes('dewalt') || name.includes('dcd')) return taladroDewaltImg;
+    if (brand.includes('bosch') || name.includes('gws')) return esmerilGws2200Img;
+    if (brand.includes('makita') || name.includes('ga') || name.includes('m0900')) return esmerilGws750Img;
+    return taladroImg;
+  };
+
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        const [prodList, posCatalogList, custList, modelList, specList, imgList, catList, brandList, supplierList, bankList] = await Promise.all([
+        const [prodList, posCatalogList, custList, modelList, specList, imgList, , , , bankList] = await Promise.all([
           api.get('/products').catch(() => []),
           api.get('/modelos/pos-catalog').catch(() => []),
           api.get('/customers').catch(() => []),
@@ -120,20 +129,8 @@ export default function Ventas() {
           setModelos(modelList);
           setEspecificaciones(specList);
           setProductosImagenes(imgList);
-          setCategorias(catList);
-          setMarcas(brandList);
         } else {
           // Local mock models (matching Inventario.jsx)
-          const localCats = [
-            { id: 'cat_esm', nombreCategoria: 'Esmeriles' },
-            { id: 'cat_tal', nombreCategoria: 'Taladros' },
-            { id: 'cat_rot', nombreCategoria: 'Rotomartillos' }
-          ];
-          const localBrands = [
-            { id: 'marca_bosch', nombreMarca: 'Bosch' },
-            { id: 'marca_makita', nombreMarca: 'Makita' },
-            { id: 'marca_dewalt', nombreMarca: 'DeWalt' }
-          ];
           const localModels = [
             { id: 'pm_gws2200', codigoModelo: 'GWS 22-180 H', modelo: 'GWS2200', sku: 'SKU-75010324', precio: 349.99, stock: 80, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
             { id: 'pm_gws750', codigoModelo: 'GWS 7-115', modelo: 'GWS750', sku: 'SKU-72093104', precio: 199.50, stock: 45, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
@@ -217,12 +214,6 @@ export default function Ventas() {
           setModelos(localModels);
           setEspecificaciones(localSpecs);
           setProductosImagenes(localImages);
-          setCategorias(localCats);
-          setMarcas(localBrands);
-        }
-
-        if (supplierList && supplierList.length > 0) {
-          setSuppliers(supplierList);
         }
 
         const fallbackBankAccounts = [
@@ -248,7 +239,7 @@ export default function Ventas() {
           });
         }
         setError(null);
-      } catch (err) {
+      } catch {
         setError('Servidor backend offline. Usando datos locales de demostración.');
         setProducts([]);
         
@@ -268,16 +259,6 @@ export default function Ventas() {
         });
 
         // Set local models fallbacks
-        const localCats = [
-          { id: 'cat_esm', nombreCategoria: 'Esmeriles' },
-          { id: 'cat_tal', nombreCategoria: 'Taladros' },
-          { id: 'cat_rot', nombreCategoria: 'Rotomartillos' }
-        ];
-        const localBrands = [
-          { id: 'marca_bosch', nombreMarca: 'Bosch' },
-          { id: 'marca_makita', nombreMarca: 'Makita' },
-          { id: 'marca_dewalt', nombreMarca: 'DeWalt' }
-        ];
         const localModels = [
           { id: 'pm_gws2200', codigoModelo: 'GWS 22-180 H', modelo: 'GWS2200', sku: 'SKU-75010324', precio: 349.99, stock: 80, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
           { id: 'pm_gws750', codigoModelo: 'GWS 7-115', modelo: 'GWS750', sku: 'SKU-72093104', precio: 199.50, stock: 45, categoria: { id: 'cat_esm' }, marca: { id: 'marca_bosch' } },
@@ -361,9 +342,6 @@ export default function Ventas() {
         setModelos(localModels);
         setEspecificaciones(localSpecs);
         setProductosImagenes(localImages);
-        setCategorias(localCats);
-        setMarcas(localBrands);
-
         const fallbackBankAccounts = [
           { id: 'bank-bcp', bankName: 'BCP', accountAlias: 'Cuenta soles BCP', accountHolderName: 'MEPS GROUP PERU S.A.C.', accountNumber: '191-12345678-0-00', cci: '00219100123456780000', currency: 'PEN', supportsApi: true },
           { id: 'bank-interbank', bankName: 'INTERBANK', accountAlias: 'Cuenta ventas Interbank', accountHolderName: 'MEPS GROUP PERU S.A.C.', accountNumber: '200-300400500600', cci: '00320030040050060000', currency: 'PEN', supportsApi: true },
@@ -381,9 +359,13 @@ export default function Ventas() {
   // Update documentType and series dynamically based on customer's docType
   useEffect(() => {
     if (validatedCustomer) {
-      const isRuc = validatedCustomer.docType === 'RUC';
-      setDocumentType(isRuc ? 'Factura' : 'Boleta');
-      setSeries(isRuc ? 'F001' : 'B001');
+      const timer = window.setTimeout(() => {
+        const isRuc = validatedCustomer.docType === 'RUC';
+        setDocumentType(isRuc ? 'Factura' : 'Boleta');
+        setSeries(isRuc ? 'F001' : 'B001');
+      }, 0);
+
+      return () => window.clearTimeout(timer);
     }
   }, [validatedCustomer]);
 
@@ -640,24 +622,6 @@ export default function Ventas() {
     setCart([]);
   };
 
-  const resetPOS = () => {
-    setCart([]);
-    setSearch('');
-    setDocInput('20601234567');
-    const defaultCust = customers.find(c => c.docNumber === '20601234567') || {
-      id: 'c3',
-      name: 'CONSTRUCTORA DEL NORTE S.A.C.',
-      docType: 'RUC',
-      docNumber: '20601234567',
-      status: 'Habido / Activo',
-      preferredDiscount: 0
-    };
-    setValidatedCustomer(defaultCust);
-    setSelectedProductId('101');
-    setCurrentPage(1);
-    setShowPaymentModal(false);
-  };
-
   // Calculations
   const discountPct = validatedCustomer ? validatedCustomer.preferredDiscount : 0;
   const rawSubtotal = cart.reduce((acc, item) => acc + (item.qty * item.price), 0);
@@ -814,29 +778,33 @@ export default function Ventas() {
   // Set default initial cart to match the mockup screenshot or load pending cart
   useEffect(() => {
     if (products.length > 0) {
-      const pendingCart = localStorage.getItem('pos_cart_pending');
-      const pendingCustomer = localStorage.getItem('pos_customer_pending');
-      
-      if (pendingCart || pendingCustomer) {
-        if (pendingCart) {
-          try {
-            setCart(JSON.parse(pendingCart));
-          } catch(e) {
-            console.error('Error parsing pending cart', e);
+      const timer = window.setTimeout(() => {
+        const pendingCart = localStorage.getItem('pos_cart_pending');
+        const pendingCustomer = localStorage.getItem('pos_customer_pending');
+
+        if (pendingCart || pendingCustomer) {
+          if (pendingCart) {
+            try {
+              setCart(JSON.parse(pendingCart));
+            } catch(e) {
+              console.error('Error parsing pending cart', e);
+            }
+            localStorage.removeItem('pos_cart_pending');
           }
-          localStorage.removeItem('pos_cart_pending');
-        }
-        if (pendingCustomer) {
-          try {
-            const cust = JSON.parse(pendingCustomer);
-            setValidatedCustomer(cust);
-            setDocInput(cust.docNumber);
-          } catch(e) {
-            console.error('Error parsing pending customer', e);
+          if (pendingCustomer) {
+            try {
+              const cust = JSON.parse(pendingCustomer);
+              setValidatedCustomer(cust);
+              setDocInput(cust.docNumber);
+            } catch(e) {
+              console.error('Error parsing pending customer', e);
+            }
+            localStorage.removeItem('pos_customer_pending');
           }
-          localStorage.removeItem('pos_customer_pending');
         }
-      }
+      }, 0);
+
+      return () => window.clearTimeout(timer);
     }
   }, [products]);
 
@@ -945,6 +913,7 @@ export default function Ventas() {
     `);
     printWindow.document.close();
   };
+  void handlePrint;
 
   const handlePrintOrderTicket = (order) => {
     const printWindow = window.open('', '_blank', 'width=350,height=600');
@@ -1255,6 +1224,7 @@ export default function Ventas() {
     setOperationType('Venta Directa');
   };
 
+  /* eslint-disable no-unreachable */
   const saveOrder = () => {
     handleOpenCheckout();
     return;
@@ -1300,6 +1270,7 @@ export default function Ventas() {
     setCart([]);
     setOperationType('Venta Directa');
   };
+  /* eslint-enable no-unreachable */
 
   const handleConfirmAction = () => {
     if (operationType === 'Cotizacion') {
@@ -1384,11 +1355,7 @@ export default function Ventas() {
       <Header 
         title="Venta POS" 
         subtitle="Registra ventas de productos y emite comprobantes electrónicos en tiempo real"
-      >
-        <button className="btn-premium" onClick={resetPOS}>
-          NUEVA VENTA
-        </button>
-      </Header>
+      />
 
       {error && (
         <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '4px', padding: '0.8rem 1rem', marginBottom: '1.5rem', color: '#b91c1c', fontSize: '0.85rem' }}>
@@ -1443,7 +1410,7 @@ export default function Ventas() {
             <div style={{ width: '100%', minWidth: 0 }}>
               <div style={{ 
                 display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 200px), 1fr))', 
                 gap: '1.2rem',
                 width: '100%'
               }}>
@@ -1646,7 +1613,7 @@ export default function Ventas() {
             maxWidth: '750px', 
             width: '95%',
             display: 'grid',
-            gridTemplateColumns: '1fr 300px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
             gap: '2rem',
             background: '#ffffff'
           }}>
@@ -1676,7 +1643,7 @@ export default function Ventas() {
               </div>
 
               <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '0.9rem', marginTop: '-0.7rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem 0.9rem', fontSize: '0.76rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: '0.6rem 0.9rem', fontSize: '0.76rem' }}>
                   <div>
                     <div style={{ color: '#8397ab', fontWeight: '800', textTransform: 'uppercase', fontSize: '0.62rem' }}>Telefono</div>
                     <div style={{ color: '#0a1629', fontWeight: '700' }}>{validatedCustomer?.phone || '-'}</div>
@@ -1701,7 +1668,7 @@ export default function Ventas() {
               </div>
 
               {/* Form document type (Locked based on condition: DNI -> Boleta, RUC -> Factura/Voucher) */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '1rem' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label style={{ fontWeight: '700', fontSize: '0.75rem' }}>Comprobante a Emitir</label>
                   <input 
@@ -1802,7 +1769,7 @@ export default function Ventas() {
                             <div><strong>Cuenta:</strong> {selectedBankAccount.accountNumber}</div>
                             <div><strong>CCI:</strong> {selectedBankAccount.cci || 'No configurado'}</div>
                             <div style={{ color: '#ff6b00', fontWeight: '800', marginTop: '0.25rem' }}>
-                              Referencia sugerida: TRF-{Date.now().toString().slice(-6)}
+                              Referencia sugerida: {transferReferenceHint}
                             </div>
                           </div>
                         )}
@@ -2432,7 +2399,7 @@ export default function Ventas() {
                       key={m.id}
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: '50px 1fr 100px 90px',
+                        gridTemplateColumns: '50px minmax(0, 1fr) minmax(78px, auto) minmax(82px, auto)',
                         alignItems: 'center',
                         gap: '1rem',
                         padding: '0.6rem 0.8rem',
@@ -2447,7 +2414,15 @@ export default function Ventas() {
                     >
                       {/* Thumbnail */}
                       <div style={{ width: '45px', height: '45px', borderRadius: '4px', border: '1px solid #cbd5e1', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-                        <img src={mImgUrl} alt={m.modelo} style={{ maxHeight: '90%', maxWidth: '90%', objectFit: 'contain' }} />
+                        <img
+                          src={mImgUrl}
+                          alt={m.modelo}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = getModelImageFallback(m);
+                          }}
+                          style={{ maxHeight: '90%', maxWidth: '90%', objectFit: 'contain' }}
+                        />
                       </div>
 
                       {/* Info */}

@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import AnimatedKpiValue from '../../components/AnimatedKpiValue';
+import SummaryControls, { downloadCsv, makeCsv } from '../../components/SummaryControls';
 
 /* ─── Datos simulados base ─────────────────────────────────────── */
 
@@ -246,7 +248,7 @@ function KpiCard({ kpi, delay, isSelected, onClick }) {
         fontWeight: 800, color: tok.text,
         lineHeight: 1.1, margin: '0.5rem 0 0.1rem',
       }}>
-        {kpi.format(kpi.value)}
+        <AnimatedKpiValue value={kpi.value} format={kpi.format} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.7rem' }}>
@@ -554,6 +556,10 @@ function LogAccesos({ data }) {
 export default function ResumenUsuariosRoles() {
   const [dbData, setDbData] = useState(null);
   const [selectedKpi, setSelectedKpi] = useState('registrados');
+  const [selectedSecurityView, setSelectedSecurityView] = useState('Todos');
+  const [dateRange, setDateRange] = useState('30');
+  const [exporting, setExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   useEffect(() => {
     const fetchDbSummary = async () => {
@@ -566,6 +572,7 @@ export default function ResumenUsuariosRoles() {
     };
     fetchDbSummary();
   }, []);
+
 
   const getBaseKpiValue = (kpiId, defaultValue) => {
     if (!dbData || !dbData.kpis) return defaultValue;
@@ -617,19 +624,62 @@ export default function ResumenUsuariosRoles() {
     }
   };
 
+  const securityFactor = selectedSecurityView === 'Activos'
+    ? 0.78
+    : selectedSecurityView === 'Bloqueados'
+      ? 0.22
+      : selectedSecurityView === 'Roles'
+        ? 0.55
+        : selectedSecurityView === 'Actividad'
+          ? 0.68
+          : 1;
+  const rangeFactor = dateRange === '7' ? 0.45 : dateRange === '365' ? 2.25 : 1;
+  const scalableKpis = ['registrados', 'activos', 'accesos', 'actividad', 'bloqueadas', 'intentos'];
+
   const currentKpis = KPI_DATA.map(kpi => {
     const val = getBaseKpiValue(kpi.id, kpi.value);
     const sub = getBaseKpiSub(kpi.id, kpi.valueSub);
-    const spark = typeof val === 'number' && typeof kpi.value === 'number' && kpi.value !== 0
-      ? kpi.sparkData.map(v => Math.round(v * (val / kpi.value)))
+    const scaledVal = typeof val === 'number' && scalableKpis.includes(kpi.id)
+      ? Math.max(kpi.id === 'bloqueadas' ? 0 : 1, Math.round(val * securityFactor * rangeFactor))
+      : val;
+    const spark = typeof scaledVal === 'number' && typeof kpi.value === 'number' && kpi.value !== 0
+      ? kpi.sparkData.map(v => Math.round(v * (scaledVal / kpi.value)))
       : kpi.sparkData;
     return {
       ...kpi,
-      value: val,
+      value: scaledVal,
       valueSub: sub,
       sparkData: spark
     };
   });
+
+  const handleExport = () => {
+    setExporting(true);
+    setExportSuccess(false);
+
+    const csv = makeCsv(
+      ['Vista', 'Periodo dias', 'KPI', 'Valor', 'Detalle', 'Tendencia'],
+      currentKpis.map(kpi => [
+        selectedSecurityView,
+        dateRange,
+        kpi.label,
+        kpi.format(kpi.value),
+        kpi.valueSub,
+        kpi.trend === null ? 'Sin variacion' : `${kpi.trend > 0 ? '+' : ''}${kpi.trend}%`
+      ])
+    );
+
+    downloadCsv(
+      `reporte_usuarios_roles_${selectedSecurityView.toLowerCase().replace(/\s+/g, '-')}_${dateRange}dias.csv`,
+      csv
+    );
+
+    setTimeout(() => {
+      setExporting(false);
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 1800);
+    }, 350);
+  };
 
   const activeUsersCount = parseInt(dbData?.kpis?.[0]?.hint) || 31;
 
@@ -728,7 +778,14 @@ export default function ResumenUsuariosRoles() {
         subtitle="KPIs de acceso, seguridad y actividad del sistema"
       />
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '1rem',
+        flexWrap: 'wrap',
+        marginBottom: '1.5rem'
+      }}>
         <Link to="/" style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
           color: 'var(--accent-gold)', textDecoration: 'none',
@@ -736,6 +793,17 @@ export default function ResumenUsuariosRoles() {
         }}>
           <ArrowLeft size={14} /> Volver al Dashboard
         </Link>
+        <SummaryControls
+          filterLabel="Vista"
+          filterValue={selectedSecurityView}
+          onFilterChange={setSelectedSecurityView}
+          filterOptions={['Todos', 'Activos', 'Bloqueados', 'Roles', 'Actividad']}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          onExport={handleExport}
+          exporting={exporting}
+          exportSuccess={exportSuccess}
+        />
       </div>
 
       <div style={{
@@ -743,13 +811,13 @@ export default function ResumenUsuariosRoles() {
         textTransform: 'uppercase', color: 'var(--text-muted)',
         marginBottom: '0.8rem',
       }}>
-        Dashboard Desglosado (Sincronizado con Base de Datos)
+        Dashboard Desglosado - Mostrando: {selectedSecurityView} / {dateRange} dias
       </div>
 
       {/* ── 8 KPI Cards ── */}
       <section style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
         gap: '1.1rem',
         marginBottom: '2rem',
       }}>
@@ -794,8 +862,9 @@ export default function ResumenUsuariosRoles() {
       </div>
 
       {/* ── Fila 1: actividad diaria + intentos fallidos ── */}
+
       <div style={{
-        display: 'grid', gridTemplateColumns: '1.4fr 1fr',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
         gap: '1.5rem', marginBottom: '1.5rem',
       }}>
         {/* Barras actividad */}
@@ -835,7 +904,7 @@ export default function ResumenUsuariosRoles() {
           </div>
           <LineChartIntentos data={dynamicIntentosMensuales} />
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.6rem',
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '0.6rem',
             marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px solid var(--glass-border)',
           }}>
             {[
@@ -857,7 +926,7 @@ export default function ResumenUsuariosRoles() {
 
       {/* ── Fila 2: donut roles + log accesos ── */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1.5fr',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
         gap: '1.5rem',
       }}>
         {/* Donut roles */}

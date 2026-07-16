@@ -270,7 +270,7 @@ export default function VentasDespachos() {
           <p style={{ fontSize: '0.85rem', marginTop: '0.3rem' }}>Los despachos se crean al presionar "Despachar" en las órdenes confirmadas del submódulo de Pedidos.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '1.5rem' }}>
           {dispatches.map((desp) => (
             <div 
               key={desp.id}

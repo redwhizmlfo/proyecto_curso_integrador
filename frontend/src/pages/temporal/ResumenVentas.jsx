@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import AnimatedKpiValue from '../../components/AnimatedKpiValue';
 
 /* ─── Datos base de la aplicación (los mismos originales) ─────────── */
 
@@ -74,7 +75,7 @@ const KPI_DATA = [
     trend: null,
     alert: 'yellow',
     icon: Clock,
-    format: (v) => v,
+    format: (v) => typeof v === 'number' ? `${Math.round(v)}%` : v,
     sparkData: [20, 35, 50, 70, 90, 100, 98, 85, 60, 40, 30, 25],
   },
   {
@@ -130,6 +131,13 @@ const TOP_PRODUCTOS = [
   { nombre: 'Interruptor Eléctrico EL-772', unidades: 440, monto: 13200, pct: 58 },
   { nombre: 'Cemento Sol 42.5kg', unidades: 210, monto: 10500, pct: 44 },
 ];
+
+const PEAK_HOURS_BY_CHANNEL = {
+  Todos: { range: '12:00 - 14:00', salesIndex: 45, label: '45% de ventas' },
+  POS: { range: '12:00 - 14:00', salesIndex: 48, label: '48% de ventas POS' },
+  Corporativo: { range: '09:00 - 11:00', salesIndex: 39, label: '39% de ventas corp.' },
+  Ecommerce: { range: '18:00 - 21:00', salesIndex: 31, label: '31% de pedidos web' },
+};
 
 const ALERT_TOKENS = {
   green:  { bg: 'rgba(76,209,55,0.07)',  border: 'rgba(76,209,55,0.22)',  text: '#2fb01e', label: 'Normal'   },
@@ -226,7 +234,7 @@ function KpiCard({ kpi, delay, isSelected, onClick }) {
         margin: '0.5rem 0 0.1rem',
         letterSpacing: kpi.id === 'horaPico' ? '-0.5px' : 'normal',
       }}>
-        {kpi.format(kpi.value)}
+        <AnimatedKpiValue value={kpi.value} format={kpi.format} />
       </div>
 
       {/* Sub label inline with value */}
@@ -590,9 +598,12 @@ export default function ResumenVentas() {
 
   // Recalcular dinámicamente los KPIs según el canal de venta
   const currentKpis = (() => {
+    const activePeakHour = PEAK_HOURS_BY_CHANNEL[selectedChannel] || PEAK_HOURS_BY_CHANNEL.Todos;
     const baseKpis = KPI_DATA.map(kpi => ({
       ...kpi,
-      value: getBaseKpiValue(kpi.id, kpi.value)
+      value: kpi.id === 'horaPico' ? activePeakHour.range : getBaseKpiValue(kpi.id, kpi.value),
+      valueSub: kpi.id === 'horaPico' ? activePeakHour.label : kpi.valueSub,
+      salesIndex: kpi.id === 'horaPico' ? activePeakHour.salesIndex : undefined,
     }));
 
     if (selectedChannel === 'Todos') {
@@ -647,6 +658,8 @@ export default function ResumenVentas() {
         case 'horaPico':
           val = selectedChannel === 'POS' ? '12:00 – 14:00' : (selectedChannel === 'Corporativo' ? '09:00 – 11:00' : '18:00 – 21:00');
           valSub = 'pico del canal';
+          val = activePeakHour.range;
+          valSub = activePeakHour.label;
           break;
         case 'recurrentes':
           val = Math.round(kpi.value * recurrentesMultiplier);
@@ -679,7 +692,9 @@ export default function ResumenVentas() {
   // Recalcular la tendencia mensual del KPI seleccionado
   const dynamicLineData = (() => {
     const activeKpi = currentKpis.find(k => k.id === selectedKpi) || currentKpis[1];
-    const finalVal = typeof activeKpi.value === 'number' ? activeKpi.value : 100;
+    const finalVal = activeKpi.id === 'horaPico'
+      ? (activeKpi.salesIndex || PEAK_HOURS_BY_CHANNEL[selectedChannel]?.salesIndex || PEAK_HOURS_BY_CHANNEL.Todos.salesIndex)
+      : (typeof activeKpi.value === 'number' ? activeKpi.value : 100);
     const months = ['Nov', 'Dic', 'Ene', 'Feb', 'Mar', 'Abr', 'May'];
 
     return months.map((m, idx) => {
@@ -916,7 +931,7 @@ export default function ResumenVentas() {
       {/* 8 KPI Cards */}
       <section style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
         gap: '1.1rem',
         marginBottom: '2rem',
       }}>
@@ -934,7 +949,7 @@ export default function ResumenVentas() {
       {/* Gráficos */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '1.3fr 1fr',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
         gap: '1.5rem',
         marginBottom: '1.5rem',
         alignItems: 'start'
@@ -992,7 +1007,7 @@ export default function ResumenVentas() {
             kpiColor={ALERT_TOKENS[activeKpiObj.alert].text}
           />
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.7rem',
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '0.7rem',
             marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px solid var(--glass-border)',
           }}>
             {[

@@ -260,7 +260,7 @@ export default function Asistencia() {
       )}
 
       {/* Main split */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '1.5rem', alignItems: 'start' }}>
         {/* Left Side: Daily Clock panel */}
         <div className="luxury-card">
           <h2 style={{ fontSize: '1.2rem', fontWeight: '400', color: 'var(--accent)', letterSpacing: '1px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -544,7 +544,7 @@ export default function Asistencia() {
                 </div>
 
                 {/* Employee info grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#ffffff', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1.2rem', fontSize: '0.85rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '1rem', background: '#ffffff', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1.2rem', fontSize: '0.85rem' }}>
                   <div>
                     <p style={{ margin: '0 0 4px 0', color: '#64748b' }}>Colaborador:</p>
                     <p style={{ margin: 0, fontWeight: '700', color: '#0f172a' }}>{selectedEmployee.name}</p>
@@ -638,7 +638,7 @@ export default function Asistencia() {
                 </div>
 
                 {/* Payment summary grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#f1f5f9', padding: '1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '1rem', background: '#f1f5f9', padding: '1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
                   {(() => {
                     const empLogs = getEmployeeLogs(selectedEmployee);
                     const totalDays = empLogs.filter(l => l.status?.toLowerCase() === 'asistio').length;

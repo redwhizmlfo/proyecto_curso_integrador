@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
+import FieldValidationHint from '../components/FieldValidationHint';
 import { Search, Plus, Edit, Briefcase, DollarSign } from 'lucide-react';
+import { liveFieldValidators, onlyDigits, validateEmployeeForm } from '../services/validators';
 
 export default function Empleados() {
   const [employees, setEmployees] = useState([]);
@@ -23,6 +25,7 @@ export default function Empleados() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const loadEmployees = async () => {
     try {
@@ -57,6 +60,7 @@ export default function Empleados() {
       payPerDay: '',
       isActive: true
     });
+    setFormErrors({});
     setShowModal(true);
   };
 
@@ -70,29 +74,43 @@ export default function Empleados() {
       payPerDay: e.payPerDay,
       isActive: e.isActive ?? true
     });
+    setFormErrors({});
     setShowModal(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationErrors = validateEmployeeForm(form, employees, editingEmployee?.id);
+    setFormErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
+
+    const payload = {
+      ...form,
+      initials: form.initials.trim().toUpperCase(),
+      name: form.name.trim(),
+      role: form.role.trim(),
+      dni: onlyDigits(form.dni),
+      payPerDay: Number(form.payPerDay),
+    };
+
     try {
       if (editingEmployee) {
         if (error) {
-          setEmployees(employees.map(emp => emp.id === editingEmployee.id ? { ...emp, ...form } : emp));
+          setEmployees(employees.map(emp => emp.id === editingEmployee.id ? { ...emp, ...payload } : emp));
         } else {
-          await api.put(`/employees/${editingEmployee.id}`, form);
+          await api.put(`/employees/${editingEmployee.id}`, payload);
         }
         alert('Empleado actualizado con éxito.');
       } else {
         if (error) {
           const newEmp = {
             id: 'e' + Date.now(),
-            ...form,
+            ...payload,
             workedDays: 0
           };
           setEmployees([...employees, newEmp]);
         } else {
-          await api.post('/employees', form);
+          await api.post('/employees', payload);
         }
         alert('Empleado registrado con éxito.');
       }
@@ -225,16 +243,25 @@ export default function Empleados() {
             <h2 style={{ color: 'var(--accent)', marginBottom: '1.5rem', fontWeight: '400', letterSpacing: '1px' }}>
               {editingEmployee ? 'Editar Ficha de Empleado' : 'Registrar Nuevo Empleado'}
             </h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="form-group">
                 <label>Nombre Completo *</label>
                 <input 
                   type="text" 
                   className="form-input" 
                   required 
+                  maxLength={180}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
+                <FieldValidationHint
+                  value={form.name}
+                  isValid={liveFieldValidators.employeeName}
+                  validMessage="Nombre correcto."
+                  invalidMessage="Escribe entre 3 y 180 caracteres. Solo letras, espacios, apostrofe o guion."
+                  maxLength={180}
+                />
+                {formErrors.name && <div className="form-error">{formErrors.name}</div>}
               </div>
 
               <div className="form-row">
@@ -249,6 +276,14 @@ export default function Empleados() {
                     value={form.initials}
                     onChange={(e) => setForm({ ...form, initials: e.target.value.toUpperCase() })}
                   />
+                  <FieldValidationHint
+                    value={form.initials}
+                    isValid={liveFieldValidators.initials}
+                    validMessage="Iniciales correctas."
+                    invalidMessage="Escribe de 2 a 4 letras mayusculas, sin espacios ni numeros."
+                    maxLength={4}
+                  />
+                  {formErrors.initials && <div className="form-error">{formErrors.initials}</div>}
                 </div>
                 <div className="form-group">
                   <label>DNI *</label>
@@ -260,6 +295,15 @@ export default function Empleados() {
                     value={form.dni}
                     onChange={(e) => setForm({ ...form, dni: e.target.value.replace(/\D/g, '') })}
                   />
+                  <FieldValidationHint
+                    value={form.dni}
+                    isValid={liveFieldValidators.dni}
+                    validMessage="DNI correcto."
+                    invalidMessage="Escribe exactamente 8 digitos para el DNI."
+                    maxLength={8}
+                    unit="digitos"
+                  />
+                  {formErrors.dni && <div className="form-error">{formErrors.dni}</div>}
                 </div>
               </div>
 
@@ -271,9 +315,18 @@ export default function Empleados() {
                     className="form-input" 
                     required 
                     placeholder="Ej. Almacenero, Vendedor..."
+                    maxLength={80}
                     value={form.role}
                     onChange={(e) => setForm({ ...form, role: e.target.value })}
                   />
+                  <FieldValidationHint
+                    value={form.role}
+                    isValid={liveFieldValidators.role}
+                    validMessage="Cargo correcto."
+                    invalidMessage="Escribe entre 3 y 80 caracteres. Solo letras y espacios."
+                    maxLength={80}
+                  />
+                  {formErrors.role && <div className="form-error">{formErrors.role}</div>}
                 </div>
                 <div className="form-group">
                   <label>Tarifa Diaria (S/) *</label>
@@ -285,6 +338,14 @@ export default function Empleados() {
                     value={form.payPerDay}
                     onChange={(e) => setForm({ ...form, payPerDay: parseFloat(e.target.value) })}
                   />
+                  <FieldValidationHint
+                    value={form.payPerDay}
+                    isValid={liveFieldValidators.payPerDay}
+                    validMessage="Tarifa correcta."
+                    invalidMessage="Escribe un monto mayor a 0. Puedes usar hasta 2 decimales."
+                    limitLabel="Formato: 999.99"
+                  />
+                  {formErrors.payPerDay && <div className="form-error">{formErrors.payPerDay}</div>}
                 </div>
               </div>
 

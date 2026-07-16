@@ -128,7 +128,7 @@ export default function VentasPedidos() {
           <p style={{ fontSize: '0.85rem', marginTop: '0.3rem' }}>Puedes emitir un pedido seleccionando "Pedido" como Tipo de Operación en el Punto de Venta (POS) y procesando el cobro.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '1.5rem' }}>
           {orders.map((ped) => (
             <div 
               key={ped.id}

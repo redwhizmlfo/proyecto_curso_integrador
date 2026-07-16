@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import AnimatedKpiValue from '../../components/AnimatedKpiValue';
+import SummaryControls, { downloadCsv, makeCsv } from '../../components/SummaryControls';
 
 /* ─── Datos simulados base ─────────────────────────────────────── */
 
@@ -247,7 +249,7 @@ function KpiCard({ kpi, delay, isSelected, onClick }) {
         fontWeight: 800, color: tok.text,
         lineHeight: 1.1, margin: '0.5rem 0 0.1rem',
       }}>
-        {kpi.format(kpi.value)}
+        <AnimatedKpiValue value={kpi.value} format={kpi.format} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.7rem' }}>
@@ -590,6 +592,10 @@ function HorasSemanaBars({ data }) {
 export default function ResumenEmpleados() {
   const [dbData, setDbData] = useState(null);
   const [selectedKpi, setSelectedKpi] = useState('activos');
+  const [selectedPeopleView, setSelectedPeopleView] = useState('Todos');
+  const [dateRange, setDateRange] = useState('30');
+  const [exporting, setExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   useEffect(() => {
     const fetchDbSummary = async () => {
@@ -654,19 +660,39 @@ export default function ResumenEmpleados() {
     }
   };
 
+  const peopleFactor = selectedPeopleView === 'Activos' ? 0.88 : selectedPeopleView === 'Asistencia' ? 0.76 : selectedPeopleView === 'Ausencias' ? 0.18 : selectedPeopleView === 'Nomina' ? 0.55 : 1;
+  const rangeFactor = dateRange === '7' ? 0.4 : dateRange === '365' ? 2.15 : 1;
+
   const currentKpis = KPI_DATA.map(kpi => {
     const val = getBaseKpiValue(kpi.id, kpi.value);
     const sub = getBaseKpiSub(kpi.id, kpi.valueSub);
+    const scaledVal = typeof val === 'number' && ['activos', 'nuevos', 'ausencias', 'horas', 'nomina', 'costo'].includes(kpi.id)
+      ? Math.max(0, Math.round(val * peopleFactor * rangeFactor))
+      : val;
     const spark = typeof val === 'number' && typeof kpi.value === 'number' && kpi.value !== 0
-      ? kpi.sparkData.map(v => Math.round(v * (val / kpi.value)))
+      ? kpi.sparkData.map(v => Math.round(v * (scaledVal / kpi.value)))
       : kpi.sparkData;
     return {
       ...kpi,
-      value: val,
+      value: scaledVal,
       valueSub: sub,
       sparkData: spark
     };
   });
+
+  const handleExport = () => {
+    setExporting(true);
+    setExportSuccess(false);
+    setTimeout(() => {
+      downloadCsv(`reporte_empleados_${selectedPeopleView.toLowerCase()}_${dateRange}dias.csv`, makeCsv(
+        ['ID', 'Metrica', 'Valor', 'Detalle', 'Vista', 'Rango'],
+        currentKpis.map(kpi => [kpi.id, kpi.label, kpi.format(kpi.value), kpi.valueSub, selectedPeopleView, `${dateRange} dias`])
+      ));
+      setExporting(false);
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 2200);
+    }, 350);
+  };
 
   const activeVal = dbData?.kpis?.[0]?.value ?? 28;
   const presentVal = dbData?.kpis?.[1]?.value ?? 25;
@@ -787,7 +813,7 @@ export default function ResumenEmpleados() {
         subtitle="KPIs, asistencia, productividad y distribución de personal"
       />
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         <Link to="/" style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
           color: 'var(--accent-gold)', textDecoration: 'none',
@@ -795,6 +821,22 @@ export default function ResumenEmpleados() {
         }}>
           <ArrowLeft size={14} /> Volver al Dashboard
         </Link>
+        <SummaryControls
+          filterValue={selectedPeopleView}
+          onFilterChange={setSelectedPeopleView}
+          filterOptions={[
+            { value: 'Todos', label: 'Todo el Personal' },
+            { value: 'Activos', label: 'Activos' },
+            { value: 'Asistencia', label: 'Asistencia' },
+            { value: 'Ausencias', label: 'Ausencias' },
+            { value: 'Nomina', label: 'Nomina' },
+          ]}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          onExport={handleExport}
+          exporting={exporting}
+          exportSuccess={exportSuccess}
+        />
       </div>
 
       <div style={{
@@ -802,13 +844,13 @@ export default function ResumenEmpleados() {
         textTransform: 'uppercase', color: 'var(--text-muted)',
         marginBottom: '0.8rem',
       }}>
-        Dashboard Desglosado (Sincronizado con Base de Datos)
+        Dashboard Desglosado - Mostrando: {selectedPeopleView} / {dateRange} dias
       </div>
 
       {/* ── 8 KPI Cards ── */}
       <section style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
         gap: '1.1rem',
         marginBottom: '2rem',
       }}>
@@ -854,7 +896,7 @@ export default function ResumenEmpleados() {
 
       {/* ── Fila 1: asistencia + áreas ── */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '1.1fr 1fr',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
         gap: '1.5rem', marginBottom: '1.5rem',
       }}>
         {/* Línea asistencia */}
@@ -869,7 +911,7 @@ export default function ResumenEmpleados() {
           </div>
           <LineChartAsistencia data={dynamicAsistenciaMensual} />
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.7rem',
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '0.7rem',
             marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px solid var(--glass-border)',
           }}>
             {[
@@ -913,7 +955,7 @@ export default function ResumenEmpleados() {
 
       {/* ── Fila 2: costo vs prod + horas semana + top empleados ── */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '1.4fr 0.7fr 1fr',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
         gap: '1.5rem',
       }}>
         {/* Dual line costo vs prod */}

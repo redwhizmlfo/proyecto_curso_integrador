@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
 import { Plus, CheckCircle, Search, FileText, ShoppingBag, Trash2 } from 'lucide-react';
+import { validatePurchaseOrderForm } from '../services/validators';
 
 export default function OrdenesCompra() {
   const [orders, setOrders] = useState([]);
@@ -24,6 +25,7 @@ export default function OrdenesCompra() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const loadData = async () => {
     try {
@@ -72,6 +74,11 @@ export default function OrdenesCompra() {
 
   const handleAddItem = () => {
     if (!tempProductId) return;
+    if (Number(tempQty) <= 0) {
+      setFormErrors(prev => ({ ...prev, tempQty: 'La cantidad debe ser mayor a cero.' }));
+      return;
+    }
+    setFormErrors(prev => ({ ...prev, tempQty: '', orderItems: '' }));
     const existingIdx = orderItems.findIndex(i => i.productId === tempProductId);
     const prod = products.find(p => p.id === tempProductId);
     
@@ -95,10 +102,14 @@ export default function OrdenesCompra() {
 
   const handleCreateOrder = async (e) => {
     e.preventDefault();
-    if (orderItems.length === 0) {
-      alert('Debe agregar al menos un producto a la orden de compra.');
-      return;
-    }
+    const validationErrors = validatePurchaseOrderForm({
+      selectedSupplierId,
+      orderItems,
+      tempQty,
+      note,
+    });
+    setFormErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
 
     const orderRequest = {
       supplierId: selectedSupplierId,
@@ -131,6 +142,7 @@ export default function OrdenesCompra() {
       }
       alert('Orden de compra creada con éxito.');
       setShowModal(false);
+      setFormErrors({});
       setOrderItems([]);
       setNote('');
       loadData();
@@ -301,7 +313,7 @@ export default function OrdenesCompra() {
             <h2 style={{ color: 'var(--accent)', marginBottom: '1.5rem', fontWeight: '400', letterSpacing: '1px' }}>
               Redactar Nueva Orden de Compra
             </h2>
-            <form onSubmit={handleCreateOrder}>
+            <form onSubmit={handleCreateOrder} noValidate>
               <div className="form-row">
                 <div className="form-group">
                   <label>Seleccionar Proveedor *</label>
@@ -314,6 +326,7 @@ export default function OrdenesCompra() {
                       <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
                   </select>
+                  {formErrors.selectedSupplierId && <div className="form-error">{formErrors.selectedSupplierId}</div>}
                 </div>
                 <div className="form-group">
                   <label>Prioridad *</label>
@@ -339,12 +352,13 @@ export default function OrdenesCompra() {
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                 />
+                {formErrors.note && <div className="form-error">{formErrors.note}</div>}
               </div>
 
               {/* Add item to Order row */}
               <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '1.5rem' }}>
                 <h3 style={{ fontSize: '0.9rem', marginBottom: '0.8rem', color: 'var(--accent-gold)' }}>Añadir Artículos a la lista</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 80px', gap: '1rem', alignItems: 'end' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '1rem', alignItems: 'end' }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label>Producto</label>
                     <select 
@@ -366,6 +380,7 @@ export default function OrdenesCompra() {
                       value={tempQty}
                       onChange={(e) => setTempQty(e.target.value)}
                     />
+                    {formErrors.tempQty && <div className="form-error">{formErrors.tempQty}</div>}
                   </div>
                   <button 
                     type="button" 
@@ -406,6 +421,7 @@ export default function OrdenesCompra() {
                     </div>
                   ))
                 )}
+                {formErrors.orderItems && <div className="form-error">{formErrors.orderItems}</div>}
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>

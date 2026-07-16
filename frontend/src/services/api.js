@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-const API_BASE_URL = window.location.port === '5173'
-  ? 'http://localhost:8081/api'
-  : '/api';
+// VITE_API_URL must be set in .env.local for development
+// and as a Vercel environment variable for production.
+// Example: VITE_API_URL=https://mi-backend.onrender.com/api
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
+
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -32,7 +34,8 @@ apiClient.interceptors.response.use(
     console.error('API client error:', error);
     
     // Auto logout on 401 Unauthorized
-    if (error.response && error.response.status === 401) {
+    const isLoginRequest = error.config?.url?.includes('/auth/login');
+    if (error.response && error.response.status === 401 && !isLoginRequest) {
       localStorage.removeItem('token');
       // Reload page to redirect to login
       window.location.href = '/';

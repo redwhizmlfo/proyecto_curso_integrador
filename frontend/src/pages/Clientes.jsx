@@ -1,7 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
-import { Search, Plus, Edit, Trash, UserPlus } from 'lucide-react';
+import FieldValidationHint from '../components/FieldValidationHint';
+import { Search, Edit, Trash, UserPlus } from 'lucide-react';
+import { liveFieldValidators, onlyDigits, validateCustomerForm } from '../services/validators';
+
+const parseCustomer = (c) => {
+  let cleanAddress = c.address || '';
+  let type = c.docType === 'RUC' ? 'Mayorista' : 'Minorista';
+
+  if (cleanAddress.startsWith('[Minorista] ')) {
+    type = 'Minorista';
+    cleanAddress = cleanAddress.substring('[Minorista] '.length);
+  } else if (cleanAddress.startsWith('[Mayorista] ')) {
+    type = 'Mayorista';
+    cleanAddress = cleanAddress.substring('[Mayorista] '.length);
+  }
+
+  return {
+    ...c,
+    customerType: type,
+    address: cleanAddress
+  };
+};
 
 export default function Clientes() {
   const [customers, setCustomers] = useState([]);
@@ -23,35 +44,11 @@ export default function Clientes() {
     customerType: 'Minorista' // Restricted: Minorista / Mayorista (NO Proveedor)
   });
 
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
-  // Helper to parse type and address
-  const parseCustomer = (c) => {
-    let type = 'Minorista';
-    let cleanAddress = c.address || '';
-    
-    if (cleanAddress.startsWith('[Minorista] ')) {
-      type = 'Minorista';
-      cleanAddress = cleanAddress.substring('[Minorista] '.length);
-    } else if (cleanAddress.startsWith('[Mayorista] ')) {
-      type = 'Mayorista';
-      cleanAddress = cleanAddress.substring('[Mayorista] '.length);
-    } else {
-      // Default fallback based on document type
-      type = c.docType === 'RUC' ? 'Mayorista' : 'Minorista';
-    }
-    
-    return {
-      ...c,
-      customerType: type,
-      address: cleanAddress
-    };
-  };
-
-  const loadCustomers = async () => {
+  const loadCustomers = useCallback(async () => {
     try {
-      setLoading(true);
       const data = await api.get('/customers');
       // Map and parse each customer
       setCustomers(data.map(parseCustomer));
@@ -65,14 +62,16 @@ export default function Clientes() {
         { id: 'c3', name: 'CONSTRUCTORA DEL NORTE S.A.C.', docType: 'RUC', docNumber: '20601234567', phone: '01 4567890', email: 'compras@construalfa.com', address: 'Industrial Area B-12, Callao', preferredDiscount: 10, customerType: 'Mayorista' }
       ];
       setCustomers(backupData);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadCustomers();
-  }, []);
+    const timer = window.setTimeout(() => {
+      loadCustomers();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [loadCustomers]);
 
   const openAddModal = () => {
     setEditingCustomer(null);
@@ -86,6 +85,7 @@ export default function Clientes() {
       preferredDiscount: 0,
       customerType: 'Minorista'
     });
+    setFormErrors({});
     setShowModal(true);
   };
 
@@ -101,21 +101,25 @@ export default function Clientes() {
       preferredDiscount: c.preferredDiscount || 0,
       customerType: c.customerType || 'Minorista'
     });
+    setFormErrors({});
     setShowModal(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationErrors = validateCustomerForm(form, customers, editingCustomer?.id);
+    setFormErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
     
     // Save customerType in address with a prefix to satisfy no-backend constraint
     const payload = {
-      name: form.name,
+      name: form.name.trim(),
       docType: form.docType,
-      docNumber: form.docNumber,
-      phone: form.phone,
-      email: form.email,
+      docNumber: onlyDigits(form.docNumber),
+      phone: onlyDigits(form.phone),
+      email: form.email.trim(),
       address: `[${form.customerType}] ${form.address}`,
-      preferredDiscount: form.preferredDiscount
+      preferredDiscount: Number(form.preferredDiscount)
     };
 
     try {
@@ -172,9 +176,12 @@ export default function Clientes() {
     c.customerType.toLowerCase().includes(search.toLowerCase()) ||
     c.email.toLowerCase().includes(search.toLowerCase())
   );
+  const totalCustomers = customers.length;
+  const wholesaleCustomers = customers.filter(c => c.customerType === 'Mayorista').length;
+  const retailCustomers = customers.filter(c => c.customerType !== 'Mayorista').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+    <div className="content-page customers-page">
       <Header 
         title="Gestión de Clientes" 
         subtitle="Administra la base de datos de tus clientes mayoristas y minoristas (excluye proveedores)"
@@ -185,29 +192,57 @@ export default function Clientes() {
       </Header>
 
       {error && (
-        <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '4px', padding: '1rem', marginBottom: '1.5rem', color: '#b91c1c', fontSize: '0.9rem' }}>
+        <div className="content-alert danger">
           ℹ️ {error}
         </div>
       )}
 
+      <section className="content-summary-grid">
+        <article className="content-summary-card">
+          <span>Total clientes</span>
+          <strong>{totalCustomers}</strong>
+          <small>registros en la base comercial</small>
+        </article>
+        <article className="content-summary-card accent">
+          <span>Mayoristas</span>
+          <strong>{wholesaleCustomers}</strong>
+          <small>empresas, RUC y compras recurrentes</small>
+        </article>
+        <article className="content-summary-card muted">
+          <span>Minoristas</span>
+          <strong>{retailCustomers}</strong>
+          <small>atencion directa y publico general</small>
+        </article>
+      </section>
+
       {/* Clientes Table */}
-      <div className="luxury-card" style={{ background: '#ffffff', borderRadius: '4px', border: '1px solid #cbd5e1' }}>
-        <div className="search-container">
+      <div className="content-panel customers-panel">
+        <div className="content-panel-header">
+          <div>
+            <span className="content-eyebrow">Directorio comercial</span>
+            <h2>Clientes registrados</h2>
+            <p>{filteredCustomers.length} resultados visibles segun el filtro actual.</p>
+          </div>
+          <div className="content-panel-meta">
+            <span>{totalCustomers} total</span>
+          </div>
+        </div>
+
+        <div className="search-container content-search">
           <Search size={18} />
           <input 
             type="text" 
             className="form-input" 
             placeholder="Buscar por nombre, tipo (minorista/mayorista), documento o correo..."
-            style={{ border: '1px solid #cbd5e1', background: '#f3f4f6', borderRadius: '4px' }}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="table-container" style={{ border: 'none', width: '100%', overflowX: 'auto' }}>
+        <div className="table-container content-table-container">
           <table className="luxury-table">
             <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #cbd5e1' }}>
+              <tr>
                 <th>Nombre / Razón Social</th>
                 <th style={{ width: '100px', minWidth: '100px' }}>Tipo Cliente</th>
                 <th style={{ width: '130px', minWidth: '130px' }}>Documento</th>
@@ -221,21 +256,29 @@ export default function Clientes() {
             <tbody>
               {filteredCustomers.length === 0 ? (
                 <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '3rem' }}>
-                    No se encontraron clientes registrados.
+                  <td colSpan="8">
+                    <div className="content-empty-state">
+                      <strong>No hay clientes para mostrar</strong>
+                      <span>Prueba con otro termino de busqueda o registra un nuevo cliente.</span>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 filteredCustomers.map((c) => (
                   <tr key={c.id}>
-                    <td style={{ fontWeight: '600', color: '#0a1629' }}>{c.name}</td>
+                    <td>
+                      <div className="customer-name-cell">
+                        <span>{c.name}</span>
+                        <small>{c.customerType} · {c.docType} {c.docNumber}</small>
+                      </div>
+                    </td>
                     <td style={{ width: '100px', minWidth: '100px' }}>
                       {c.customerType === 'Mayorista' ? (
-                        <span style={{ background: '#e9f2fd', color: '#003471', fontSize: '0.75rem', fontWeight: '700', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid #cbd5e1' }}>
+                        <span className="customer-type-badge wholesale">
                           Mayorista
                         </span>
                       ) : (
-                        <span style={{ background: '#f1f5f9', color: '#5c6b73', fontSize: '0.75rem', fontWeight: '700', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid #cbd5e1' }}>
+                        <span className="customer-type-badge retail">
                           Minorista
                         </span>
                       )}
@@ -255,18 +298,16 @@ export default function Clientes() {
                       {c.preferredDiscount}%
                     </td>
                     <td style={{ textAlign: 'center', width: '100px', minWidth: '100px' }}>
-                      <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'center' }}>
+                      <div className="row-actions">
                         <button 
-                          className="btn-secondary" 
-                          style={{ padding: '0.4rem', borderRadius: '4px', minWidth: 'auto', border: '1px solid #cbd5e1' }}
+                          className="action-icon-btn"
                           onClick={() => openEditModal(c)}
                           title="Editar"
                         >
                           <Edit size={12} />
                         </button>
                         <button 
-                          className="btn-danger" 
-                          style={{ padding: '0.4rem', borderRadius: '4px', minWidth: 'auto', background: '#fee2e2', border: '1px solid #fca5a5', color: '#ef4444' }}
+                          className="action-icon-btn danger"
                           onClick={() => handleDelete(c.id)}
                           disabled={c.id === 'c1'}
                           title="Eliminar"
@@ -286,30 +327,37 @@ export default function Clientes() {
       {/* Modal Add / Edit */}
       {showModal && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ borderRadius: '4px', border: '1px solid #cbd5e1', padding: '2rem' }}>
-            <h2 style={{ color: 'var(--accent)', marginBottom: '1.5rem', fontWeight: '800', fontSize: '1.25rem', borderBottom: '1px solid #cbd5e1', paddingBottom: '0.8rem' }}>
+          <div className="modal-content content-modal">
+            <h2 className="content-modal-title">
               {editingCustomer ? 'Editar Ficha de Cliente' : 'Registrar Nuevo Cliente'}
             </h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               
               <div className="form-group">
                 <label style={{ fontWeight: '700' }}>Nombre Completo / Razón Social *</label>
                 <input 
                   type="text" 
                   className="form-input" 
-                  style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                   required 
+                  maxLength={180}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
+                <FieldValidationHint
+                  value={form.name}
+                  isValid={liveFieldValidators.customerName}
+                  validMessage="Correcto. El nombre tiene un formato permitido."
+                  invalidMessage="Escribe entre 3 y 180 caracteres. Puedes usar letras, numeros, espacios y estos signos: . , ' & ( ) / -"
+                  maxLength={180}
+                />
+                {formErrors.name && <div className="form-error">{formErrors.name}</div>}
               </div>
 
-              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '1rem' }}>
                 <div className="form-group">
                   <label style={{ fontWeight: '700' }}>Tipo Cliente *</label>
                   <select 
                     className="form-select" 
-                    style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                     value={form.customerType}
                     onChange={(e) => setForm({ ...form, customerType: e.target.value })}
                   >
@@ -325,22 +373,24 @@ export default function Clientes() {
                     min="0" 
                     max="100" 
                     className="form-input" 
-                    style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                     required 
                     value={form.preferredDiscount}
                     onChange={(e) => setForm({ ...form, preferredDiscount: parseFloat(e.target.value) })}
                   />
+                  {formErrors.preferredDiscount && <div className="form-error">{formErrors.preferredDiscount}</div>}
                 </div>
               </div>
 
-              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '1rem' }}>
                 <div className="form-group">
                   <label style={{ fontWeight: '700' }}>Tipo Documento *</label>
                   <select 
                     className="form-select" 
-                    style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                     value={form.docType}
-                    onChange={(e) => setForm({ ...form, docType: e.target.value, docNumber: '' })}
+                    onChange={(e) => {
+                      setForm({ ...form, docType: e.target.value, docNumber: '' });
+                      setFormErrors({ ...formErrors, docType: '', docNumber: '' });
+                    }}
                   >
                     <option value="DNI">DNI (Persona Física)</option>
                     <option value="RUC">RUC (Empresa)</option>
@@ -352,53 +402,87 @@ export default function Clientes() {
                   <input 
                     type="text" 
                     className="form-input" 
-                    style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
                     required 
                     placeholder={form.docType === 'DNI' ? '8 dígitos' : '11 dígitos'}
                     maxLength={form.docType === 'DNI' ? 8 : 11}
                     value={form.docNumber}
                     onChange={(e) => setForm({ ...form, docNumber: e.target.value.replace(/\D/g, '') })}
                   />
+                  <FieldValidationHint
+                    value={form.docNumber}
+                    isValid={(value) => liveFieldValidators.docByType(value, form.docType)}
+                    validMessage={`${form.docType} correcto.`}
+                    invalidMessage={form.docType === 'RUC' ? 'Escribe 11 digitos. El RUC debe empezar con 10 o 20.' : 'Escribe exactamente 8 digitos para el DNI.'}
+                    maxLength={form.docType === 'DNI' ? 8 : 11}
+                    unit="digitos"
+                  />
+                  {formErrors.docNumber && <div className="form-error">{formErrors.docNumber}</div>}
                 </div>
               </div>
 
-              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '1rem' }}>
                 <div className="form-group">
                   <label style={{ fontWeight: '700' }}>Teléfono Contacto</label>
                   <input 
                     type="text" 
-                    className="form-input" 
-                    style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  />
+                  className="form-input" 
+                  maxLength={15}
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '') })}
+                />
+                <FieldValidationHint
+                  value={form.phone}
+                  isValid={liveFieldValidators.phone}
+                  validMessage="Telefono correcto."
+                  invalidMessage="Escribe solo numeros, entre 7 y 15 digitos."
+                  maxLength={15}
+                  unit="digitos"
+                />
+                  {formErrors.phone && <div className="form-error">{formErrors.phone}</div>}
                 </div>
                 <div className="form-group">
                   <label style={{ fontWeight: '700' }}>Correo Electrónico</label>
                   <input 
-                    type="email" 
-                    className="form-input" 
-                    style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  />
+                  type="email" 
+                  className="form-input" 
+                  maxLength={120}
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
+                <FieldValidationHint
+                  value={form.email}
+                  isValid={liveFieldValidators.email}
+                  validMessage="Correo correcto."
+                  invalidMessage="Usa un correo valido, por ejemplo nombre@dominio.com. Maximo 120 caracteres."
+                  maxLength={120}
+                />
+                  {formErrors.email && <div className="form-error">{formErrors.email}</div>}
                 </div>
               </div>
 
               <div className="form-group">
-                <label style={{ fontWeight: '700' }}>Dirección Domiciliaria</label>
+                <label style={{ fontWeight: '700' }}>Dirección Domiciliaria *</label>
                 <input 
                   type="text" 
                   className="form-input" 
-                  style={{ border: '1px solid #cbd5e1', borderRadius: '4px' }}
+                  required
+                  maxLength={500}
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
                 />
+                <FieldValidationHint
+                  value={form.address}
+                  isValid={liveFieldValidators.address}
+                  validMessage="Direccion correcta."
+                  invalidMessage="Escribe entre 3 y 500 caracteres. Puedes usar letras, numeros, #, -, /, parentesis y punto."
+                  maxLength={500}
+                />
+                {formErrors.address && <div className="form-error">{formErrors.address}</div>}
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem', borderTop: '1px solid #cbd5e1', paddingTop: '1rem' }}>
-                <button type="button" className="btn-secondary" style={{ borderRadius: '4px', border: '1px solid #cbd5e1' }} onClick={() => setShowModal(false)}>Cancelar</button>
-                <button type="submit" className="btn-premium" style={{ borderRadius: '4px', background: '#003471' }}>Guardar Cliente</button>
+              <div className="content-form-actions">
+                <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
+                <button type="submit" className="btn-premium">Guardar Cliente</button>
               </div>
             </form>
           </div>

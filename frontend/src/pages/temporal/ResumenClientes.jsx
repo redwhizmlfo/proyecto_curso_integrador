@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import AnimatedKpiValue from '../../components/AnimatedKpiValue';
+import SummaryControls, { downloadCsv, makeCsv } from '../../components/SummaryControls';
 
 /* ─── Datos simulados ─────────────────────────────────────────── */
 
@@ -231,7 +233,7 @@ function KpiCard({ kpi, delay }) {
         lineHeight: 1.15,
         margin: '0.5rem 0 0.1rem',
       }}>
-        {kpi.format(kpi.value)}
+        <AnimatedKpiValue value={kpi.value} format={kpi.format} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.7rem' }}>
@@ -555,6 +557,10 @@ function TopClientes({ data }) {
 
 export default function ResumenClientes() {
   const [dbData, setDbData] = useState(null);
+  const [selectedSegment, setSelectedSegment] = useState('Todos');
+  const [dateRange, setDateRange] = useState('30');
+  const [exporting, setExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   useEffect(() => {
     const fetchDbSummary = async () => {
@@ -580,13 +586,36 @@ export default function ResumenClientes() {
     }
   };
 
-  const currentKpis = KPI_DATA.map(kpi => ({
-    ...kpi,
-    value: getBaseKpiValue(kpi.id, kpi.value),
-    sparkData: typeof kpi.value === 'number' && getBaseKpiValue(kpi.id, kpi.value) !== kpi.value
-      ? kpi.sparkData.map(v => Math.round(v * (getBaseKpiValue(kpi.id, kpi.value) / kpi.value)))
-      : kpi.sparkData
-  }));
+  const segmentFactor = selectedSegment === 'DNI' ? 0.62 : selectedSegment === 'RUC' ? 0.38 : selectedSegment === 'Con descuento' ? 0.18 : 1;
+  const rangeFactor = dateRange === '7' ? 0.35 : dateRange === '365' ? 2.4 : 1;
+
+  const currentKpis = KPI_DATA.map(kpi => {
+    const baseValue = getBaseKpiValue(kpi.id, kpi.value);
+    const shouldScale = typeof baseValue === 'number' && ['activos', 'nuevos', 'frecuentes', 'inactivos', 'valor', 'compras'].includes(kpi.id);
+    const value = shouldScale ? Math.max(0, Math.round(baseValue * segmentFactor * rangeFactor)) : baseValue;
+    return {
+      ...kpi,
+      value,
+      sparkData: typeof kpi.value === 'number' && value !== kpi.value
+        ? kpi.sparkData.map(v => Math.round(v * (value / kpi.value)))
+        : kpi.sparkData
+    };
+  });
+
+  const handleExport = () => {
+    setExporting(true);
+    setExportSuccess(false);
+    setTimeout(() => {
+      const rows = currentKpis.map(kpi => [kpi.id, kpi.label, kpi.format(kpi.value), kpi.valueSub, selectedSegment, `${dateRange} dias`]);
+      downloadCsv(`reporte_clientes_${selectedSegment.toLowerCase().replace(/\s+/g, '-')}_${dateRange}dias.csv`, makeCsv(
+        ['ID', 'Metrica', 'Valor', 'Detalle', 'Segmento', 'Rango'],
+        rows
+      ));
+      setExporting(false);
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 2200);
+    }, 350);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
@@ -595,7 +624,7 @@ export default function ResumenClientes() {
         subtitle="KPIs, segmentación y comportamiento de compra"
       />
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         <Link to="/" style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
           color: 'var(--accent-gold)', textDecoration: 'none',
@@ -603,6 +632,21 @@ export default function ResumenClientes() {
         }}>
           <ArrowLeft size={14} /> Volver al Dashboard
         </Link>
+        <SummaryControls
+          filterValue={selectedSegment}
+          onFilterChange={setSelectedSegment}
+          filterOptions={[
+            { value: 'Todos', label: 'Todos los Clientes' },
+            { value: 'DNI', label: 'Clientes DNI' },
+            { value: 'RUC', label: 'Clientes RUC' },
+            { value: 'Con descuento', label: 'Con descuento' },
+          ]}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          onExport={handleExport}
+          exporting={exporting}
+          exportSuccess={exportSuccess}
+        />
       </div>
 
       <div style={{
@@ -610,13 +654,13 @@ export default function ResumenClientes() {
         textTransform: 'uppercase', color: 'var(--text-muted)',
         marginBottom: '0.8rem',
       }}>
-        Dashboard Desglosado (Sincronizado con Base de Datos)
+        Dashboard Desglosado - Mostrando: {selectedSegment} / {dateRange} dias
       </div>
 
       {/* ── 8 KPI Cards ── */}
       <section style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
         gap: '1.1rem',
         marginBottom: '2rem',
       }}>
@@ -628,7 +672,7 @@ export default function ResumenClientes() {
       {/* ── Gráficos fila 1 ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
         gap: '1.5rem',
         marginBottom: '1.5rem',
       }}>
@@ -647,7 +691,7 @@ export default function ResumenClientes() {
           </div>
           <BarChartNuevos data={NUEVOS_MENSUALES} />
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.7rem',
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '0.7rem',
             marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px solid var(--glass-border)',
           }}>
             {[
@@ -681,7 +725,7 @@ export default function ResumenClientes() {
           </div>
           <LineChartRetencion data={RETENCION_MENSUAL} />
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.7rem',
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '0.7rem',
             marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px solid var(--glass-border)',
           }}>
             {[
@@ -704,7 +748,7 @@ export default function ResumenClientes() {
       {/* ── Gráficos fila 2 ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 1.4fr',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
         gap: '1.5rem',
       }}>
         {/* Donut — segmentos */}

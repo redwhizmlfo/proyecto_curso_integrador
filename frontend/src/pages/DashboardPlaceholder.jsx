@@ -335,6 +335,99 @@ const toneStyles = {
   slate: { color: '#475569', background: '#f1f5f9' }
 };
 
+const extractMetric = (value) => {
+  if (typeof value === 'number') return value;
+  const normalized = String(value ?? '')
+    .replace(/\s/g, '')
+    .replace(/S\/\.?/gi, '')
+    .replace(/,/g, '');
+  const parsed = Number(normalized.replace(/[^\d.-]/g, ''));
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const compactNumber = new Intl.NumberFormat('es-PE', {
+  notation: 'compact',
+  maximumFractionDigits: 1
+});
+
+function MinimalKpiBars({ kpis = [], loading }) {
+  const series = kpis
+    .map((kpi) => ({
+      label: kpi.label,
+      value: extractMetric(kpi.value),
+      tone: kpi.tone
+    }))
+    .filter((item) => item.value > 0);
+
+  const max = Math.max(...series.map((item) => item.value), 1);
+
+  return (
+    <section className="minimal-analytics-grid">
+      <article className="minimal-chart-card">
+        <div className="minimal-chart-header">
+          <h2>Lectura de KPIs</h2>
+          <span>{loading ? 'Sincronizando' : `${series.length} metricas`}</span>
+        </div>
+        <div className="minimal-bars" aria-label="Grafico minimalista de KPIs">
+          {series.length ? series.map((item) => {
+            const style = toneStyles[item.tone] ?? toneStyles.slate;
+            return (
+              <div className="minimal-bar-row" key={item.label}>
+                <span>{item.label}</span>
+                <div className="minimal-bar-track">
+                  <div
+                    className="minimal-bar-fill"
+                    style={{
+                      width: `${Math.max((item.value / max) * 100, 3)}%`,
+                      background: style.color
+                    }}
+                  />
+                </div>
+                <strong>{compactNumber.format(item.value)}</strong>
+              </div>
+            );
+          }) : (
+            <p className="minimal-empty">No hay valores suficientes para graficar.</p>
+          )}
+        </div>
+      </article>
+
+      <article className="minimal-chart-card">
+        <div className="minimal-chart-header">
+          <h2>Composicion</h2>
+          <span>Datos reales</span>
+        </div>
+        <div className="minimal-ratio-stack" aria-label="Composicion proporcional de KPIs">
+          {series.length ? series.map((item) => {
+            const style = toneStyles[item.tone] ?? toneStyles.slate;
+            return (
+              <span
+                key={item.label}
+                title={`${item.label}: ${item.value}`}
+                style={{
+                  flexGrow: Math.max(item.value, 1),
+                  background: style.color
+                }}
+              />
+            );
+          }) : <span className="minimal-ratio-empty" />}
+        </div>
+        <div className="minimal-legend">
+          {series.slice(0, 4).map((item) => {
+            const style = toneStyles[item.tone] ?? toneStyles.slate;
+            return (
+              <span key={item.label}>
+                <i style={{ background: style.color }} />
+                {item.label}
+              </span>
+            );
+          })}
+        </div>
+      </article>
+    </section>
+  );
+}
+
 export default function DashboardPlaceholder() {
   const location = useLocation();
   const config = moduleDetails[location.pathname] ?? moduleDetails['/dashboard/resumen-inventario'];
@@ -391,8 +484,6 @@ export default function DashboardPlaceholder() {
     return config.build(normalizedPayload);
   }, [config, payload]);
 
-  const PageIcon = config.icon;
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
       <Header title={config.title} subtitle={config.subtitle} />
@@ -422,6 +513,8 @@ export default function DashboardPlaceholder() {
           );
         })}
       </section>
+
+      <MinimalKpiBars kpis={summary.kpis} loading={loading} />
 
       <section className="luxury-card dashboard-summary-table">
         <div className="dashboard-table-header">

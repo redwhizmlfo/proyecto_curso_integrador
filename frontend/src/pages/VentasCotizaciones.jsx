@@ -66,7 +66,7 @@ export default function VentasCotizaciones() {
           <p style={{ fontSize: '0.85rem', marginTop: '0.3rem' }}>Puedes emitir una cotización seleccionando "Cotización" como Tipo de Operación en el Punto de Venta (POS).</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '1.5rem' }}>
           {quotations.map((cot) => (
             <div 
               key={cot.id}

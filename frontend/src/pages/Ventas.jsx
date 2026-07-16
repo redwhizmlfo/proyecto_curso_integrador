@@ -37,6 +37,7 @@ export default function Ventas() {
   // Customer identification
   const [docInput, setDocInput] = useState('');
   const [validatedCustomer, setValidatedCustomer] = useState(null);
+  const [customerSelectionStarted, setCustomerSelectionStarted] = useState(false);
 
   // Sale configuration
   const [documentType, setDocumentType] = useState('Factura');
@@ -128,6 +129,8 @@ export default function Ventas() {
         setSelectedBankAccountId(bankList[0]?.id || '');
 
         setValidatedCustomer(null);
+        setDocInput('');
+        setCustomerSelectionStarted(false);
         setError(null);
       } catch {
         setError('No se pudo cargar datos desde el backend. Las operaciones estan deshabilitadas.');
@@ -135,6 +138,8 @@ export default function Ventas() {
         setPosCatalog([]);
         setCustomers([]);
         setValidatedCustomer(null);
+        setDocInput('');
+        setCustomerSelectionStarted(false);
         setModelos([]);
         setEspecificaciones([]);
         setProductosImagenes([]);
@@ -186,6 +191,7 @@ export default function Ventas() {
   useEffect(() => {
     if (!docSearchDigits) {
       setValidatedCustomer(null);
+      setCustomerSelectionStarted(false);
       return;
     }
 
@@ -202,10 +208,13 @@ export default function Ventas() {
   }, [docSearchDigits, exactCustomerMatch, validatedCustomer]);
 
   const handleDocInputChange = (event) => {
-    setDocInput(event.target.value.replace(/\D/g, '').slice(0, 11));
+    const nextDocument = event.target.value.replace(/\D/g, '').slice(0, 11);
+    setCustomerSelectionStarted(Boolean(nextDocument));
+    setDocInput(nextDocument);
   };
 
   const handleSelectCustomer = (customer) => {
+    setCustomerSelectionStarted(true);
     setDocInput(customer.docNumber);
     setValidatedCustomer({
       ...customer,
@@ -226,6 +235,7 @@ export default function Ventas() {
 
     const found = customers.find(c => c.docNumber === document);
     if (found) {
+      setCustomerSelectionStarted(true);
       setValidatedCustomer({
         ...found,
         status: 'Habido / Activo'
@@ -240,6 +250,7 @@ export default function Ventas() {
         ...customer,
         status: customer.status || customer.condition || 'Validado'
       };
+      setCustomerSelectionStarted(true);
       setValidatedCustomer(normalizedCustomer);
       setCustomers((prev) => [
         ...prev.filter((item) => item.docNumber !== normalizedCustomer.docNumber),
@@ -298,12 +309,20 @@ export default function Ventas() {
     }
   };
 
+  const resetUntouchedCustomerSearch = () => {
+    if (!customerSelectionStarted) {
+      setDocInput('');
+      setValidatedCustomer(null);
+    }
+  };
+
   const addModelToCart = (model) => {
     if (model.stock <= 0) {
       alert('¡Sin stock disponible para este modelo!');
       return;
     }
     
+    resetUntouchedCustomerSearch();
     setIsCartOpen(true);
 
     const name = `${model.marca?.nombreMarca} - ${model.modelo} (${model.codigoModelo})`;
@@ -424,6 +443,7 @@ export default function Ventas() {
       return;
     }
     
+    resetUntouchedCustomerSearch();
     // Auto-open shopping cart drawer on item addition
     setIsCartOpen(true);
 
@@ -630,6 +650,7 @@ export default function Ventas() {
     if (products.length > 0 && pending) {
       setCart(pending.items || []);
       if (pending.customer) {
+        setCustomerSelectionStarted(true);
         setValidatedCustomer(pending.customer);
         setDocInput(pending.customer.docNumber);
       }

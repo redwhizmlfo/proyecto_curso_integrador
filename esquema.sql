@@ -583,6 +583,38 @@ create table if not exists sales_workflow_documents (
   constraint sales_workflow_documents_total_non_negative check (total >= 0)
 );
 
+create table if not exists inventory_min_stocks (
+  product_model_id uuid primary key references productos_modelos(id) on delete cascade,
+  min_stock integer not null,
+  updated_at timestamptz not null default now(),
+  constraint inventory_min_stocks_non_negative check (min_stock >= 0)
+);
+
+create table if not exists inventory_boxes (
+  id uuid primary key default gen_random_uuid(),
+  name varchar(160) not null,
+  brand_id varchar(80),
+  brand_name varchar(180),
+  status varchar(32) not null default 'SELLADA',
+  origin varchar(180),
+  items_json text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint inventory_boxes_name_not_blank check (btrim(name) <> ''),
+  constraint inventory_boxes_status_allowed check (lower(status) in ('sellada', 'liberada')),
+  constraint inventory_boxes_items_not_blank check (btrim(items_json) <> '')
+);
+
+create table if not exists inventory_box_history (
+  id uuid primary key default gen_random_uuid(),
+  box_name varchar(160) not null,
+  brand_name varchar(180),
+  items_json text not null,
+  released_at timestamptz not null default now(),
+  constraint inventory_box_history_name_not_blank check (btrim(box_name) <> ''),
+  constraint inventory_box_history_items_not_blank check (btrim(items_json) <> '')
+);
+
 create table if not exists bank_account_configs (
   id uuid primary key default gen_random_uuid(),
   bank_name varchar(80) not null,
@@ -644,6 +676,8 @@ create index if not exists employee_slips_employee_id_idx on employee_slips (emp
 create index if not exists employee_slips_period_label_idx on employee_slips (period_label);
 create index if not exists employee_slips_issued_at_idx on employee_slips (issued_at);
 create index if not exists sales_workflow_documents_kind_idx on sales_workflow_documents (document_kind);
+create index if not exists inventory_boxes_status_idx on inventory_boxes (status);
+create index if not exists inventory_box_history_released_at_idx on inventory_box_history (released_at);
 
 -- Categorias
 INSERT INTO categorias (id, nombre_categoria) VALUES

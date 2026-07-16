@@ -57,36 +57,20 @@ export default function Movimientos() {
     }
   };
 
-  // Seed default boxes and load state from localStorage on mount
+  const loadMovementsState = async () => {
+    const movements = await api.get('/inventory-boxes');
+    setBoxes(movements.boxes || []);
+    setHistory(movements.history || []);
+  };
+
+  // Load backend state on mount
   useEffect(() => {
-    loadData();
-
-    const storedBoxes = localStorage.getItem('inventory_boxes');
-    const storedHistory = localStorage.getItem('inventory_history');
-
-    if (storedBoxes) {
-      setBoxes(JSON.parse(storedBoxes));
-    } else {
+    Promise.all([loadData(), loadMovementsState()]).catch((err) => {
+      console.warn('Error loading movement state from backend.', err);
       setBoxes([]);
-    }
-
-    if (storedHistory) {
-      setHistory(JSON.parse(storedHistory));
-    } else {
       setHistory([]);
-    }
+    });
   }, []);
-
-  // Sync boxes and history with localStorage when they change
-  const saveBoxesToLocal = (newBoxes) => {
-    setBoxes(newBoxes);
-    localStorage.setItem('inventory_boxes', JSON.stringify(newBoxes));
-  };
-
-  const saveHistoryToLocal = (newHistory) => {
-    setHistory(newHistory);
-    localStorage.setItem('inventory_history', JSON.stringify(newHistory));
-  };
 
   // Helper for brand name representation
   const getBrandName = (brandId) => {
@@ -124,7 +108,7 @@ export default function Movimientos() {
   };
 
   // Handle Box Registration Form submit
-  const handleRegisterBox = (e) => {
+  const handleRegisterBox = async (e) => {
     e.preventDefault();
     if (!newBoxName.trim()) {
       alert("Por favor introduce el nombre o código de la caja.");
@@ -143,18 +127,20 @@ export default function Movimientos() {
       ? { id: `marca_${Date.now()}`, nombreMarca: newBrandName.trim() }
       : (marcas.find(b => b.id === selectedBrandId) || marcas[0]);
     const newBox = {
-      id: `box_${Date.now()}`,
       name: newBoxName,
       brandId: brand ? brand.id : 'marca_bosch',
       brandName: brand ? brand.nombreMarca : 'Bosch',
-      status: 'SELLADA',
       origin: 'Almacén de Entrada',
-      dateRegistered: new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
       items: newBoxItems
     };
 
-    const updatedBoxes = [newBox, ...boxes];
-    saveBoxesToLocal(updatedBoxes);
+    try {
+      const savedBox = await api.post('/inventory-boxes', newBox);
+      setBoxes([savedBox, ...boxes]);
+    } catch (err) {
+      alert('No se pudo registrar la caja en backend: ' + err.message);
+      return;
+    }
 
     // Reset Form states
     setNewBoxName('');
@@ -190,44 +176,9 @@ export default function Movimientos() {
     setUnboxingStage('releasing');
     
     try {
-      // Loop over crate items and call PUT /api/modelos/{id}
-      for (const item of activeBox.items) {
-        // Find existing model locally or from fetched models to get its specs
-        const currentModel = modelos.find(m => m.id === item.modelId || m.modelo?.toLowerCase() === item.modelName?.toLowerCase());
-        
-        // If not found, skip or throw error
-        if (!currentModel) continue;
-
-        const updatedStock = currentModel.stock + item.qty;
-
-        // PUT update payload
-        await api.put(`/modelos/${currentModel.id}`, {
-          codigoModelo: currentModel.codigoModelo,
-          modelo: currentModel.modelo,
-          sku: currentModel.sku,
-          precio: currentModel.precio,
-          stock: updatedStock,
-          id_categoria: currentModel.categoria?.id,
-          id_marca: currentModel.marca?.id
-        });
-      }
-
-      // Successful releases:
-      // 1. Mark box as LIBERADA in state
-      const updatedBoxes = boxes.map(b => b.id === activeBox.id ? { ...b, status: 'LIBERADA' } : b);
-      saveBoxesToLocal(updatedBoxes);
-
-      // 2. Add history record
-      const todayDate = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      const todayTime = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true });
-      const newHistoryEntry = {
-        id: `mov_${Date.now()}`,
-        boxName: activeBox.name,
-        brandName: activeBox.brandName,
-        dateReleased: `${todayDate} ${todayTime}`,
-        items: activeBox.items
-      };
-      saveHistoryToLocal([newHistoryEntry, ...history]);
+      const movementState = await api.post(`/inventory-boxes/${activeBox.id}/release`);
+      setBoxes(movementState.boxes || []);
+      setHistory(movementState.history || []);
 
       // 3. Reload live products stock from backend
       await loadData();

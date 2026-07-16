@@ -97,7 +97,9 @@ public class SecurityConfig {
                     "/api/imagenes-modelos/**",
                     "/api/product-images/**",
                     "/api/stock-movements/**",
-                    "/api/losses/**"
+                    "/api/losses/**",
+                    "/api/inventory-min-stocks/**",
+                    "/api/inventory-boxes/**"
                 ).access(hasAnyPermission(
                     "inventario:catalogo",
                     "inventario:stock",

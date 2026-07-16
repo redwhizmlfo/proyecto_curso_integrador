@@ -16,7 +16,7 @@ export default function Alertas() {
   // Filter tabs: 'todos', 'criticos', 'advertencias'
   const [filterTab, setFilterTab] = useState('todos');
 
-  // Shared minStocks state backed by localStorage
+  // Shared minStocks state backed by backend
   const [minStocks, setMinStocks] = useState({});
 
   // Success toast/message state when requesting replenishment
@@ -26,19 +26,19 @@ export default function Alertas() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [modelList, brandList, catList] = await Promise.all([
+      const [modelList, brandList, catList, minStockConfig] = await Promise.all([
         api.get('/modelos'),
         api.get('/marcas'),
-        api.get('/categorias')
+        api.get('/categorias'),
+        api.get('/inventory-min-stocks')
       ]);
       setModelos(modelList);
       setMarcas(brandList);
       setCategorias(catList);
       setError(null);
 
-      // Resolve minimum stocks from localStorage or load defaults
-      const storedMins = localStorage.getItem('inventory_min_stocks');
-      const initialMins = storedMins ? JSON.parse(storedMins) : {};
+      // Resolve minimum stocks from backend or load defaults
+      const initialMins = { ...minStockConfig };
       
       modelList.forEach(m => {
         if (!initialMins[m.id]) {
@@ -51,7 +51,6 @@ export default function Alertas() {
       });
 
       setMinStocks(initialMins);
-      localStorage.setItem('inventory_min_stocks', JSON.stringify(initialMins));
     } catch (err) {
       console.warn('Error loading inventory alerts from backend.', err);
       setError('No se pudo cargar alertas desde el backend. No se muestran datos simulados.');
@@ -68,11 +67,17 @@ export default function Alertas() {
     loadData();
   }, []);
 
-  // Sync minStock change with localStorage
-  const handleMinStockChange = (modelId, newMin) => {
+  // Sync minStock change with backend
+  const handleMinStockChange = async (modelId, newMin) => {
     const updatedMins = { ...minStocks, [modelId]: newMin };
     setMinStocks(updatedMins);
-    localStorage.setItem('inventory_min_stocks', JSON.stringify(updatedMins));
+    try {
+      const savedMins = await api.put(`/inventory-min-stocks/${modelId}`, { minStock: newMin });
+      setMinStocks(savedMins);
+    } catch (err) {
+      alert('No se pudo guardar el stock minimo: ' + err.message);
+      loadData();
+    }
   };
 
   // Create a replenishment box in Movimientos

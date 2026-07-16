@@ -6,6 +6,9 @@ import {
   PlusCircle, CheckCircle2, History, Truck, Wrench, RefreshCw, X, AlertTriangle, Info
 } from 'lucide-react';
 
+const CATALOG_IMAGE_BASE_URL = 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/';
+const catalogImageUrl = (fileName) => `${CATALOG_IMAGE_BASE_URL}${fileName}`;
+
 export default function Movimientos() {
   const ADD_BRAND_VALUE = '__add_brand__';
   const [modelos, setModelos] = useState([]);
@@ -203,10 +206,10 @@ export default function Movimientos() {
 
   // Helper to resolve fallback or real images
   const getProductImage = (modelId) => {
-    if (modelId === 'pm_gws2200') return '/src/assets/esmeril_gws2200.png';
-    if (modelId === 'pm_gws750') return '/src/assets/esmeril_gws750.png';
-    if (modelId === 'pm_m0900b') return '/src/assets/taladro.png';
-    return '/src/assets/taladro.png';
+    if (modelId === 'pm_gws2200') return catalogImageUrl('esmeril_gws2200.png');
+    if (modelId === 'pm_gws750') return catalogImageUrl('esmeril_gws750.png');
+    if (modelId === 'pm_m0900b') return catalogImageUrl('taladro.png');
+    return catalogImageUrl('taladro.png');
   };
 
   return (
@@ -1090,7 +1093,7 @@ export default function Movimientos() {
                             src={getProductImage(item.modelId)} 
                             alt={item.modelName} 
                             style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                            onError={(e) => { e.target.src = '/src/assets/taladro.png'; }}
+                            onError={(e) => { e.target.src = catalogImageUrl('taladro.png'); }}
                           />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>

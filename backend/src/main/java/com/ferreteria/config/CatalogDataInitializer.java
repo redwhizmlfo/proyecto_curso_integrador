@@ -21,6 +21,9 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class CatalogDataInitializer implements CommandLineRunner {
 
+    private static final String CATALOG_IMAGE_BASE_URL =
+            "https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/";
+
     private final CategoriaRepository categoriaRepository;
     private final MarcaRepository marcaRepository;
     private final ProductoModeloRepository productoModeloRepository;
@@ -53,7 +56,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 80,
                 esmeriles,
                 bosch,
-                "/src/assets/esmeril_gws2200.png",
+                catalogImageUrl("esmeril_gws2200.png"),
                 spec("Potencia", "2200 W"),
                 spec("Disco", "7 pulg. / 180 mm"),
                 spec("Velocidad", "8500 RPM")
@@ -67,7 +70,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 22,
                 taladros,
                 bosch,
-                "/src/assets/taladro.png",
+                catalogImageUrl("taladro.png"),
                 spec("Voltaje", "18 V"),
                 spec("Motor", "Brushless"),
                 spec("Torque", "50 Nm")
@@ -81,7 +84,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 15,
                 rotomartillos,
                 bosch,
-                "/src/assets/rotomartillo_bosch.png",
+                catalogImageUrl("rotomartillo_bosch.png"),
                 spec("Potencia", "790 W"),
                 spec("Impacto", "2.7 J"),
                 spec("Mandril", "SDS Plus")
@@ -95,7 +98,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 30,
                 esmeriles,
                 makita,
-                "/src/assets/esmeril_gws750.png",
+                catalogImageUrl("esmeril_gws750.png"),
                 spec("Potencia", "540 W"),
                 spec("Disco", "4 1/2 pulg."),
                 spec("Velocidad", "12000 RPM")
@@ -109,7 +112,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 40,
                 taladros,
                 makita,
-                "/src/assets/taladro.png",
+                catalogImageUrl("taladro.png"),
                 spec("Potencia", "710 W"),
                 spec("Mandril", "13 mm"),
                 spec("Velocidad", "3200 RPM")
@@ -123,7 +126,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 35,
                 esmeriles,
                 makita,
-                "/src/assets/esmeril_gws750.png",
+                catalogImageUrl("esmeril_gws750.png"),
                 spec("Potencia", "720 W"),
                 spec("Disco", "4 1/2 pulg."),
                 spec("Velocidad", "11000 RPM")
@@ -137,7 +140,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 25,
                 taladros,
                 dewalt,
-                "/src/assets/taladro_dewalt.png",
+                catalogImageUrl("taladro_dewalt.png"),
                 spec("Voltaje", "20 V Max"),
                 spec("Mandril", "1/2 pulg."),
                 spec("Velocidades", "2")
@@ -151,7 +154,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 28,
                 esmeriles,
                 dewalt,
-                "/src/assets/esmeril_gws750.png",
+                catalogImageUrl("esmeril_gws750.png"),
                 spec("Potencia", "11 A"),
                 spec("Disco", "4 1/2 pulg."),
                 spec("Velocidad", "11000 RPM")
@@ -165,7 +168,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 12,
                 rotomartillos,
                 dewalt,
-                "/src/assets/rotomartillo_bosch.png",
+                catalogImageUrl("rotomartillo_bosch.png"),
                 spec("Potencia", "8.5 A"),
                 spec("Impacto", "3.0 J"),
                 spec("Mandril", "SDS Plus")
@@ -179,7 +182,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 45,
                 esmeriles,
                 bosch,
-                "/src/assets/esmeril_gws750.png",
+                catalogImageUrl("esmeril_gws750.png"),
                 spec("Potencia", "720 W"),
                 spec("Disco", "4 1/2 pulg. / 115 mm"),
                 spec("Velocidad", "11000 RPM")
@@ -193,7 +196,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 16,
                 rotomartillos,
                 makita,
-                "/src/assets/rotomartillo_bosch.png",
+                catalogImageUrl("rotomartillo_bosch.png"),
                 spec("Potencia", "780 W"),
                 spec("Impacto", "2.4 J"),
                 spec("Mandril", "SDS Plus")
@@ -207,7 +210,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 30,
                 taladros,
                 dewalt,
-                "/src/assets/taladro_dewalt.png",
+                catalogImageUrl("taladro_dewalt.png"),
                 spec("Voltaje", "12 V Max"),
                 spec("Mandril", "3/8 pulg."),
                 spec("Velocidades", "2")
@@ -221,7 +224,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 120,
                 seguridad,
                 tresM,
-                "/src/assets/casco.png",
+                catalogImageUrl("casco.png"),
                 spec("Material", "HDPE"),
                 spec("Suspension", "4 puntos"),
                 spec("Norma", "ANSI/ISEA Z89.1")
@@ -235,7 +238,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 1500,
                 fijaciones,
                 prodac,
-                "/src/assets/pernos.png",
+                catalogImageUrl("pernos.png"),
                 spec("Diametro", "3/8 pulg."),
                 spec("Acabado", "Zincado"),
                 spec("Unidad", "pieza")
@@ -249,7 +252,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 85,
                 electricidad,
                 schneider,
-                "/src/assets/interruptor.png",
+                catalogImageUrl("interruptor.png"),
                 spec("Corriente", "10 A"),
                 spec("Tension", "250 V"),
                 spec("Tipo", "Simple")
@@ -337,6 +340,10 @@ public class CatalogDataInitializer implements CommandLineRunner {
 
     private Spec spec(String atributo, String valor) {
         return new Spec(atributo, valor);
+    }
+
+    private String catalogImageUrl(String fileName) {
+        return CATALOG_IMAGE_BASE_URL + fileName;
     }
 
     private record Spec(String atributo, String valor) {

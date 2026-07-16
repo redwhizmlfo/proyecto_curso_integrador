@@ -717,13 +717,13 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Imagenes de Modelos
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('38d4c2e0-3a61-42b9-a50b-c0209e210021', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), '/src/assets/esmeril_gws2200.png'),
-  ('38d4c2e0-3a61-42b9-a50b-c0209e210022', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), '/src/assets/taladro.png'),
-  ('38d4c2e0-3a61-42b9-a50b-c0209e210023', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), '/src/assets/casco.png'),
-  ('38d4c2e0-3a61-42b9-a50b-c0209e210024', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), '/src/assets/esmeril_gws750.png'),
-  ('38d4c2e0-3a61-42b9-a50b-c0209e210025', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), '/src/assets/taladro.png'),
-  ('38d4c2e0-3a61-42b9-a50b-c0209e210026', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), '/src/assets/pernos.png'),
-  ('38d4c2e0-3a61-42b9-a50b-c0209e210027', (SELECT id FROM productos_modelos WHERE sku = 'SKU-84102941'), '/src/assets/taladro.png')
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210021', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/esmeril_gws2200.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210022', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210023', (SELECT id FROM productos_modelos WHERE sku = 'SKU-75010324'), 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/casco.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210024', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/esmeril_gws750.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210025', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210026', (SELECT id FROM productos_modelos WHERE sku = 'SKU-72093104'), 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/pernos.png'),
+  ('38d4c2e0-3a61-42b9-a50b-c0209e210027', (SELECT id FROM productos_modelos WHERE sku = 'SKU-84102941'), 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- Configuracion de Cuentas Bancarias
@@ -817,7 +817,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('2b839201-4829-410a-bc92-192013829d01', 'a54d6738-3482-411a-829d-ee3d45c1a3b1', '/src/assets/taladro_dewalt.png')
+  ('2b839201-4829-410a-bc92-192013829d01', 'a54d6738-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro_dewalt.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- Bosch Rotomartillo GBH 2-24 D
@@ -832,7 +832,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('4d829102-4829-420a-bc39-102938482d01', 'c829e102-4829-410a-bc39-a83d910d82d4', '/src/assets/rotomartillo_bosch.png')
+  ('4d829102-4829-420a-bc39-102938482d01', 'c829e102-4829-410a-bc39-a83d910d82d4', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/rotomartillo_bosch.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- Nuevos Productos Adicionales (12 productos mas)
@@ -845,7 +845,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010001-4910-482a-bc91-38291039d002', 'b0010001-3482-411a-829d-ee3d45c1a3b1', 'Mandril', '3/8"')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010001-4829-410a-bc92-192013829d01', 'b0010001-3482-411a-829d-ee3d45c1a3b1', '/src/assets/taladro_dewalt.png')
+  ('b0010001-4829-410a-bc92-192013829d01', 'b0010001-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro_dewalt.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. Taladro Makita HP1630
@@ -857,7 +857,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010002-4910-482a-bc91-38291039d002', 'b0010002-3482-411a-829d-ee3d45c1a3b1', 'Velocidad', '3200 RPM')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010002-4829-410a-bc92-192013829d01', 'b0010002-3482-411a-829d-ee3d45c1a3b1', '/src/assets/taladro.png')
+  ('b0010002-4829-410a-bc92-192013829d01', 'b0010002-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. Taladro Bosch GSB 18V-50
@@ -869,7 +869,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010003-4910-482a-bc91-38291039d002', 'b0010003-3482-411a-829d-ee3d45c1a3b1', 'Motor', 'Brushless')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010003-4829-410a-bc92-192013829d01', 'b0010003-3482-411a-829d-ee3d45c1a3b1', '/src/assets/taladro.png')
+  ('b0010003-4829-410a-bc92-192013829d01', 'b0010003-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. Esmeril Makita GA4530
@@ -881,7 +881,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010004-4910-482a-bc91-38291039d002', 'b0010004-3482-411a-829d-ee3d45c1a3b1', 'Disco', '4 1/2"')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010004-4829-410a-bc92-192013829d01', 'b0010004-3482-411a-829d-ee3d45c1a3b1', '/src/assets/esmeril_gws750.png')
+  ('b0010004-4829-410a-bc92-192013829d01', 'b0010004-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/esmeril_gws750.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 5. Esmeril DeWalt DWE4020
@@ -893,7 +893,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010005-4910-482a-bc91-38291039d002', 'b0010005-3482-411a-829d-ee3d45c1a3b1', 'Velocidad', '12000 RPM')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010005-4829-410a-bc92-192013829d01', 'b0010005-3482-411a-829d-ee3d45c1a3b1', '/src/assets/esmeril_gws750.png')
+  ('b0010005-4829-410a-bc92-192013829d01', 'b0010005-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/esmeril_gws750.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 6. Esmeril Bosch GWS 9-125
@@ -905,7 +905,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010006-4910-482a-bc91-38291039d002', 'b0010006-3482-411a-829d-ee3d45c1a3b1', 'Disco', '5"')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010006-4829-410a-bc92-192013829d01', 'b0010006-3482-411a-829d-ee3d45c1a3b1', '/src/assets/esmeril_gws750.png')
+  ('b0010006-4829-410a-bc92-192013829d01', 'b0010006-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/esmeril_gws750.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 7. Rotomartillo DeWalt D25133K
@@ -917,7 +917,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010007-4910-482a-bc91-38291039d002', 'b0010007-3482-411a-829d-ee3d45c1a3b1', 'Potencia', '800W')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010007-4829-410a-bc92-192013829d01', 'b0010007-3482-411a-829d-ee3d45c1a3b1', '/src/assets/rotomartillo_bosch.png')
+  ('b0010007-4829-410a-bc92-192013829d01', 'b0010007-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/rotomartillo_bosch.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 8. Rotomartillo Makita HR2470
@@ -929,7 +929,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010008-4910-482a-bc91-38291039d002', 'b0010008-3482-411a-829d-ee3d45c1a3b1', 'Potencia', '780W')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010008-4829-410a-bc92-192013829d01', 'b0010008-3482-411a-829d-ee3d45c1a3b1', '/src/assets/rotomartillo_bosch.png')
+  ('b0010008-4829-410a-bc92-192013829d01', 'b0010008-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/rotomartillo_bosch.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 9. Rotomartillo Bosch GBH 18V-26
@@ -941,7 +941,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010009-4910-482a-bc91-38291039d002', 'b0010009-3482-411a-829d-ee3d45c1a3b1', 'Fuerza', '2.6 J')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010009-4829-410a-bc92-192013829d01', 'b0010009-3482-411a-829d-ee3d45c1a3b1', '/src/assets/rotomartillo_bosch.png')
+  ('b0010009-4829-410a-bc92-192013829d01', 'b0010009-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/rotomartillo_bosch.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 10. Atornillador Bosch GSR 1000 Smart
@@ -953,7 +953,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010010-4910-482a-bc91-38291039d002', 'b0010010-3482-411a-829d-ee3d45c1a3b1', 'Torque', '15 Nm')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010010-4829-410a-bc92-192013829d01', 'b0010010-3482-411a-829d-ee3d45c1a3b1', '/src/assets/taladro.png')
+  ('b0010010-4829-410a-bc92-192013829d01', 'b0010010-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 11. Atornillador DeWalt DCF801
@@ -965,7 +965,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010011-4910-482a-bc91-38291039d002', 'b0010011-3482-411a-829d-ee3d45c1a3b1', 'Torque', '163 Nm')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010011-4829-410a-bc92-192013829d01', 'b0010011-3482-411a-829d-ee3d45c1a3b1', '/src/assets/taladro_dewalt.png')
+  ('b0010011-4829-410a-bc92-192013829d01', 'b0010011-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro_dewalt.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- 12. Esmeril Inalambrico Makita DGA452
@@ -977,7 +977,7 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
   ('b0010012-4910-482a-bc91-38291039d002', 'b0010012-3482-411a-829d-ee3d45c1a3b1', 'Velocidad', '10000 RPM')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('b0010012-4829-410a-bc92-192013829d01', 'b0010012-3482-411a-829d-ee3d45c1a3b1', '/src/assets/esmeril_gws750.png')
+  ('b0010012-4829-410a-bc92-192013829d01', 'b0010012-3482-411a-829d-ee3d45c1a3b1', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/esmeril_gws750.png')
 ON CONFLICT (id) DO NOTHING;
 
 -- Productos adicionales con imagenes representativas reales por categoria
@@ -1024,12 +1024,12 @@ INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
-  ('d2030001-6a71-4c6a-9b5d-000000000001', 'd2010001-6a71-4c6a-9b5d-000000000001', '/src/assets/esmeril_gws750.png'),
-  ('d2030001-6a71-4c6a-9b5d-000000000002', 'd2010001-6a71-4c6a-9b5d-000000000002', '/src/assets/rotomartillo_bosch.png'),
-  ('d2030001-6a71-4c6a-9b5d-000000000003', 'd2010001-6a71-4c6a-9b5d-000000000003', '/src/assets/taladro_dewalt.png'),
-  ('d2030001-6a71-4c6a-9b5d-000000000004', 'd2010001-6a71-4c6a-9b5d-000000000004', '/src/assets/casco.png'),
-  ('d2030001-6a71-4c6a-9b5d-000000000005', 'd2010001-6a71-4c6a-9b5d-000000000005', '/src/assets/pernos.png'),
-  ('d2030001-6a71-4c6a-9b5d-000000000006', 'd2010001-6a71-4c6a-9b5d-000000000006', '/src/assets/interruptor.png')
+  ('d2030001-6a71-4c6a-9b5d-000000000001', 'd2010001-6a71-4c6a-9b5d-000000000001', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/esmeril_gws750.png'),
+  ('d2030001-6a71-4c6a-9b5d-000000000002', 'd2010001-6a71-4c6a-9b5d-000000000002', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/rotomartillo_bosch.png'),
+  ('d2030001-6a71-4c6a-9b5d-000000000003', 'd2010001-6a71-4c6a-9b5d-000000000003', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/taladro_dewalt.png'),
+  ('d2030001-6a71-4c6a-9b5d-000000000004', 'd2010001-6a71-4c6a-9b5d-000000000004', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/casco.png'),
+  ('d2030001-6a71-4c6a-9b5d-000000000005', 'd2010001-6a71-4c6a-9b5d-000000000005', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/pernos.png'),
+  ('d2030001-6a71-4c6a-9b5d-000000000006', 'd2010001-6a71-4c6a-9b5d-000000000006', 'https://raw.githubusercontent.com/redwhizmlfo/proyecto_curso_integrador/aea7f14d4c49a317849710ce3d1153f055fdac3e/frontend/src/assets/interruptor.png')
 ON CONFLICT (id) DO NOTHING;
 
 

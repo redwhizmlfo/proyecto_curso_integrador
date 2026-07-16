@@ -1049,13 +1049,20 @@ export default function Inventario() {
               </div>
 
               <div className="form-group">
-                <label>URL de Imagen Ilustrativa (Carrusel)</label>
+                <label>URL de Imagen del Producto (Carrusel)</label>
                 <input 
-                  type="text" 
+                  type="url" 
                   className="form-input" 
-                  placeholder="Ej. /src/assets/esmeril_gws2200.png"
+                  placeholder="Ej. https://dominio.com/imagen-producto.png"
                   value={modelForm.imageUrl}
                   onChange={(e) => setModelForm({ ...modelForm, imageUrl: e.target.value })}
+                />
+                <FieldValidationHint
+                  value={modelForm.imageUrl}
+                  isValid={liveFieldValidators.imageUrl}
+                  validMessage="URL de imagen correcta."
+                  invalidMessage="Pega una URL publica que empiece con http:// o https://."
+                  limitLabel="URL publica"
                 />
                 {formErrors.imageUrl && <div className="form-error">{formErrors.imageUrl}</div>}
               </div>

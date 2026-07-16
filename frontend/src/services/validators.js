@@ -257,9 +257,12 @@ export const validateProductModelForm = (form = {}, context = {}) => {
 	if (form.imageUrl) {
 		try {
 			const cleanUrl = String(form.imageUrl).trim();
-			if (!cleanUrl.startsWith('/') && !cleanUrl.startsWith('./')) new URL(cleanUrl);
+			const url = new URL(cleanUrl);
+			if (!['http:', 'https:'].includes(url.protocol)) {
+				throw new Error('Invalid image URL protocol');
+			}
 		} catch {
-			errors.imageUrl = 'Use una URL valida o una ruta local.';
+			errors.imageUrl = 'Use una URL publica valida que empiece con http:// o https://.';
 		}
 	}
 	if ((form.specs || []).some((spec) =>
@@ -314,4 +317,14 @@ export const liveFieldValidators = {
 	sku: (value) => regexPatterns.sku.test(String(value || '').trim()),
 	price: (value) => regexPatterns.decimal.test(String(value || '').trim()) && Number(value) > 0,
 	stock: (value) => Number.isInteger(Number(value)) && Number(value) >= 0,
+	imageUrl: (value) => {
+		const cleanUrl = String(value || '').trim();
+		if (!cleanUrl) return true;
+		try {
+			const url = new URL(cleanUrl);
+			return ['http:', 'https:'].includes(url.protocol);
+		} catch {
+			return false;
+		}
+	},
 };

@@ -8,13 +8,13 @@ Fecha de auditoria: 2026-07-16
 |---|---:|---|---|
 | Integracion Front-end y Back-end | 4 pts | Parcial alta | Medio |
 | Funcionalidad integral del sistema | 4 pts | Parcial alta | Medio |
-| Seguridad y autenticacion | 2.5 pts | Alta | Bajo/medio |
-| Calidad de codigo y buenas practicas | 2.5 pts | Media | Medio |
+| Seguridad y autenticacion | 2.5 pts | Alta verificada | Bajo |
+| Calidad de codigo y buenas practicas | 2.5 pts | Media/alta | Medio |
 | Despliegue en la nube | 2 pts | Pendiente | Alto |
 | Documentacion tecnica y manuales | 2 pts | Mejorada | Bajo/medio |
 | Sustentacion y dominio tecnico | 3 pts | Parcial alta | Medio |
 
-Estimacion antes de despliegue cloud: 14/20 a 16/20.
+Estimacion antes de despliegue cloud: 15/20 a 17/20.
 
 Estimacion con despliegue operativo y evidencia de pruebas: 17/20 a 19/20.
 
@@ -30,6 +30,9 @@ Evidencia actual:
 - Servicio central `frontend/src/services/api.js` conecta con backend.
 - Backend expone API bajo `/api`.
 - Login probado localmente con `admin/admin123`.
+- Login JWT probado localmente con `admin/admin123`.
+- `GET /api/auth/me` probado con token Bearer.
+- `GET /api/users` sin token responde `401`.
 - Frontend local: `http://127.0.0.1:5173`.
 - Backend local: `http://localhost:8081/api`.
 
@@ -37,7 +40,7 @@ Pendientes:
 
 - Ejecutar prueba manual modulo por modulo con backend levantado.
 - Registrar capturas o checklist firmado.
-- Asegurar que la rama backend con JWT/permisos quede integrada antes de presentar.
+- Integrar o subir la rama backend `feature/backend-seguridad-jwt-roles`.
 
 Estado:
 
@@ -104,19 +107,22 @@ Evidencia actual:
 - `SecurityConfig` protege `/api/**`.
 - `POST /api/auth/login`.
 - `GET /api/auth/me`.
+- Passwords con BCrypt.
+- Sesion stateless con token Bearer.
+- Validacion de login vacio devuelve `400` con mensaje claro.
+- `/api/users/**` requiere rol ADMIN.
 - Frontend adjunta `Authorization: Bearer <token>`.
 - Rutas frontend se protegen con permisos en `ROUTE_PERMISSIONS`.
 - Panel de permisos por submodulo.
 
 Pendientes:
 
-- Confirmar que los cambios backend de seguridad esten en rama/commit correcto.
 - Probar usuario sin permisos.
 - Cambiar `JWT_SECRET` en despliegue.
 
 Estado:
 
-- Cumple alto, con pendiente de integracion Git y prueba de roles.
+- Cumple alto, con pendiente de prueba de usuario limitado y secreto productivo.
 
 ## 4. Calidad de codigo y buenas practicas
 
@@ -130,19 +136,20 @@ Evidencia actual:
 - Validaciones centralizadas en `services/validators.js`.
 - Componentes reutilizables: `Header`, `Sidebar`, `SummaryControls`, `AnimatedKpiValue`, `FieldValidationHint`.
 - Backend sigue capas controller/service/repository/model/dto.
+- Backend centraliza errores API en `ApiExceptionHandler`.
+- Backend sanea entradas sensibles con `InputSanitizationService`.
 - Build frontend pasa.
 - Compile backend pasa.
 
 Riesgos:
 
 - `npm run lint` completo reporta errores heredados en varios modulos.
-- Hay cambios backend sin commitear en el workspace actual.
-- Evitar mezclar cambios backend en ramas frontend.
+- Quedan assets estaticos generados en backend sin limpiar/decidir.
 
 Pendientes:
 
 - Corregir lint o documentar excepciones.
-- Limpiar archivos temporales no versionables si se va a entregar repo.
+- Limpiar o decidir assets estaticos generados si se va a entregar repo.
 
 Estado:
 
@@ -227,10 +234,10 @@ Estado:
 ## Checklist final antes de presentar
 
 - [ ] Rama frontend final creada y subida.
-- [ ] Rama backend/integracion con JWT y permisos revisada.
-- [ ] Backend compila.
-- [ ] Frontend build pasa.
-- [ ] Login ADMIN funciona.
+- [x] Rama backend/integracion con JWT y permisos revisada localmente.
+- [x] Backend compila.
+- [x] Frontend build pasa.
+- [x] Login ADMIN funciona.
 - [ ] Usuario limitado bloquea rutas sin permiso.
 - [ ] CRUD clientes funciona.
 - [ ] CRUD proveedores funciona.

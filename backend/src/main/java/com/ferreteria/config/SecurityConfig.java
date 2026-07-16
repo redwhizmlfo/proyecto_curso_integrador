@@ -33,8 +33,15 @@ public class SecurityConfig {
      * Set env var CORS_ALLOWED_ORIGINS in production to include the Vercel URL.
      * Example: https://mi-ferreteria.vercel.app,https://www.mi-ferreteria.com
      */
-    @Value("${cors.allowed-origins:http://localhost:5173,http://127.0.0.1:5173}")
+    @Value("${cors.allowed-origins:http://localhost:5173,http://127.0.0.1:5173,https://proyecto-curso-integrador-frontend.vercel.app}")
     private String corsAllowedOrigins;
+
+    /**
+     * Comma-separated CORS origin patterns. This covers Vercel preview URLs,
+     * whose deployment subdomain changes on each production/preview deploy.
+     */
+    @Value("${cors.allowed-origin-patterns:http://localhost:5173,http://127.0.0.1:5173,https://proyecto-curso-integrador-frontend.vercel.app,https://proyecto-curso-integrador-frontend-*.vercel.app}")
+    private String corsAllowedOriginPatterns;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -142,7 +149,12 @@ public class SecurityConfig {
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList();
+        List<String> originPatterns = Arrays.stream(corsAllowedOriginPatterns.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
         configuration.setAllowedOrigins(origins);
+        configuration.setAllowedOriginPatterns(originPatterns);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setExposedHeaders(List.of("Authorization"));

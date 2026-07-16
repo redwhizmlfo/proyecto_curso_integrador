@@ -85,6 +85,13 @@ create table if not exists users (
 create unique index if not exists users_username_unique_normalized_idx
   on users (lower(btrim(username)));
 
+create table if not exists user_module_permissions (
+  user_id uuid not null references users(id) on delete cascade,
+  permission_key varchar(120) not null,
+  primary key (user_id, permission_key),
+  constraint user_module_permissions_key_not_blank check (btrim(permission_key) <> '')
+);
+
 create table if not exists categorias (
   id uuid primary key default gen_random_uuid(),
   nombre_categoria varchar(180) not null,

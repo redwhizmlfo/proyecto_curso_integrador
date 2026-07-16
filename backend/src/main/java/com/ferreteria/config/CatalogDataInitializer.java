@@ -1,10 +1,19 @@
 package com.ferreteria.config;
 
-import com.ferreteria.model.*;
-import com.ferreteria.repository.*;
+import com.ferreteria.model.Categoria;
+import com.ferreteria.model.Especificacion;
+import com.ferreteria.model.Marca;
+import com.ferreteria.model.ProductoImagen;
+import com.ferreteria.model.ProductoModelo;
+import com.ferreteria.repository.CategoriaRepository;
+import com.ferreteria.repository.EspecificacionRepository;
+import com.ferreteria.repository.MarcaRepository;
+import com.ferreteria.repository.ProductoImagenRepository;
+import com.ferreteria.repository.ProductoModeloRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 
@@ -19,100 +28,227 @@ public class CatalogDataInitializer implements CommandLineRunner {
     private final ProductoImagenRepository productoImagenRepository;
 
     @Override
-    public void run(String... args) throws Exception {
-        // Only run if database is empty
-        if (categoriaRepository.count() == 0) {
-            // 1. Create Categories
-            Categoria esmeriles = Categoria.builder().nombreCategoria("Esmeriles").build();
-            Categoria taladros = Categoria.builder().nombreCategoria("Taladros").build();
-            Categoria rotomartillos = Categoria.builder().nombreCategoria("Rotomartillos").build();
-            categoriaRepository.saveAll(Arrays.asList(esmeriles, taladros, rotomartillos));
+    public void run(String... args) {
+        cleanupLegacyDemoModels();
 
-            // 2. Create Brands
-            Marca bosch = Marca.builder().nombreMarca("Bosch").build();
-            Marca makita = Marca.builder().nombreMarca("Makita").build();
-            Marca dewalt = Marca.builder().nombreMarca("DeWalt").build();
-            marcaRepository.saveAll(Arrays.asList(bosch, makita, dewalt));
+        Categoria esmeriles = getOrCreateCategoria("Esmeriles");
+        Categoria taladros = getOrCreateCategoria("Taladros");
+        Categoria rotomartillos = getOrCreateCategoria("Rotomartillos");
 
-            // 3. Create Product Models
-            // GWS2200
-            ProductoModelo gws2200 = ProductoModelo.builder()
-                    .codigoModelo("GWS 22-180 H")
-                    .modelo("GWS2200")
-                    .sku("SKU-75010324")
-                    .precio(new BigDecimal("349.99"))
-                    .stock(80)
-                    .categoria(esmeriles)
-                    .marca(bosch)
-                    .build();
+        Marca bosch = getOrCreateMarca("Bosch");
+        Marca makita = getOrCreateMarca("Makita");
+        Marca dewalt = getOrCreateMarca("DeWalt");
 
-            // GWS750
-            ProductoModelo gws750 = ProductoModelo.builder()
-                    .codigoModelo("GWS 7-115")
-                    .modelo("GWS750")
-                    .sku("SKU-72093104")
-                    .precio(new BigDecimal("199.50"))
-                    .stock(45)
-                    .categoria(esmeriles)
-                    .marca(bosch)
-                    .build();
+        seedProduct(
+                "SKU-BOSCH-GWS22180H",
+                "GWS 22-180 H",
+                "GWS 22-180 H",
+                new BigDecimal("349.99"),
+                80,
+                esmeriles,
+                bosch,
+                "https://www.bosch-professional.com/middle-east/en/ocsmedia/50101-82/product-image/166x164/angle-grinder-pro-gws-22-180-h-0601881l63.png",
+                spec("Potencia", "2200 W"),
+                spec("Disco", "7 pulg. / 180 mm"),
+                spec("Velocidad", "8500 RPM")
+        );
 
-            // M0900B
-            ProductoModelo m0900b = ProductoModelo.builder()
-                    .codigoModelo("M0900B 540W")
-                    .modelo("M0900B")
-                    .sku("SKU-84102941")
-                    .precio(new BigDecimal("155.00"))
-                    .stock(30)
-                    .categoria(esmeriles)
-                    .marca(makita)
-                    .build();
+        seedProduct(
+                "SKU-BOSCH-GSB18V50",
+                "GSB 18V-50",
+                "GSB 18V-50",
+                new BigDecimal("449.00"),
+                22,
+                taladros,
+                bosch,
+                "https://www.bosch-professional.com/middle-east/en/ocsmedia/392666-82/product-image/166x164/cordless-combi-gsb-18v-50-06019h5100.png",
+                spec("Voltaje", "18 V"),
+                spec("Motor", "Brushless"),
+                spec("Torque", "50 Nm")
+        );
 
-            productoModeloRepository.saveAll(Arrays.asList(gws2200, gws750, m0900b));
+        seedProduct(
+                "SKU-BOSCH-GBH224DRE",
+                "GBH 2-24 DRE",
+                "GBH 2-24 DRE",
+                new BigDecimal("549.90"),
+                15,
+                rotomartillos,
+                bosch,
+                "https://www.powertoolworld.co.uk/media/catalog/product/cache/084e1d53cb6448930cfcf0f17a664cff/b/o/bosch-gbh-2-24-d-professional-2kg-sds-hammer-drill-240v.jpg",
+                spec("Potencia", "790 W"),
+                spec("Impacto", "2.7 J"),
+                spec("Mandril", "SDS Plus")
+        );
 
-            // 4. Create Specifications
-            // GWS2200
-            especificacionRepository.saveAll(Arrays.asList(
-                    Especificacion.builder().productoModelo(gws2200).atributo("Potencia").valor("2200 W").build(),
-                    Especificacion.builder().productoModelo(gws2200).atributo("Diámetro de disco").valor("7\" (180 mm)").build(),
-                    Especificacion.builder().productoModelo(gws2200).atributo("Velocidad").valor("8500 RPM").build(),
-                    Especificacion.builder().productoModelo(gws2200).atributo("Peso").valor("5.2 kg").build()
-            ));
+        seedProduct(
+                "SKU-MAKITA-M0900B",
+                "M0900B",
+                "M0900B",
+                new BigDecimal("155.00"),
+                30,
+                esmeriles,
+                makita,
+                "https://makitacentre.com/cdn/shop/products/M0900B_large.jpg",
+                spec("Potencia", "540 W"),
+                spec("Disco", "4 1/2 pulg."),
+                spec("Velocidad", "12000 RPM")
+        );
 
-            // GWS750
-            especificacionRepository.saveAll(Arrays.asList(
-                    Especificacion.builder().productoModelo(gws750).atributo("Potencia").valor("750 W").build(),
-                    Especificacion.builder().productoModelo(gws750).atributo("Diámetro de disco").valor("4 1/2\" (115 mm)").build(),
-                    Especificacion.builder().productoModelo(gws750).atributo("Velocidad").valor("11000 RPM").build(),
-                    Especificacion.builder().productoModelo(gws750).atributo("Peso").valor("1.8 kg").build()
-            ));
+        seedProduct(
+                "SKU-MAKITA-HP1630",
+                "HP1630",
+                "HP1630",
+                new BigDecimal("189.90"),
+                40,
+                taladros,
+                makita,
+                "https://makita.com.sg/wp-content/uploads/2020/09/HP1630.png",
+                spec("Potencia", "710 W"),
+                spec("Mandril", "13 mm"),
+                spec("Velocidad", "3200 RPM")
+        );
 
-            // M0900B
-            especificacionRepository.saveAll(Arrays.asList(
-                    Especificacion.builder().productoModelo(m0900b).atributo("Potencia").valor("540 W").build(),
-                    Especificacion.builder().productoModelo(m0900b).atributo("Velocidad").valor("12000 RPM").build(),
-                    Especificacion.builder().productoModelo(m0900b).atributo("Peso").valor("1.6 kg").build()
-            ));
+        seedProduct(
+                "SKU-MAKITA-GA4530",
+                "GA4530",
+                "GA4530",
+                new BigDecimal("169.00"),
+                35,
+                esmeriles,
+                makita,
+                "https://images.thdstatic.com/productImages/079da4bc-9958-4e41-8d87-419d6e8897cc/svn/makita-angle-grinders-ga4530-e1_600.jpg",
+                spec("Potencia", "720 W"),
+                spec("Disco", "4 1/2 pulg."),
+                spec("Velocidad", "11000 RPM")
+        );
 
-            // 5. Create Product Images
-            // GWS2200 images
-            productoImagenRepository.saveAll(Arrays.asList(
-                    ProductoImagen.builder().productoModelo(gws2200).urlImagen("/src/assets/esmeril_gws2200.png").build(),
-                    ProductoImagen.builder().productoModelo(gws2200).urlImagen("/src/assets/taladro.png").build(),
-                    ProductoImagen.builder().productoModelo(gws2200).urlImagen("/src/assets/casco.png").build()
-            ));
+        seedProduct(
+                "SKU-DEWALT-DCD771C2",
+                "DCD771C2",
+                "DCD771C2",
+                new BigDecimal("289.99"),
+                25,
+                taladros,
+                dewalt,
+                "https://images.thdstatic.com/productImages/4fe71abf-108e-4721-b39c-fbe2acf8336d/svn/dewalt-power-drills-dcd771c2-64_600.jpg",
+                spec("Voltaje", "20 V Max"),
+                spec("Mandril", "1/2 pulg."),
+                spec("Velocidades", "2")
+        );
 
-            // GWS750 images
-            productoImagenRepository.saveAll(Arrays.asList(
-                    ProductoImagen.builder().productoModelo(gws750).urlImagen("/src/assets/esmeril_gws750.png").build(),
-                    ProductoImagen.builder().productoModelo(gws750).urlImagen("/src/assets/taladro.png").build(),
-                    ProductoImagen.builder().productoModelo(gws750).urlImagen("/src/assets/pernos.png").build()
-            ));
+        seedProduct(
+                "SKU-DEWALT-DWE402",
+                "DWE402",
+                "DWE402",
+                new BigDecimal("185.00"),
+                28,
+                esmeriles,
+                dewalt,
+                "https://images.thdstatic.com/productImages/eec96a1f-001e-4478-88b2-60eecbe5b5c1/svn/dewalt-angle-grinders-dwe402-64_600.jpg",
+                spec("Potencia", "11 A"),
+                spec("Disco", "4 1/2 pulg."),
+                spec("Velocidad", "11000 RPM")
+        );
 
-            // M0900B images
-            productoImagenRepository.saveAll(Arrays.asList(
-                    ProductoImagen.builder().productoModelo(m0900b).urlImagen("/src/assets/taladro.png").build()
-            ));
-        }
+        seedProduct(
+                "SKU-DEWALT-D25263K",
+                "D25263K",
+                "D25263K",
+                new BigDecimal("489.00"),
+                12,
+                rotomartillos,
+                dewalt,
+                "https://images.thdstatic.com/productImages/fcc2fb48-6fc5-41f7-b14d-4bf52b84f7ff/svn/dewalt-rotary-hammers-d25263k-64_600.jpg",
+                spec("Potencia", "8.5 A"),
+                spec("Impacto", "3.0 J"),
+                spec("Mandril", "SDS Plus")
+        );
+    }
+
+    private Categoria getOrCreateCategoria(String nombre) {
+        return categoriaRepository.findAllByNombreCategoriaIgnoreCase(nombre).stream()
+                .findFirst()
+                .orElseGet(() -> categoriaRepository.save(Categoria.builder().nombreCategoria(nombre).build()));
+    }
+
+    private Marca getOrCreateMarca(String nombre) {
+        return marcaRepository.findAllByNombreMarcaIgnoreCase(nombre).stream()
+                .findFirst()
+                .orElseGet(() -> marcaRepository.save(Marca.builder().nombreMarca(nombre).build()));
+    }
+
+    private void cleanupLegacyDemoModels() {
+        Arrays.asList(
+                "SKU-75010324",
+                "SKU-72093104",
+                "SKU-84102941",
+                "SKU-30910482",
+                "SKU-58291043",
+                "SKU-10000001",
+                "SKU-10000002",
+                "SKU-10000003",
+                "SKU-10000004",
+                "SKU-10000005",
+                "SKU-10000006",
+                "SKU-10000007",
+                "SKU-10000008",
+                "SKU-10000009",
+                "SKU-10000010",
+                "SKU-10000011",
+                "SKU-10000012"
+        ).forEach(sku -> productoModeloRepository.findBySku(sku).ifPresent(model -> {
+            especificacionRepository.deleteAll(especificacionRepository.findByProductoModeloId(model.getId()));
+            productoImagenRepository.deleteAll(productoImagenRepository.findByProductoModeloId(model.getId()));
+            productoModeloRepository.delete(model);
+        }));
+    }
+
+    private void seedProduct(
+            String sku,
+            String codigoModelo,
+            String modelo,
+            BigDecimal precio,
+            Integer stock,
+            Categoria categoria,
+            Marca marca,
+            String imageUrl,
+            Spec... specs
+    ) {
+        ProductoModelo producto = productoModeloRepository.findBySku(sku)
+                .orElseGet(ProductoModelo::new);
+
+        producto.setSku(sku);
+        producto.setCodigoModelo(codigoModelo);
+        producto.setModelo(modelo);
+        producto.setPrecio(precio);
+        producto.setStock(stock);
+        producto.setCategoria(categoria);
+        producto.setMarca(marca);
+
+        ProductoModelo saved = productoModeloRepository.save(producto);
+
+        especificacionRepository.deleteAll(especificacionRepository.findByProductoModeloId(saved.getId()));
+        productoImagenRepository.deleteAll(productoImagenRepository.findByProductoModeloId(saved.getId()));
+
+        especificacionRepository.saveAll(Arrays.stream(specs)
+                .map(spec -> Especificacion.builder()
+                        .productoModelo(saved)
+                        .atributo(spec.atributo())
+                        .valor(spec.valor())
+                        .build())
+                .toList());
+
+        productoImagenRepository.save(ProductoImagen.builder()
+                .productoModelo(saved)
+                .urlImagen(imageUrl)
+                .build());
+    }
+
+    private Spec spec(String atributo, String valor) {
+        return new Spec(atributo, valor);
+    }
+
+    private record Spec(String atributo, String valor) {
     }
 }

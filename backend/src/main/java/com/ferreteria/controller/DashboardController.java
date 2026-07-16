@@ -327,6 +327,7 @@ public class DashboardController {
         );
     }
 
+    @SafeVarargs
     private Map<String, Object> response(String tableTitle, List<String> columns, List<List<Object>> rows, Map<String, Object>... kpis) {
         Map<String, Object> response = new HashMap<>();
         response.put("kpis", List.of(kpis));

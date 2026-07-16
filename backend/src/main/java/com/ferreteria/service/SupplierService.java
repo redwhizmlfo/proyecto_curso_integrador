@@ -15,6 +15,7 @@ import java.util.UUID;
 public class SupplierService {
 
     private final SupplierRepository supplierRepository;
+    private final InputSanitizationService inputSanitizationService;
 
     public List<Supplier> getAllSuppliers() {
         return supplierRepository.findAll();
@@ -33,11 +34,11 @@ public class SupplierService {
     @Transactional
     public Supplier createSupplier(SupplierRequestDTO request) {
         Supplier supplier = Supplier.builder()
-                .name(request.getName())
-                .ruc(request.getRuc())
-                .contact(request.getContact())
-                .phone(request.getPhone())
-                .email(request.getEmail())
+                .name(inputSanitizationService.requiredText(request.getName(), "name"))
+                .ruc(inputSanitizationService.requiredText(request.getRuc(), "ruc"))
+                .contact(inputSanitizationService.optionalText(request.getContact(), "contact"))
+                .phone(inputSanitizationService.optionalText(request.getPhone(), "phone"))
+                .email(inputSanitizationService.optionalText(request.getEmail(), "email"))
                 .isActive(true)
                 .build();
         return supplierRepository.save(supplier);
@@ -46,11 +47,11 @@ public class SupplierService {
     @Transactional
     public Supplier updateSupplier(UUID id, SupplierRequestDTO request) {
         Supplier supplier = getSupplierById(id);
-        supplier.setName(request.getName());
-        supplier.setRuc(request.getRuc());
-        supplier.setContact(request.getContact());
-        supplier.setPhone(request.getPhone());
-        supplier.setEmail(request.getEmail());
+        supplier.setName(inputSanitizationService.requiredText(request.getName(), "name"));
+        supplier.setRuc(inputSanitizationService.requiredText(request.getRuc(), "ruc"));
+        supplier.setContact(inputSanitizationService.optionalText(request.getContact(), "contact"));
+        supplier.setPhone(inputSanitizationService.optionalText(request.getPhone(), "phone"));
+        supplier.setEmail(inputSanitizationService.optionalText(request.getEmail(), "email"));
         return supplierRepository.save(supplier);
     }
 

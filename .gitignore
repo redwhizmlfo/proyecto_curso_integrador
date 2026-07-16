@@ -12,6 +12,8 @@ build/
 # IDE
 .idea/
 .vscode/
+.metals/
+.bloop/
 *.iml
 .project
 .classpath

@@ -12,7 +12,10 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -49,6 +52,7 @@ public class User {
     private String status = "active";
 
     @NotBlank
+    @JsonIgnore
     @Column(name = "password_hash", nullable = false, columnDefinition = "text")
     private String passwordHash;
 
@@ -58,6 +62,15 @@ public class User {
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private boolean isActive = true;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_module_permissions",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "permission_key", nullable = false, length = 120)
+    @Builder.Default
+    private Set<String> modulePermissions = new HashSet<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

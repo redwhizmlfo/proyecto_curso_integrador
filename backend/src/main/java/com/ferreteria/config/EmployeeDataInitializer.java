@@ -8,6 +8,7 @@ import com.ferreteria.repository.EmployeeRepository;
 import com.ferreteria.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import jakarta.persistence.EntityManager;
@@ -26,6 +27,7 @@ public class EmployeeDataInitializer implements CommandLineRunner {
     private final EmployeeRepository employeeRepository;
     private final EmployeeAttendanceRepository attendanceRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -41,9 +43,7 @@ public class EmployeeDataInitializer implements CommandLineRunner {
             System.err.println("Error updating check constraint in database: " + e.getMessage());
         }
 
-        // Load default admin user
-        Optional<User> adminOpt = userRepository.findByUsername("admin");
-        User admin = adminOpt.orElse(null);
+        User admin = seedDefaultAdminUser();
 
         // 1. Seed Carlos Mendoza
         Employee carlos = seedEmployee("CM", "Carlos Mendoza", "Vendedor Cajero", "44558899", new BigDecimal("80.00"), new BigDecimal("5.0"), "en turno", true, true);
@@ -75,6 +75,40 @@ public class EmployeeDataInitializer implements CommandLineRunner {
             seedAttendance(lucia, admin, LocalDate.now().minusDays(3), OffsetDateTime.now(ZoneOffset.UTC).minusDays(3).withHour(8).withMinute(10), OffsetDateTime.now(ZoneOffset.UTC).minusDays(3).withHour(18).withMinute(0), "asistio");
             seedAttendance(lucia, admin, LocalDate.now().minusDays(4), OffsetDateTime.now(ZoneOffset.UTC).minusDays(4).withHour(8).withMinute(5), OffsetDateTime.now(ZoneOffset.UTC).minusDays(4).withHour(18).withMinute(0), "asistio");
         }
+    }
+
+    private User seedDefaultAdminUser() {
+        Employee adminEmployee = seedEmployee(
+                "ADM",
+                "Admin User",
+                "GERENTE",
+                "00000000",
+                new BigDecimal("100.00"),
+                BigDecimal.ZERO,
+                null,
+                false,
+                false
+        );
+
+        User admin = userRepository.findByUsername("admin")
+                .orElseGet(() -> User.builder()
+                        .employee(adminEmployee)
+                        .username("admin")
+                        .role("ADMIN")
+                        .status("active")
+                        .passwordHash(passwordEncoder.encode("admin123"))
+                        .isActive(true)
+                        .build());
+
+        admin.setEmployee(adminEmployee);
+        admin.setRole("ADMIN");
+        admin.setStatus("active");
+        admin.setActive(true);
+        if (admin.getPasswordHash() == null || !passwordEncoder.matches("admin123", admin.getPasswordHash())) {
+            admin.setPasswordHash(passwordEncoder.encode("admin123"));
+        }
+
+        return userRepository.save(admin);
     }
 
     private Employee seedEmployee(

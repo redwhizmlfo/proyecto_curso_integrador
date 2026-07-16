@@ -16,6 +16,7 @@ import java.util.UUID;
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final InputSanitizationService inputSanitizationService;
 
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
@@ -29,10 +30,10 @@ public class EmployeeService {
     @Transactional
     public Employee createEmployee(EmployeeRequestDTO request) {
         Employee employee = Employee.builder()
-                .initials(request.getInitials())
-                .name(request.getName())
-                .role(request.getRole())
-                .dni(request.getDni())
+                .initials(inputSanitizationService.requiredText(request.getInitials(), "initials"))
+                .name(inputSanitizationService.requiredText(request.getName(), "name"))
+                .role(inputSanitizationService.requiredText(request.getRole(), "role"))
+                .dni(inputSanitizationService.requiredText(request.getDni(), "dni"))
                 .payPerDay(request.getPayPerDay() != null ? request.getPayPerDay() : BigDecimal.ZERO)
                 .workedDays(BigDecimal.ZERO)
                 .isActive(true)
@@ -44,10 +45,10 @@ public class EmployeeService {
     @Transactional
     public Employee updateEmployee(UUID id, EmployeeRequestDTO request) {
         Employee employee = getEmployeeById(id);
-        employee.setInitials(request.getInitials());
-        employee.setName(request.getName());
-        employee.setRole(request.getRole());
-        employee.setDni(request.getDni());
+        employee.setInitials(inputSanitizationService.requiredText(request.getInitials(), "initials"));
+        employee.setName(inputSanitizationService.requiredText(request.getName(), "name"));
+        employee.setRole(inputSanitizationService.requiredText(request.getRole(), "role"));
+        employee.setDni(inputSanitizationService.requiredText(request.getDni(), "dni"));
         if (request.getPayPerDay() != null) {
             employee.setPayPerDay(request.getPayPerDay());
         }

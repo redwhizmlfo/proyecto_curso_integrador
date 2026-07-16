@@ -5,9 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ProductoModeloRepository extends JpaRepository<ProductoModelo, UUID> {
+    Optional<ProductoModelo> findBySku(String sku);
 
     @Query("SELECT p FROM ProductoModelo p WHERE " +
            "LOWER(p.modelo) LIKE LOWER(CONCAT('%', :query, '%')) OR " +

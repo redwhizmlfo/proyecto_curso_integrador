@@ -16,6 +16,7 @@ import java.util.UUID;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final InputSanitizationService inputSanitizationService;
 
     public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
@@ -29,12 +30,12 @@ public class CustomerService {
     @Transactional
     public Customer createCustomer(CustomerRequestDTO request) {
         Customer customer = Customer.builder()
-                .name(request.getName())
-                .docType(request.getDocType())
-                .docNumber(request.getDocNumber())
-                .phone(request.getPhone())
-                .email(request.getEmail())
-                .address(request.getAddress())
+                .name(inputSanitizationService.requiredText(request.getName(), "name"))
+                .docType(inputSanitizationService.requiredText(request.getDocType(), "docType"))
+                .docNumber(inputSanitizationService.requiredText(request.getDocNumber(), "docNumber"))
+                .phone(inputSanitizationService.optionalText(request.getPhone(), "phone"))
+                .email(inputSanitizationService.optionalText(request.getEmail(), "email"))
+                .address(inputSanitizationService.optionalText(request.getAddress(), "address"))
                 .preferredDiscount(request.getPreferredDiscount() != null ? request.getPreferredDiscount() : BigDecimal.ZERO)
                 .build();
         return customerRepository.save(customer);
@@ -43,12 +44,12 @@ public class CustomerService {
     @Transactional
     public Customer updateCustomer(UUID id, CustomerRequestDTO request) {
         Customer customer = getCustomerById(id);
-        customer.setName(request.getName());
-        customer.setDocType(request.getDocType());
-        customer.setDocNumber(request.getDocNumber());
-        customer.setPhone(request.getPhone());
-        customer.setEmail(request.getEmail());
-        customer.setAddress(request.getAddress());
+        customer.setName(inputSanitizationService.requiredText(request.getName(), "name"));
+        customer.setDocType(inputSanitizationService.requiredText(request.getDocType(), "docType"));
+        customer.setDocNumber(inputSanitizationService.requiredText(request.getDocNumber(), "docNumber"));
+        customer.setPhone(inputSanitizationService.optionalText(request.getPhone(), "phone"));
+        customer.setEmail(inputSanitizationService.optionalText(request.getEmail(), "email"));
+        customer.setAddress(inputSanitizationService.optionalText(request.getAddress(), "address"));
         customer.setPreferredDiscount(request.getPreferredDiscount() != null ? request.getPreferredDiscount() : BigDecimal.ZERO);
         return customerRepository.save(customer);
     }

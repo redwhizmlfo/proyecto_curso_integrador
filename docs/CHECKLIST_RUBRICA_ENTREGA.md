@@ -164,13 +164,17 @@ Estandar esperado:
 Evidencia actual:
 
 - `frontend/vercel.json` preparado.
+- `backend/Dockerfile` preparado.
+- `render.yaml` preparado.
+- `GET /api/health` disponible para health check cloud.
+- `docs/DEPLOYMENT_CLOUD.md` creado.
 - Backend usa variables `PORT`, `DATABASE_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`.
 - CORS configurable por `CORS_ALLOWED_ORIGINS`.
 
 Pendientes criticos:
 
-- Desplegar frontend en Vercel.
-- Desplegar backend en Render/Railway/Fly.io/VPS.
+- Publicar frontend en Vercel.
+- Publicar backend en Render/Railway/Fly.io/VPS.
 - Configurar PostgreSQL cloud.
 - Configurar variables de entorno productivas.
 - Probar login contra URL cloud.
@@ -178,7 +182,7 @@ Pendientes criticos:
 
 Estado:
 
-- Pendiente. Es el bloque que mas puntos puede hacer perder si no se completa.
+- Configuracion preparada, despliegue real pendiente. Es el bloque que mas puntos puede hacer perder si no se completa.
 
 ## 6. Documentacion tecnica y manuales
 
@@ -189,6 +193,7 @@ Estandar esperado:
 Evidencia actual:
 
 - README principal actualizado.
+- `docs/DEPLOYMENT_CLOUD.md`.
 - `docs/CONSULTA_CLIENTES_DNI_RUC.md`.
 - `docs/PASARELAS_PAGO_PRODUCCION.md`.
 - Este checklist de rubrica.

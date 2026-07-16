@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: ferreteria-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: DDL_AUTO
+        value: update
+      - key: SHOW_SQL
+        value: false
+      - key: SQL_LOG_LEVEL
+        value: INFO
+      - key: JWT_EXPIRATION_MS
+        value: 3600000
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: CUSTOMER_LOOKUP_TOKEN
+        sync: false

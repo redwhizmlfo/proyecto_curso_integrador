@@ -184,6 +184,7 @@ Base de datos:
 - `docs/CONSULTA_CLIENTES_DNI_RUC.md`
 - `docs/PASARELAS_PAGO_PRODUCCION.md`
 - `docs/CHECKLIST_RUBRICA_ENTREGA.md`
+- `docs/DEPLOYMENT_CLOUD.md`
 
 ## Estado de calidad conocido
 

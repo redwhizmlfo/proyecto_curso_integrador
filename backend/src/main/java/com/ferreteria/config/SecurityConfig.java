@@ -59,6 +59,7 @@ public class SecurityConfig {
                     "/icons.svg",
                     "/assets/**"
                 ).permitAll()
+                .requestMatchers("/api/health").permitAll()
                 .requestMatchers(
                     "/ventas/**",
                     "/inventario/**",

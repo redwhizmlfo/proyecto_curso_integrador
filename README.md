@@ -1,289 +1,204 @@
-# MEPSS GROUP — Sistema de Gestión Ferretera
+# MEPS GROUP - Sistema de Gestion Ferretera
 
-> Proyecto Integrador · Curso de Desarrollo de Software  
-> Stack: **Spring Boot 3.3 + React 19 + PostgreSQL**
+Sistema web de gestion para ferreteria desarrollado con Spring Boot, React y PostgreSQL. Incluye modulos operativos de ventas, inventario, clientes, proveedores, pedidos, empleados, asistencia, boletas, dashboard y control de permisos por usuario.
 
----
+## Stack
 
-## 📋 Descripción General
+| Capa | Tecnologia |
+|---|---|
+| Frontend | React 19, Vite, React Router, Axios, Lucide |
+| Backend | Spring Boot 3.3, Spring Security, Spring Data JPA |
+| Base de datos | PostgreSQL |
+| Seguridad | JWT Bearer Token, roles y permisos por modulo |
 
-**MEPSS GROUP** es un sistema de gestión empresarial para ferreterías desarrollado como proyecto integrador. El sistema cubre los módulos de clientes, proveedores, inventario, ventas, empleados, asistencia, boletas/planillas y un dashboard analítico en tiempo real.
+## Arquitectura
 
-La arquitectura sigue el patrón **Controller → Service → Repository → Entity** cumpliendo estándares REST y buenas prácticas de desarrollo con Spring Boot.
-
----
-
-## 🏗️ Arquitectura del Proyecto
-
-```
+```text
 springboot/
-├── backend/                         # Spring Boot (Java 21)
-│   └── src/main/java/com/ferreteria/
-│       ├── config/                  # Seguridad y configuración inicial
-│       │   ├── SecurityConfig.java
-│       │   ├── CatalogDataInitializer.java
-│       │   └── PaymentConfigInitializer.java
-│       ├── controller/              # 24 controladores REST
-│       ├── service/                 # 16 servicios de negocio
-│       ├── repository/              # 20 repositorios JPA
-│       ├── model/                   # 22 entidades JPA/Hibernate
-│       └── dto/                     # 17 DTOs de transferencia de datos
-├── frontend/                        # React 19 + Vite
-│   └── src/
-│       ├── pages/                   # Módulos de la aplicación
-│       ├── components/              # Sidebar, Header, componentes reutilizables
-│       └── index.css                # Sistema de diseño global
-└── esquema.sql                      # Esquema DDL + datos semilla
+  backend/
+    src/main/java/com/ferreteria/
+      config/        Seguridad, JWT, CORS, carga inicial
+      controller/    Endpoints REST
+      service/       Reglas de negocio
+      repository/    Acceso a datos JPA
+      model/         Entidades
+      dto/           Objetos de entrada/salida
+  frontend/
+    src/
+      components/    Header, Sidebar, controles reutilizables
+      pages/         Modulos del sistema
+      services/      API y validadores
+      context/       Estado compartido
+      index.css      Sistema visual y responsive
+  docs/
+    Documentacion tecnica complementaria
 ```
 
----
+## Modulos
 
-## ⚙️ Stack Tecnológico
+| Modulo | Estado |
+|---|---|
+| Login | JWT con usuario y permisos |
+| Dashboard | KPIs y resumenes por area |
+| Clientes | CRUD, validaciones y consulta DNI/RUC |
+| Proveedores | CRUD y validaciones |
+| Inventario | Catalogo, stock, movimientos, alertas, mermas y kardex |
+| Ventas | POS, historial, cotizaciones, pedidos, despachos, devoluciones y garantias |
+| Ordenes de compra | Registro y gestion de pedidos a proveedores |
+| RR.HH. | Empleados, asistencia y boletas |
+| Usuarios y roles | Panel de permisos por modulo/submodulo |
+
+## Seguridad
+
+El sistema usa autenticacion JWT:
+
+1. El usuario inicia sesion en `POST /api/auth/login`.
+2. El backend responde con token JWT, rol y permisos.
+3. El frontend guarda la sesion y envia `Authorization: Bearer <token>` en cada request.
+4. El backend protege `/api/**` con Spring Security.
+5. El frontend valida permisos por ruta para ocultar o bloquear submodulos.
+
+Credenciales locales de prueba:
+
+```text
+Usuario: admin
+Password: admin123
+Rol: ADMIN
+```
+
+## Ejecucion local
+
+### Requisitos
+
+- Java 21 o superior
+- Maven 3.9+
+- Node.js 18+
+- PostgreSQL
 
 ### Backend
-| Tecnología | Versión | Uso |
-|---|---|---|
-| Java | 21 | Lenguaje principal |
-| Spring Boot | 3.3.4 | Framework principal |
-| Spring Data JPA | 3.3.4 | Persistencia ORM |
-| Spring Security | 3.3.4 | Autenticación y autorización |
-| Hibernate | 6.x | Implementación JPA |
-| PostgreSQL Driver | - | Conector base de datos |
-| Lombok | 1.18.44 | Reducción de boilerplate |
 
-### Frontend
-| Tecnología | Versión | Uso |
-|---|---|---|
-| React | 19.2.6 | Framework UI |
-| Vite | 8.x | Bundler y servidor de desarrollo |
-| React Router DOM | 7.15.1 | Enrutamiento SPA |
-| Axios | 1.16.1 | Cliente HTTP |
-| Lucide React | 1.16.0 | Iconografía |
-
-### Base de Datos
-| Tecnología | Detalle |
-|---|---|
-| PostgreSQL | 18.x |
-| Base de datos | `ferremas_db` |
-| Puerto | `5432` |
-
----
-
-## 🔐 Seguridad (Spring Security)
-
-El proyecto implementa **autenticación HTTP Basic** con `BCryptPasswordEncoder` y control de acceso basado en roles:
-
-```java
-// SecurityConfig.java
-.authorizeHttpRequests(auth -> auth
-    .requestMatchers("/api/users/**").hasRole("ADMIN")  // Solo ADMIN
-    .anyRequest().permitAll()                           // Resto: abierto
-)
-.httpBasic(basic -> {});  // HTTP Basic Auth habilitado
-```
-
-- `CustomUserDetailsService` implementa `UserDetailsService` para cargar usuarios desde la BD
-- Contraseñas almacenadas con hash `BCrypt`
-- Roles: `ADMIN`, `USER`
-
----
-
-## 🗄️ Persistencia JPA/Hibernate
-
-Todos los modelos utilizan anotaciones JPA estándar con auditoría automática:
-
-```java
-@Entity
-@Table(name = "customers")
-@EntityListeners(AuditingEntityListener.class)
-public class Customer {
-    @Id @GeneratedValue
-    private UUID id;
-
-    @CreatedDate
-    private OffsetDateTime createdAt;
-
-    @LastModifiedDate
-    private OffsetDateTime updatedAt;
-}
-```
-
-Relaciones implementadas: `@OneToMany`, `@ManyToOne`, `@ManyToMany`  
-Repositorios extienden `JpaRepository<T, UUID>` con consultas JPQL personalizadas.
-
----
-
-## 🌐 API REST — Endpoints Principales
-
-Todos los módulos implementan CRUD completo siguiendo convenciones RESTful:
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `GET` | `/api/customers` | Listar todos los clientes |
-| `GET` | `/api/customers/{id}` | Obtener cliente por ID |
-| `POST` | `/api/customers` | Crear nuevo cliente |
-| `PUT` | `/api/customers/{id}` | Actualizar cliente |
-| `DELETE` | `/api/customers/{id}` | Eliminar cliente |
-| `GET` | `/api/suppliers` | Listar proveedores |
-| `GET` | `/api/products` | Listar productos |
-| `POST` | `/api/sales` | Registrar venta |
-| `GET` | `/api/employees` | Listar empleados |
-| `GET` | `/api/dashboard/summary` | KPIs del dashboard |
-
-> Base URL: `http://localhost:8080`
-
----
-
-## 💉 Inyección de Dependencias y DTOs
-
-El proyecto utiliza **constructor injection** vía Lombok `@RequiredArgsConstructor`:
-
-```java
-@RestController
-@RequestMapping("/api/customers")
-@RequiredArgsConstructor   // Inyección por constructor
-public class CustomerController {
-
-    private final CustomerService customerService;  // Inyectado automáticamente
-
-    @PostMapping
-    public ResponseEntity<Customer> create(@RequestBody CustomerRequestDTO request) {
-        return new ResponseEntity<>(customerService.createCustomer(request), HttpStatus.CREATED);
-    }
-}
-```
-
-Los **DTOs** separan la capa de presentación del modelo de dominio (17 DTOs implementados).
-
----
-
-## 🚀 Instalación y Ejecución
-
-### Prerrequisitos
-
-- Java 21+
-- Maven 3.8+
-- Node.js 18+
-- PostgreSQL 14+
-
-### 1. Configurar Base de Datos
+Configurar base de datos local:
 
 ```sql
--- Crear la base de datos
 CREATE DATABASE ferremas_db;
 ```
 
-```bash
-# Ejecutar el esquema y datos iniciales
-psql -h localhost -U postgres -d ferremas_db -f esquema.sql
-```
-
-### 2. Configurar `application.properties`
+Variables principales en `backend/src/main/resources/application.properties`:
 
 ```properties
-# backend/src/main/resources/application.properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/ferremas_db
-spring.datasource.username=postgres
-spring.datasource.password=admin123
-spring.jpa.hibernate.ddl-auto=update
-server.port=8080
+spring.datasource.url=${DATABASE_URL:jdbc:postgresql://localhost:5432/ferremas_db}
+spring.datasource.username=${DB_USERNAME:postgres}
+spring.datasource.password=${DB_PASSWORD:admin123}
+server.port=${PORT:8081}
+jwt.secret=${JWT_SECRET:dev_local_jwt_secret_change_me_32_chars_minimum_2026}
 ```
 
-### 3. Ejecutar el Backend
+Levantar backend:
 
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
-El backend estará disponible en: `http://localhost:8080`
+Backend local:
 
-### 4. Ejecutar el Frontend (desarrollo)
+```text
+http://localhost:8081/api
+```
+
+### Frontend
+
+Crear `frontend/.env.local`:
+
+```env
+VITE_API_URL=http://localhost:8081/api
+```
+
+Levantar frontend:
 
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev -- --host 127.0.0.1
 ```
 
-El frontend estará disponible en: `http://localhost:5173`
+Frontend local:
 
-### 5. Build de producción (frontend embebido en backend)
+```text
+http://127.0.0.1:5173
+```
+
+## Verificacion rapida
+
+Frontend:
 
 ```bash
 cd frontend
 npm run build
-# Los assets se copian automáticamente a backend/src/main/resources/static/
 ```
 
-Luego ejecutar solo el backend y acceder a: `http://localhost:8080`
+Backend:
 
----
-
-## 📦 Módulos del Sistema
-
-| Módulo | Descripción | Endpoints |
-|---|---|---|
-| **Clientes** | CRUD + búsqueda por DNI/RUC via SUNAT/APIDNI | `/api/customers` |
-| **Proveedores** | CRUD + categorías de proveedor | `/api/suppliers` |
-| **Inventario** | Productos, stock en vivo, movimientos | `/api/products`, `/api/stock-movements` |
-| **Ventas** | Registro de ventas, items, historial | `/api/sales` |
-| **Empleados** | CRUD empleados, asistencia, boletas | `/api/employees` |
-| **Órdenes de Compra** | Pedidos a proveedores | `/api/purchase-orders` |
-| **Dashboard** | KPIs en tiempo real (ventas, stock, clientes) | `/api/dashboard/**` |
-| **Usuarios** | Gestión de acceso (solo ADMIN) | `/api/users` |
-
----
-
-## 🧪 Verificación del Sistema
-
-### Verificar que el backend responde
 ```bash
-curl http://localhost:8080/api/customers
-curl http://localhost:8080/api/suppliers
-curl http://localhost:8080/api/products
+cd backend
+mvn -q -DskipTests compile
 ```
 
-### Verificar datos en PostgreSQL
+Login API:
+
 ```bash
-psql -h localhost -U postgres -d ferremas_db -c "SELECT COUNT(*) FROM customers;"
-psql -h localhost -U postgres -d ferremas_db -c "SELECT COUNT(*) FROM suppliers;"
-psql -h localhost -U postgres -d ferremas_db -c "SELECT COUNT(*) FROM products;"
+curl -X POST http://localhost:8081/api/auth/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"username\":\"admin\",\"password\":\"admin123\"}"
 ```
 
-### Probar autenticación (endpoint protegido)
-```bash
-# Sin credenciales → 401 Unauthorized
-curl http://localhost:8080/api/users
+## Despliegue recomendado
 
-# Con credenciales ADMIN → 200 OK
-curl -u admin:admin123 http://localhost:8080/api/users
+Frontend:
+
+- Vercel.
+- Configurar `VITE_API_URL=https://URL_BACKEND/api`.
+- El archivo `frontend/vercel.json` contiene rewrites para SPA.
+
+Backend:
+
+- Render, Railway, Fly.io o VPS.
+- Configurar variables:
+
+```env
+PORT=8081
+DATABASE_URL=jdbc:postgresql://HOST:5432/DB
+DB_USERNAME=usuario
+DB_PASSWORD=password
+JWT_SECRET=secreto_largo_seguro
+CORS_ALLOWED_ORIGINS=https://URL_FRONTEND
 ```
 
----
+Base de datos:
 
-## 👥 Estructura de Ramas Git
+- PostgreSQL local para desarrollo.
+- PostgreSQL cloud para entrega/despliegue.
 
-| Rama | Responsable |
-|---|---|
-| `main` | Producción estable |
-| `feature/frontend-dashboard-navbar` | Dashboard y navegación |
-| `feature/frontend-modulo-clientes` | Módulo clientes |
-| `feature/frontend-modulo-ventas` | Módulo ventas |
-| `feature/frontend-modulo-proveedores` | Módulo proveedores |
-| `BE-feature/spring-security-jwt` | JWT (remoto) |
-| `BE-feature/modulo_asistencia` | Asistencia (remoto) |
+## Documentacion complementaria
 
----
+- `docs/CONSULTA_CLIENTES_DNI_RUC.md`
+- `docs/PASARELAS_PAGO_PRODUCCION.md`
+- `docs/CHECKLIST_RUBRICA_ENTREGA.md`
 
-## 📁 Datos de Prueba
+## Estado de calidad conocido
 
-El archivo `esquema.sql` incluye datos semilla para:
-- ✅ Proveedores peruanos reales (10 registros con RUC)
-- ✅ Clientes de ejemplo
-- ✅ Productos de ferretería con precios y stock
-- ✅ Usuario administrador por defecto
+- `frontend npm run build`: operativo.
+- `backend mvn -DskipTests compile`: operativo.
+- `npm run lint` completo aun requiere limpieza de errores heredados en varios modulos. No bloquea build, pero debe quedar como mejora tecnica pendiente si se exige lint estricto.
 
----
+## Sustentacion tecnica
 
-*Sistema desarrollado como proyecto integrador — MEPSS GROUP © 2026*
+Decisiones principales:
+
+- Separacion frontend/backend para desarrollo independiente.
+- API REST con servicios de negocio en Spring Boot.
+- JWT para sesion stateless.
+- Permisos por modulo/submodulo para control de acceso.
+- React Router para navegacion SPA.
+- Validaciones de formularios centralizadas en `frontend/src/services/validators.js`.
+- CSS responsive global para evitar rupturas en cards, tablas, modales y submenus.

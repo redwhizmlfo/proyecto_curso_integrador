@@ -1,16 +1,142 @@
-# React + Vite
+# Frontend - MEPS GROUP
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicacion React/Vite para el sistema de gestion ferretera MEPS GROUP.
 
-Currently, two official plugins are available:
+## Tecnologias
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19.
+- Vite 8.
+- React Router DOM.
+- Axios.
+- Lucide React.
 
-## React Compiler
+## Variables de entorno
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Crear `frontend/.env.local` para desarrollo:
 
-## Expanding the ESLint configuration
+```env
+VITE_API_URL=http://localhost:8081/api
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Para produccion, configurar la misma variable en Vercel o el proveedor usado:
+
+```env
+VITE_API_URL=https://URL_BACKEND/api
+```
+
+## Scripts
+
+Instalar dependencias:
+
+```bash
+npm install
+```
+
+Levantar desarrollo:
+
+```bash
+npm run dev -- --host 127.0.0.1
+```
+
+Build:
+
+```bash
+npm run build
+```
+
+Lint:
+
+```bash
+npm run lint
+```
+
+Nota: el build esta operativo. El lint completo puede reportar pendientes heredados que deben limpiarse antes de exigir calidad estricta.
+
+## Estructura
+
+```text
+src/
+  components/
+    AnimatedKpiValue.jsx
+    FieldValidationHint.jsx
+    Header.jsx
+    Sidebar.jsx
+    SummaryControls.jsx
+  context/
+    SidebarToggleContext.jsx
+  pages/
+    Dashboard.jsx
+    Clientes.jsx
+    Proveedores.jsx
+    Inventario.jsx
+    Ventas.jsx
+    PanelPermisos.jsx
+    temporal/
+      Resumen*.jsx
+  services/
+    api.js
+    validators.js
+  index.css
+```
+
+## Seguridad frontend
+
+- El login consume `POST /auth/login`.
+- La sesion se guarda en `localStorage`.
+- `api.js` adjunta `Authorization: Bearer <token>`.
+- Si el backend responde `401`, se limpia la sesion.
+- `App.jsx` valida permisos por ruta con `ROUTE_PERMISSIONS`.
+
+## Validaciones
+
+Las validaciones se centralizan en:
+
+```text
+src/services/validators.js
+```
+
+Componentes relacionados:
+
+- `FieldValidationHint.jsx`: mensajes en vivo debajo de inputs.
+- Formularios con `noValidate` para controlar mensajes propios.
+
+## Responsive
+
+El responsive principal esta en:
+
+```text
+src/index.css
+```
+
+Se cubre:
+
+- Sidebar en movil.
+- Header.
+- KPIs.
+- Resumenes.
+- Tablas con scroll horizontal controlado.
+- Formularios.
+- Modales.
+- Controles de filtros/exportacion.
+
+## Despliegue Vercel
+
+El archivo `vercel.json` incluye rewrites para SPA:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/((?!api/.*).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
+Pasos:
+
+1. Crear proyecto en Vercel apuntando a `frontend/`.
+2. Configurar `VITE_API_URL`.
+3. Ejecutar deploy.
+4. Verificar login y navegacion.

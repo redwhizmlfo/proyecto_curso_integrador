@@ -1,40 +1,30 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import Header from '../components/Header';
-import { AlertTriangle, RefreshCw, Eye } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 export default function Mermas() {
   const [losses, setLosses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const getAuthenticatedUserId = () => {
+    try {
+      return JSON.parse(localStorage.getItem('current_user') || 'null')?.userId || null;
+    } catch {
+      return null;
+    }
+  };
+
   const loadLosses = async () => {
     try {
       setLoading(true);
-      // Since the backend might not have a GET /losses endpoint (only POST and revert),
-      // we attempt to fetch, but fallback to locally cached or mock data.
-      let fetchedLosses = [];
-      try {
-        fetchedLosses = await api.get('/losses');
-      } catch (e) {
-        console.warn('GET /losses not supported by backend yet, using local state.');
-        // Try getting from localStorage if any was saved in this session
-        const local = localStorage.getItem('luxury_losses');
-        if (local) {
-          fetchedLosses = JSON.parse(local);
-        } else {
-          // Default mock data
-          fetchedLosses = [
-            { id: 'l1', product_name_snapshot: 'Martillo de Acero 16oz', qty: 1, reason: 'Roto durante traslado en almacén', responsible_snapshot: 'Carlos Mendoza', occurred_at: '2026-05-18T10:00:00Z', loss_amount: 12.00, status: 'active' },
-            { id: 'l2', product_name_snapshot: 'Cemento Sol Tipo 1', qty: 2, reason: 'Empaque dañado por humedad', responsible_snapshot: 'Juan Pérez', occurred_at: '2026-05-15T14:30:00Z', loss_amount: 44.00, status: 'reverted', reverted_at: '2026-05-16T09:00:00Z' }
-          ];
-          localStorage.setItem('luxury_losses', JSON.stringify(fetchedLosses));
-        }
-      }
+      const fetchedLosses = await api.get('/losses');
       setLosses(fetchedLosses);
       setError(null);
     } catch (err) {
-      setError('Error al cargar historial de mermas.');
+      setLosses([]);
+      setError('No se pudo cargar historial de mermas desde el backend.');
     } finally {
       setLoading(false);
     }
@@ -46,29 +36,15 @@ export default function Mermas() {
 
   const handleRevert = async (id) => {
     if (!window.confirm('¿Está seguro de revertir esta merma? El stock del producto será restituido.')) return;
+
     try {
-      const dummyUserId = '00000000-0000-0000-0000-000000000001';
-      
-      // Attempt backend call
-      try {
-        await api.post(`/losses/${id}/revert?userId=${dummyUserId}`);
-      } catch (backendError) {
-        console.warn('Backend revert failed, simulating locally:', backendError.message);
+      const userId = getAuthenticatedUserId();
+      if (!userId) {
+        throw new Error('No se pudo identificar el usuario autenticado.');
       }
 
-      // Update UI state
-      const updated = losses.map(loss => {
-        if (loss.id === id) {
-          return {
-            ...loss,
-            status: 'reverted',
-            reverted_at: new Date().toISOString()
-          };
-        }
-        return loss;
-      });
-      setLosses(updated);
-      localStorage.setItem('luxury_losses', JSON.stringify(updated));
+      await api.post(`/losses/${id}/revert?userId=${userId}`);
+      await loadLosses();
       alert('Merma revertida con éxito.');
     } catch (err) {
       alert('Error al revertir la merma: ' + err.message);
@@ -90,6 +66,12 @@ export default function Mermas() {
     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
       <Header title="Historial de Mermas" subtitle="Visualiza y revierte mermas o pérdidas físicas de stock" />
 
+      {error && (
+        <div style={{ background: 'rgba(251,197,49,0.08)', border: '1px solid var(--warning)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', color: '#d19e07', fontSize: '0.9rem' }}>
+          {error}
+        </div>
+      )}
+
       <div className="luxury-card">
         <h2 style={{ fontSize: '1.2rem', fontWeight: '400', color: 'var(--accent)', letterSpacing: '1px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <AlertTriangle size={18} /> Registro de Incidencias de Stock
@@ -110,7 +92,13 @@ export default function Mermas() {
               </tr>
             </thead>
             <tbody>
-              {losses.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '3rem' }}>
+                    Cargando historial de mermas...
+                  </td>
+                </tr>
+              ) : losses.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '3rem' }}>
                     No se han registrado mermas en el historial.
@@ -141,8 +129,8 @@ export default function Mermas() {
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         {isActive ? (
-                          <button 
-                            className="btn-danger" 
+                          <button
+                            className="btn-danger"
                             style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                             onClick={() => handleRevert(loss.id)}
                           >

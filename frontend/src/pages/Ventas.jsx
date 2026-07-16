@@ -35,7 +35,7 @@ export default function Ventas() {
   const [selectedProductId, setSelectedProductId] = useState('101'); // Select first product by default
 
   // Customer identification
-  const [docInput, setDocInput] = useState('20601234567'); // Default RUC Constructora del Norte
+  const [docInput, setDocInput] = useState('');
   const [validatedCustomer, setValidatedCustomer] = useState(null);
 
   // Sale configuration
@@ -127,8 +127,7 @@ export default function Ventas() {
         setBankAccounts(bankList);
         setSelectedBankAccountId(bankList[0]?.id || '');
 
-        const defaultCustomer = custList.find((customer) => customer.docNumber === docInput.replace(/\D/g, ''));
-        setValidatedCustomer(defaultCustomer ? { ...defaultCustomer, status: 'Habido / Activo' } : null);
+        setValidatedCustomer(null);
         setError(null);
       } catch {
         setError('No se pudo cargar datos desde el backend. Las operaciones estan deshabilitadas.');

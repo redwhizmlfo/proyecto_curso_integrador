@@ -34,10 +34,16 @@ public class CatalogDataInitializer implements CommandLineRunner {
         Categoria esmeriles = getOrCreateCategoria("Esmeriles");
         Categoria taladros = getOrCreateCategoria("Taladros");
         Categoria rotomartillos = getOrCreateCategoria("Rotomartillos");
+        Categoria seguridad = getOrCreateCategoria("Seguridad");
+        Categoria fijaciones = getOrCreateCategoria("Fijaciones");
+        Categoria electricidad = getOrCreateCategoria("Electricidad");
 
         Marca bosch = getOrCreateMarca("Bosch");
         Marca makita = getOrCreateMarca("Makita");
         Marca dewalt = getOrCreateMarca("DeWalt");
+        Marca tresM = getOrCreateMarca("3M");
+        Marca prodac = getOrCreateMarca("Prodac");
+        Marca schneider = getOrCreateMarca("Schneider Electric");
 
         seedProduct(
                 "SKU-BOSCH-GWS22180H",
@@ -163,6 +169,90 @@ public class CatalogDataInitializer implements CommandLineRunner {
                 spec("Potencia", "8.5 A"),
                 spec("Impacto", "3.0 J"),
                 spec("Mandril", "SDS Plus")
+        );
+
+        seedProduct(
+                "SKU-BOSCH-GWS7115",
+                "GWS 7-115",
+                "GWS 7-115",
+                new BigDecimal("199.50"),
+                45,
+                esmeriles,
+                bosch,
+                "/src/assets/esmeril_gws750.png",
+                spec("Potencia", "720 W"),
+                spec("Disco", "4 1/2 pulg. / 115 mm"),
+                spec("Velocidad", "11000 RPM")
+        );
+
+        seedProduct(
+                "SKU-MAKITA-HR2470",
+                "HR2470",
+                "HR2470",
+                new BigDecimal("429.00"),
+                16,
+                rotomartillos,
+                makita,
+                "/src/assets/rotomartillo_bosch.png",
+                spec("Potencia", "780 W"),
+                spec("Impacto", "2.4 J"),
+                spec("Mandril", "SDS Plus")
+        );
+
+        seedProduct(
+                "SKU-DEWALT-DCD701F2",
+                "DCD701F2",
+                "DCD701",
+                new BigDecimal("259.90"),
+                30,
+                taladros,
+                dewalt,
+                "/src/assets/taladro_dewalt.png",
+                spec("Voltaje", "12 V Max"),
+                spec("Mandril", "3/8 pulg."),
+                spec("Velocidades", "2")
+        );
+
+        seedProduct(
+                "SKU-3M-H700",
+                "H-700",
+                "Casco de seguridad H-700",
+                new BigDecimal("39.90"),
+                120,
+                seguridad,
+                tresM,
+                "/src/assets/casco.png",
+                spec("Material", "HDPE"),
+                spec("Suspension", "4 puntos"),
+                spec("Norma", "ANSI/ISEA Z89.1")
+        );
+
+        seedProduct(
+                "SKU-PRODAC-PERNO-HEX-38",
+                "Perno hexagonal 3/8",
+                "Perno hexagonal zincado 3/8 pulg.",
+                new BigDecimal("0.90"),
+                1500,
+                fijaciones,
+                prodac,
+                "/src/assets/pernos.png",
+                spec("Diametro", "3/8 pulg."),
+                spec("Acabado", "Zincado"),
+                spec("Unidad", "pieza")
+        );
+
+        seedProduct(
+                "SKU-SCHNEIDER-UNICA-10A",
+                "Unica 10A",
+                "Interruptor simple Unica 10A",
+                new BigDecimal("18.50"),
+                85,
+                electricidad,
+                schneider,
+                "/src/assets/interruptor.png",
+                spec("Corriente", "10 A"),
+                spec("Tension", "250 V"),
+                spec("Tipo", "Simple")
         );
     }
 

@@ -980,4 +980,56 @@ INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
   ('b0010012-4829-410a-bc92-192013829d01', 'b0010012-3482-411a-829d-ee3d45c1a3b1', '/src/assets/esmeril_gws750.png')
 ON CONFLICT (id) DO NOTHING;
 
+-- Productos adicionales con imagenes representativas reales por categoria
+INSERT INTO categorias (id, nombre_categoria) VALUES
+  ('7e4f8a21-4b5d-4c8d-9e01-35a4d7e2c101', 'Seguridad'),
+  ('7e4f8a21-4b5d-4c8d-9e01-35a4d7e2c102', 'Fijaciones'),
+  ('7e4f8a21-4b5d-4c8d-9e01-35a4d7e2c103', 'Electricidad')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO marcas (id, nombre_marca) VALUES
+  ('6b2d9f84-6b42-4f86-a3f0-95e0b750c101', '3M'),
+  ('6b2d9f84-6b42-4f86-a3f0-95e0b750c102', 'Prodac'),
+  ('6b2d9f84-6b42-4f86-a3f0-95e0b750c103', 'Schneider Electric')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO productos_modelos (id, id_categoria, id_marca, modelo, codigo_modelo, sku, precio, stock) VALUES
+  ('d2010001-6a71-4c6a-9b5d-000000000001', '8a53e6b7-3b97-4b9e-bd83-bf019808602b', '5c61266d-1bf9-4700-8b1e-b81682701b22', 'GWS 7-115', 'GWS 7-115', 'SKU-BOSCH-GWS7115', 199.50, 45),
+  ('d2010001-6a71-4c6a-9b5d-000000000002', 'd7b403f5-67c3-4d69-a1b1-6a05e2d19213', '32be432e-5036-4ad6-b52e-56e632d431f9', 'HR2470', 'HR2470', 'SKU-MAKITA-HR2470', 429.00, 16),
+  ('d2010001-6a71-4c6a-9b5d-000000000003', '4fdcb3de-5b91-4c4f-96a9-858349280d0d', '20601df5-0db6-48ee-a010-388f61559871', 'DCD701', 'DCD701F2', 'SKU-DEWALT-DCD701F2', 259.90, 30),
+  ('d2010001-6a71-4c6a-9b5d-000000000004', '7e4f8a21-4b5d-4c8d-9e01-35a4d7e2c101', '6b2d9f84-6b42-4f86-a3f0-95e0b750c101', 'Casco de seguridad H-700', 'H-700', 'SKU-3M-H700', 39.90, 120),
+  ('d2010001-6a71-4c6a-9b5d-000000000005', '7e4f8a21-4b5d-4c8d-9e01-35a4d7e2c102', '6b2d9f84-6b42-4f86-a3f0-95e0b750c102', 'Perno hexagonal zincado 3/8 pulg.', 'Perno hexagonal 3/8', 'SKU-PRODAC-PERNO-HEX-38', 0.90, 1500),
+  ('d2010001-6a71-4c6a-9b5d-000000000006', '7e4f8a21-4b5d-4c8d-9e01-35a4d7e2c103', '6b2d9f84-6b42-4f86-a3f0-95e0b750c103', 'Interruptor simple Unica 10A', 'Unica 10A', 'SKU-SCHNEIDER-UNICA-10A', 18.50, 85)
+ON CONFLICT (sku) DO NOTHING;
+
+INSERT INTO especificaciones (id, id_producto_modelo, atributo, valor) VALUES
+  ('d2020001-6a71-4c6a-9b5d-000000000001', 'd2010001-6a71-4c6a-9b5d-000000000001', 'Potencia', '720 W'),
+  ('d2020001-6a71-4c6a-9b5d-000000000002', 'd2010001-6a71-4c6a-9b5d-000000000001', 'Disco', '4 1/2 pulg. / 115 mm'),
+  ('d2020001-6a71-4c6a-9b5d-000000000003', 'd2010001-6a71-4c6a-9b5d-000000000001', 'Velocidad', '11000 RPM'),
+  ('d2020001-6a71-4c6a-9b5d-000000000004', 'd2010001-6a71-4c6a-9b5d-000000000002', 'Potencia', '780 W'),
+  ('d2020001-6a71-4c6a-9b5d-000000000005', 'd2010001-6a71-4c6a-9b5d-000000000002', 'Impacto', '2.4 J'),
+  ('d2020001-6a71-4c6a-9b5d-000000000006', 'd2010001-6a71-4c6a-9b5d-000000000002', 'Mandril', 'SDS Plus'),
+  ('d2020001-6a71-4c6a-9b5d-000000000007', 'd2010001-6a71-4c6a-9b5d-000000000003', 'Voltaje', '12 V Max'),
+  ('d2020001-6a71-4c6a-9b5d-000000000008', 'd2010001-6a71-4c6a-9b5d-000000000003', 'Mandril', '3/8 pulg.'),
+  ('d2020001-6a71-4c6a-9b5d-000000000009', 'd2010001-6a71-4c6a-9b5d-000000000003', 'Velocidades', '2'),
+  ('d2020001-6a71-4c6a-9b5d-000000000010', 'd2010001-6a71-4c6a-9b5d-000000000004', 'Material', 'HDPE'),
+  ('d2020001-6a71-4c6a-9b5d-000000000011', 'd2010001-6a71-4c6a-9b5d-000000000004', 'Suspension', '4 puntos'),
+  ('d2020001-6a71-4c6a-9b5d-000000000012', 'd2010001-6a71-4c6a-9b5d-000000000004', 'Norma', 'ANSI/ISEA Z89.1'),
+  ('d2020001-6a71-4c6a-9b5d-000000000013', 'd2010001-6a71-4c6a-9b5d-000000000005', 'Diametro', '3/8 pulg.'),
+  ('d2020001-6a71-4c6a-9b5d-000000000014', 'd2010001-6a71-4c6a-9b5d-000000000005', 'Acabado', 'Zincado'),
+  ('d2020001-6a71-4c6a-9b5d-000000000015', 'd2010001-6a71-4c6a-9b5d-000000000005', 'Unidad', 'pieza'),
+  ('d2020001-6a71-4c6a-9b5d-000000000016', 'd2010001-6a71-4c6a-9b5d-000000000006', 'Corriente', '10 A'),
+  ('d2020001-6a71-4c6a-9b5d-000000000017', 'd2010001-6a71-4c6a-9b5d-000000000006', 'Tension', '250 V'),
+  ('d2020001-6a71-4c6a-9b5d-000000000018', 'd2010001-6a71-4c6a-9b5d-000000000006', 'Tipo', 'Simple')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO productos_imagenes (id, id_producto_modelo, url_imagen) VALUES
+  ('d2030001-6a71-4c6a-9b5d-000000000001', 'd2010001-6a71-4c6a-9b5d-000000000001', '/src/assets/esmeril_gws750.png'),
+  ('d2030001-6a71-4c6a-9b5d-000000000002', 'd2010001-6a71-4c6a-9b5d-000000000002', '/src/assets/rotomartillo_bosch.png'),
+  ('d2030001-6a71-4c6a-9b5d-000000000003', 'd2010001-6a71-4c6a-9b5d-000000000003', '/src/assets/taladro_dewalt.png'),
+  ('d2030001-6a71-4c6a-9b5d-000000000004', 'd2010001-6a71-4c6a-9b5d-000000000004', '/src/assets/casco.png'),
+  ('d2030001-6a71-4c6a-9b5d-000000000005', 'd2010001-6a71-4c6a-9b5d-000000000005', '/src/assets/pernos.png'),
+  ('d2030001-6a71-4c6a-9b5d-000000000006', 'd2010001-6a71-4c6a-9b5d-000000000006', '/src/assets/interruptor.png')
+ON CONFLICT (id) DO NOTHING;
+
 

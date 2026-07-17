@@ -31,23 +31,37 @@ export default function Sidebar({ isCollapsed, onToggleCollapse }) {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const [sections, setSections] = useState({
-    dashboard: true, // Expanded by default
-    ventas: true,
-    inventario: true, // Expanded by default
-    almacen: true,
-    operaciones: true,
-    rrhh: true,
+  const createSectionsState = (openSection = 'dashboard') => ({
+    dashboard: openSection === 'dashboard',
+    ventas: openSection === 'ventas',
+    inventario: openSection === 'inventario',
+    almacen: openSection === 'almacen',
+    operaciones: openSection === 'operaciones',
+    rrhh: openSection === 'rrhh',
   });
 
+  const getActiveSection = () => {
+    if (currentPath.startsWith('/ventas')) return 'ventas';
+    if (currentPath.startsWith('/inventario/mermas') || currentPath.startsWith('/inventario/kardex')) return 'almacen';
+    if (currentPath.startsWith('/inventario')) return 'inventario';
+    if (currentPath.startsWith('/rrhh') || currentPath === '/panel-permisos') return 'rrhh';
+    return 'dashboard';
+  };
+
+  const [sections, setSections] = useState(() => createSectionsState(getActiveSection()));
+
   const toggleSection = (section) => {
-    setSections((prev) => ({ ...prev, [section]: !prev[section] }));
+    setSections((prev) => (
+      prev[section]
+        ? createSectionsState(null)
+        : createSectionsState(section)
+    ));
   };
 
   const handleCategoryClick = (sectionName) => {
     if (isCollapsed) {
       onToggleCollapse(); // Expand sidebar
-      setSections(prev => ({ ...prev, [sectionName]: true }));
+      setSections(createSectionsState(sectionName));
     } else {
       toggleSection(sectionName);
     }

@@ -345,7 +345,7 @@ export default function Login({ onLoginSuccess }) {
       {/* Left Column: Warehouse Banner */}
       <div className="login-left-panel">
         <div className="login-left-content">
-          <div className="login-eyebrow">Sistema de Gestión Industrial</div>
+          <div className="login-eyebrow">Gestión de Venta - Área de Ferretería</div>
           <h1 className="login-left-title">Potencia tu eficiencia logística.</h1>
           <p className="login-left-subtitle">
             Accede al panel central de MEPS GROUP PERÚ para gestionar inventario, ventas y operaciones en tiempo real.

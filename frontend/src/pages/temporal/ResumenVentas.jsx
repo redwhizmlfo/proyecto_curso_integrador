@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
+import Header from '../../components/Header';
 import {
   ShoppingBag, BarChart2, FileText, TrendingUp,
   TrendingDown, ArrowLeft, DollarSign, Clock,

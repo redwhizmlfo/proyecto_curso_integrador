@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
+import Header from '../../components/Header';
 import {
   CalendarCheck, UserPlus, LayoutGrid, AlertTriangle,
   Clock, CreditCard, BarChart2, ShoppingBag,
   TrendingUp, TrendingDown, ArrowLeft
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
+import api from '../../services/api';
 
 /* ─── Datos simulados base ─────────────────────────────────────── */
 
